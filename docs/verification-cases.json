@@ -1,0 +1,215 @@
+{
+  "cases": [
+    {
+      "name": "golden",
+      "canGenerate": true,
+      "rulesLegal": true,
+      "supported": true,
+      "messages": [],
+      "hp": 31,
+      "ac": 17,
+      "speed": 30,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 5,
+        "damageDice": "2d6",
+        "damageModifier": 3,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    },
+    {
+      "name": "duplicate languages",
+      "canGenerate": false,
+      "rulesLegal": false,
+      "supported": true,
+      "messages": [
+        {
+          "id": "language-count",
+          "severity": "blocker"
+        }
+      ],
+      "hp": 31,
+      "ac": 17,
+      "speed": 30,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 5,
+        "damageDice": "2d6",
+        "damageModifier": 3,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    },
+    {
+      "name": "one skill",
+      "canGenerate": false,
+      "rulesLegal": false,
+      "supported": true,
+      "messages": [
+        {
+          "id": "fighter-skills-count",
+          "severity": "blocker"
+        }
+      ],
+      "hp": 31,
+      "ac": 17,
+      "speed": 30,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 5,
+        "damageDice": "2d6",
+        "damageModifier": 3,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    },
+    {
+      "name": "duplicate background skill",
+      "canGenerate": true,
+      "rulesLegal": true,
+      "supported": true,
+      "messages": [
+        {
+          "id": "duplicate-skill",
+          "severity": "warning"
+        }
+      ],
+      "hp": 31,
+      "ac": 17,
+      "speed": 30,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 5,
+        "damageDice": "2d6",
+        "damageModifier": 3,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    },
+    {
+      "name": "missing gaming set",
+      "canGenerate": true,
+      "rulesLegal": true,
+      "supported": true,
+      "messages": [],
+      "hp": 31,
+      "ac": 17,
+      "speed": 30,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 5,
+        "damageDice": "2d6",
+        "damageModifier": 3,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    },
+    {
+      "name": "unsupported gold package",
+      "error": "TypeError: Cannot read properties of undefined (reading 'map')"
+    },
+    {
+      "name": "unknown subclass",
+      "canGenerate": true,
+      "rulesLegal": true,
+      "supported": true,
+      "messages": [],
+      "hp": 31,
+      "ac": 17,
+      "speed": 30,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 5,
+        "damageDice": "2d6",
+        "damageModifier": 3,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    },
+    {
+      "name": "invalid alignment",
+      "canGenerate": true,
+      "rulesLegal": true,
+      "supported": true,
+      "messages": [],
+      "hp": 31,
+      "ac": 17,
+      "speed": 30,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 5,
+        "damageDice": "2d6",
+        "damageModifier": 3,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    },
+    {
+      "name": "negative STR and DEX",
+      "canGenerate": true,
+      "rulesLegal": true,
+      "supported": true,
+      "messages": [
+        {
+          "id": "heavy-fighter-low-str",
+          "severity": "warning"
+        },
+        {
+          "id": "heavy-armor-speed",
+          "severity": "warning"
+        }
+      ],
+      "hp": 34,
+      "ac": 17,
+      "speed": 20,
+      "attack": {
+        "weaponId": "greatsword",
+        "attackBonus": 1,
+        "damageDice": "2d6",
+        "damageModifier": -1,
+        "damageType": "slashing",
+        "mastery": {
+          "id": "graze",
+          "unlocked": true
+        }
+      }
+    }
+  ],
+  "inventoryWeapons": [
+    {
+      "id": "spear",
+      "quantity": 1
+    },
+    {
+      "id": "shortbow",
+      "quantity": 1
+    }
+  ],
+  "derivedAttackIds": [
+    "greatsword",
+    "flail",
+    "javelin"
+  ]
+}

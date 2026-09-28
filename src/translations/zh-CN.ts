@@ -52,6 +52,12 @@ export const zhCN = {
   },
 } as const;
 
+export function masteryName(id: string): string {
+  // 新增精通尚未校对中文译名时，保留稳定 ID，避免显示为空。
+  const names: Readonly<Record<string, string>> = zhCN.mastery;
+  return names[id] ?? id;
+}
+
 export const abilityNames: Record<AbilityId, string> = {
   strength: "力量",
   dexterity: "敏捷",

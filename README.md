@@ -30,7 +30,7 @@
 ## 开发
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -40,7 +40,9 @@ npm run dev
 npm run test:rules
 ```
 
-> 当前生成环境无法访问 npm registry，因此仓库暂未生成 `package-lock.json`。首次在联网环境执行 `npm install` 后请提交 lockfile。
+依赖已通过 npm 官方源安装并生成 `package-lock.json`。Vite 7 要求 Node `^20.19.0 || >=22.12.0`。
+
+2026-09-28 接手验证：已修复精通译名索引导致的 TypeScript 构建错误，黄金规则自检与页面主流程通过；已知问题和源码来源见 [`docs/verification.md`](docs/verification.md)。
 
 ## 目录
 
