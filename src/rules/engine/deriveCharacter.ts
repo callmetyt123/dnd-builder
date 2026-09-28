@@ -48,6 +48,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
           abilities[ability].modifier + (proficient ? pb : 0),
           proficient ? "proficient" : "none",
           advantageSources,
+          skillId === "stealth" ? ["chain-mail"] : [],
         ),
       ];
     }),
@@ -79,15 +80,21 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const initiative = makeRoll(abilities.dexterity.modifier, "none", initiativeAdvantages);
 
   const masterySet = new Set(build.choices.weaponMasteries);
-  const carriedWeaponIds = FIGHTER.equipmentPackages[build.equipment.classPackage]
-    .map((item) => item.id)
-    .filter((id) => id in WEAPONS);
+  // 合并两个来源的装备，避免背景武器和重复金币在人物卡中丢失。
+  const inventory = new Map<string, number>();
+  for (const item of [...FIGHTER.equipmentPackages[build.equipment.classPackage], ...SOLDIER.equipmentPackages[build.equipment.backgroundPackage]]) {
+    const id = item.id === "gaming-set" ? build.choices.soldierGamingSet ?? "gaming-set" : item.id;
+    inventory.set(id, (inventory.get(id) ?? 0) + item.quantity);
+  }
+  const equipment = [...inventory].map(([id, quantity]) => ({ id, quantity }));
+  const carriedWeaponIds = equipment.map((item) => item.id).filter((id) => Object.prototype.hasOwnProperty.call(WEAPONS, id));
 
   const attacks = carriedWeaponIds.map((weaponId) => {
     const weapon = WEAPONS[weaponId];
     const mod = abilities[weapon.ability].modifier;
     return {
       weaponId,
+      disadvantage: weapon.heavy && abilities.strength.score < 13 ? "力量低于 13，重型近战武器攻击具有劣势" : undefined,
       attackBonus: mod + pb,
       damageDice: weapon.damageDice,
       damageModifier: mod,
@@ -100,8 +107,6 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     };
   });
 
-  const classEquipment = FIGHTER.equipmentPackages[build.equipment.classPackage];
-  const backgroundEquipment = SOLDIER.equipmentPackages[build.equipment.backgroundPackage];
 
   return {
     level: 3,
@@ -134,6 +139,6 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       ...DWARF.features,
       SOLDIER.originFeatId,
     ],
-    equipment: [...classEquipment, ...backgroundEquipment],
+    equipment,
   };
 }

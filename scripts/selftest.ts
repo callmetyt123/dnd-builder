@@ -1,8 +1,13 @@
+import { parseDraft } from "../src/store/draft";
+import { normalizePlayState, updatePlayState } from "../src/rules/engine/playState";
+import { damageFormula } from "../src/rules/engine/format";
 import { deriveCharacter } from "../src/rules/engine/deriveCharacter";
 import type { CharacterBuild } from "../src/rules/types";
 import { validateBuild } from "../src/rules/validator/validateBuild";
 
+let checks = 0;
 function assert(condition: unknown, message: string): asserts condition {
+  checks += 1;
   if (!condition) throw new Error(`Assertion failed: ${message}`);
 }
 
@@ -63,12 +68,49 @@ const incompleteValidation = validateBuild(incomplete);
 assert(!incompleteValidation.complete && !incompleteValidation.canGenerate, "missing name/alignment should block generation");
 assert(incompleteValidation.messages.filter((m) => m.domain === "completeness" && m.severity === "blocker").length === 2, "should have two identity blockers");
 
-console.log("rules selftest: OK");
-console.log(JSON.stringify({
-  hp: derived.maxHp,
-  ac: derived.armorClass,
-  initiative: derived.initiative,
-  athletics: derived.skills.athletics,
-  greatsword: derived.attacks.find((a) => a.weaponId === "greatsword"),
-  criticalThreshold: derived.criticalThreshold,
-}, null, 2));
+// 以实际失败场景为边界：外部草稿不能绕过规则校验或让页面崩溃。
+for (const value of [null, [], {}, { ...build, abilities: null }, { ...build, level: 5 }, { ...build, choices: { ...build.choices, fightingStyle: "archery" } }, { ...build, equipment: { ...build.equipment, classPackage: "missing" } }]) {
+  assert(!validateBuild(value).canGenerate, "malformed or unsupported input must be rejected");
+}
+assert(!validateBuild({ ...build, identity: { ...build.identity, age: -1 } }).canGenerate, "negative age must be rejected");
+assert(!validateBuild({ ...build, identity: { ...build.identity, alignment: "??" } }).canGenerate, "unknown alignment must be rejected");
+assert(!validateBuild({ ...build, choices: { ...build.choices, soldierGamingSet: "unknown" } }).canGenerate, "unknown gaming set must be rejected");
+assert(!validateBuild({ ...build, choices: { ...build.choices, weaponMasteries: ["constructor", "flail", "javelin"] } }).canGenerate, "inherited property must not be a weapon");
+assert(!validateBuild({ ...build, choices: { ...build.choices, languages: ["giant", "giant"] } }).canGenerate, "duplicate languages must be rejected");
+assert(!validateBuild({ ...build, choices: { ...build.choices, fighterSkills: ["arcana", "survival"] } }).canGenerate, "non-fighter skills must be rejected");
+assert(validateBuild({ ...build, abilities: { ...build.abilities, backgroundBoosts: { strength: 1, dexterity: 1, constitution: 1 } } }).canGenerate, "three +1 boosts must be allowed");
+assert(!validateBuild({ ...build, abilities: { ...build.abilities, backgroundBoosts: { strength: 3 } } }).canGenerate, "+3 single boost must be rejected");
+assert(parseDraft("{oops").preserveOriginal, "invalid JSON must be retained for recovery");
+assert(parseDraft(JSON.stringify({ build: { ...build, schemaVersion: 2 } })).preserveOriginal, "future schema must not be overwritten without recovery");
+assert(parseDraft(JSON.stringify({ build, step: "unknown" })).state?.step === "review", "unknown steps must land on review");
+assert(parseDraft(JSON.stringify({ build: incomplete, step: "character" })).state?.step === "review", "incomplete restored character must return to review");
+assert(parseDraft(JSON.stringify({ build, step: "character" })).state?.step === "character", "v1 drafts without play state must migrate");
+assert(derived.attacks.length === 5, "both equipment packages must contribute attacks");
+assert(derived.attacks.find((a) => a.weaponId === "shortbow")?.attackBonus === 3, "shortbow uses DEX plus proficiency");
+assert(!derived.attacks.find((a) => a.weaponId === "spear")?.mastery?.unlocked, "carried weapons do not automatically grant mastery");
+assert(derived.equipment.find((i) => i.id === "gp")?.quantity === 18, "gold from class and background must be merged");
+assert(derived.equipment.some((i) => i.id === "dice-set") && !derived.equipment.some((i) => i.id === "gaming-set"), "selected tool must replace generic gaming set");
+assert(derived.skills.stealth.state === "disadvantage", "chain mail imposes stealth disadvantage");
+const lowStrength = structuredClone(build);
+lowStrength.abilities.baseAssignment.strength = 8;
+lowStrength.abilities.baseAssignment.intelligence = 15;
+lowStrength.abilities.backgroundBoosts = { dexterity: 2, constitution: 1 };
+const weak = deriveCharacter(lowStrength);
+assert(weak.speed === 20 && Boolean(weak.attacks[0].disadvantage), "low STR must affect armor speed and heavy attacks");
+assert(damageFormula("2d6", -1) === "2d6−1" && damageFormula("1d6", 0) === "1d6", "negative and zero damage must format correctly");
+let play = normalizePlayState(undefined, derived);
+play = updatePlayState(play, { type: "hp", value: 8 }, derived);
+play = updatePlayState(play, { type: "temporary-hp", value: 4 }, derived);
+play = updatePlayState(play, { type: "hit-dice", value: 1 }, derived);
+for (const id of ["second-wind", "action-surge", "stonecunning"]) play = updatePlayState(play, { type: "resource", id, value: 0 }, derived);
+const rested = updatePlayState(play, { type: "rest", kind: "short" }, derived);
+assert(rested.remaining["second-wind"] === 1 && rested.remaining["action-surge"] === 1 && rested.remaining.stonecunning === 0, "short rest must recover the correct amounts only");
+assert(rested.hp === 8 && rested.hitDice === 1 && rested.temporaryHp === 4, "short rest must not heal or spend dice automatically");
+assert(play.remaining["second-wind"] === 0, "rest must not mutate the previous state");
+const longRested = updatePlayState(play, { type: "rest", kind: "long" }, derived);
+assert(longRested.hp === 31 && longRested.hitDice === 3 && longRested.temporaryHp === 0 && longRested.remaining.stonecunning === 2, "long rest restores all HP, dice and resources");
+assert(updatePlayState(rested, { type: "resource", id: "second-wind", value: -3 }, derived).remaining["second-wind"] === 0, "resources cannot drop below zero");
+const clamped = normalizePlayState({ hp: 999, temporaryHp: -1, hitDice: 8, remaining: { "second-wind": 9, "action-surge": null } }, derived);
+assert(clamped.hp === 31 && clamped.temporaryHp === 0 && clamped.hitDice === 3 && clamped.remaining["second-wind"] === 2 && clamped.remaining["action-surge"] === 1, "tampered play state must be bounded");
+assert(parseDraft(JSON.stringify({ step: "character", build, play })).state?.play?.hp === 8, "play state must survive draft serialization");
+console.log(`rules selftest: OK (${checks} checks)`);

@@ -1,22 +1,45 @@
+import { useRef, useState } from "react";
 import { deriveCharacter } from "../rules/engine/deriveCharacter";
-import { skillNames, zhCN } from "../translations/zh-CN";
+import { normalizePlayState, type PlayAction } from "../rules/engine/playState";
+import { CharacterSheets } from "../components/character/CharacterSheets";
+import { features } from "../data/characterDetails";
 import { useBuilder } from "../store/builder";
+import { exportCharacter } from "../utils/exportCharacter";
 
 export function CharacterPage() {
   const { state, dispatch } = useBuilder();
   const c = deriveCharacter(state.build);
-  const main = c.attacks.find((a) => a.weaponId === "greatsword")!;
-  return (
-    <div className="character-page">
-      <header className="character-header"><button className="button secondary" onClick={() => dispatch({ type: "step", step: "review" })}>← 返回检查</button><span>D&D 5R 角色创建器</span></header>
-      <section className="character-hero"><div className="eyebrow">你的冒险者</div><h1>{state.build.identity.name}</h1><p>{zhCN.species.dwarf} · {zhCN.class.fighter} 3级 · {zhCN.subclass.champion}</p></section>
-      <div className="quick-card">
-        <div className="stat-strip"><div><span>HP</span><strong>{c.maxHp}</strong></div><div><span>AC</span><strong>{c.armorClass}</strong></div><div><span>速度</span><strong>{c.speed}尺</strong></div><div><span>先攻</span><strong>+{c.initiative.modifier}</strong><small>优势</small></div></div>
-        <section><h2>你最常做什么？</h2><ol className="turn-guide"><li>移动到合适的位置。</li><li>用{zhCN.weapon.greatsword}攻击：<strong>+{main.attackBonus}</strong> 命中，伤害 <strong>{main.damageDice}+{main.damageModifier}</strong>。</li><li>受伤后可用「{zhCN.feature["second-wind"]}」；需要爆发时使用「{zhCN.feature["action-surge"]}」。</li></ol></section>
-        <section><h2>关键能力</h2><div className="feature-grid"><div><strong>{zhCN.feature["second-wind"]} ×2</strong><span>附赠动作；三级恢复 1d10+3 HP。</span></div><div><strong>{zhCN.feature["action-surge"]} ×1</strong><span>关键回合获得一个额外动作。</span></div><div><strong>{zhCN.feature["improved-critical"]}</strong><span>武器攻击与徒手打击在 19–20 时重击。</span></div><div><strong>{zhCN.feature["remarkable-athlete"]}</strong><span>先攻与{skillNames.athletics}具有优势。</span></div></div></section>
-        <section><h2>武器精通</h2>{c.attacks.map((attack) => <div className="attack-row" key={attack.weaponId}><strong>{zhCN.weapon[attack.weaponId as keyof typeof zhCN.weapon]}</strong><span>+{attack.attackBonus}</span><span>{attack.damageDice}+{attack.damageModifier}</span><span>{zhCN.mastery[attack.mastery!.id as keyof typeof zhCN.mastery]}</span></div>)}</section>
-      </div>
-      <div className="export-panel"><strong>下一开发节点</strong><span>完整人物卡布局 + 浏览器端 PDF / PNG 导出。</span></div>
-    </div>
-  );
+  const play = normalizePlayState(state.play, c);
+  const [mode, setMode] = useState<"quick" | "full">("quick");
+  const [downloadFile, setDownloadFile] = useState<{ url: string; filename: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [rest, setRest] = useState<"short" | "long" | null>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
+  const update = (action: PlayAction) => dispatch({ type: "play", action });
+  async function download(format: "pdf" | "png") {
+    if (!exportRef.current || busy) return;
+    setBusy(true); setDownloadFile(null); setMessage(`正在生成 ${format.toUpperCase()}…`);
+    try {
+      const file = await exportCharacter(exportRef.current, format, `${state.build.identity.name}-${mode === "quick" ? "战斗速查" : "完整人物卡"}`);
+      setDownloadFile(file);
+      setMessage(`${format.toUpperCase()} 已生成，点击下方链接保存。`);
+    } catch {
+      setMessage("导出失败，请重试；也可以使用「打印 / 另存为 PDF」。");
+    } finally { setBusy(false); }
+  }
+  return <div className="character-page">
+    <header className="character-header no-print"><button className="button secondary" disabled={busy} onClick={() => dispatch({ type: "step", step: "review" })}>← 返回检查</button><span>D&D 5R · 你的冒险者</span></header>
+    <section className="character-hero no-print"><div className="eyebrow">准备好开始冒险</div><h1>{state.build.identity.name}</h1><p>战士 3 级 · 勇士 · 矮人 · 士兵</p></section>
+    <section inert={busy} className="play-panel no-print" aria-label="冒险资源记录"><div className="panel-heading"><div><h2>冒险记录</h2><p>修改即时保存；能力消耗与治疗掷骰结果分别记录。</p></div><div className="rest-actions"><button className="button secondary" onClick={() => setRest("short")}>短休</button><button className="button secondary" onClick={() => setRest("long")}>长休</button></div></div>
+      <div className="tracker-grid"><label>当前 HP / {c.maxHp}<input aria-label="当前 HP" type="number" min={0} max={c.maxHp} value={play.hp} onChange={(e) => update({ type: "hp", value: Number(e.target.value) })} /></label><label>临时 HP<input type="number" min={0} max={999} value={play.temporaryHp} onChange={(e) => update({ type: "temporary-hp", value: Number(e.target.value) })} /></label><label>剩余生命骰 / 3d10<input type="number" min={0} max={3} value={play.hitDice} onChange={(e) => update({ type: "hit-dice", value: Number(e.target.value) })} /></label></div>
+      <div className="resource-controls">{c.resources.map((r) => <div className="resource-control" key={r.id}><div><b>{features[r.id].name}</b><small>{r.recovery}</small></div><div><button className="button secondary" aria-label={`消耗一次${features[r.id].name}`} disabled={play.remaining[r.id] === 0} onClick={() => update({ type: "resource", id: r.id, value: play.remaining[r.id] - 1 })}>−</button><output aria-label={`${features[r.id].name}剩余次数`}>{play.remaining[r.id]} / {r.max}</output><button className="button secondary" aria-label={`恢复一次${features[r.id].name}`} disabled={play.remaining[r.id] === r.max} onClick={() => update({ type: "resource", id: r.id, value: play.remaining[r.id] + 1 })}>＋</button></div></div>)}</div>
+      {rest && <div className="rest-confirm" role="group" aria-label="确认休息"><p>{rest === "short" ? "完成至少 1 小时短休：回气恢复 1 次，动作如潮恢复全部。HP 与生命骰不自动改变，请按实际掷骰填写。" : "满足长休条件并完成至少 8 小时休息：HP、生命骰与所有能力次数恢复全部，临时 HP 清零。"}</p><button className="button primary" onClick={() => { update({ type: "rest", kind: rest }); setRest(null); }}>确认已完成{rest === "short" ? "短休" : "长休"}</button><button className="button secondary" onClick={() => setRest(null)}>取消</button></div>}
+    </section>
+    <div className="sheet-toolbar no-print"><div className="sheet-tabs" role="group" aria-label="人物卡视图"><button aria-pressed={mode === "quick"} disabled={busy} onClick={() => { setMode("quick"); setDownloadFile(null); setMessage(""); }}>战斗速查</button><button aria-pressed={mode === "full"} disabled={busy} onClick={() => { setMode("full"); setDownloadFile(null); setMessage(""); }}>完整人物卡</button></div><div className="export-actions"><button className="button secondary" disabled={busy} onClick={() => download("pdf")}>导出 PDF</button><button className="button secondary" disabled={busy} onClick={() => download("png")}>导出 PNG</button><button className="button secondary" disabled={busy} onClick={() => window.print()}>打印 / 另存为 PDF</button></div></div>
+    <p className="export-status no-print" role="status">{message || (mode === "quick" ? "一页战斗速查，随时翻阅。" : "三页完整人物卡：数值、能力、装备与身份。")}</p>
+    {downloadFile && <a className="button primary download-link no-print" href={downloadFile.url} download={downloadFile.filename}>保存 {downloadFile.filename}</a>}
+    <div className="sheet-preview"><CharacterSheets build={state.build} character={c} play={play} mode={mode} /></div>
+    <div className="export-root" ref={exportRef} aria-hidden="true"><CharacterSheets build={state.build} character={c} play={play} mode={mode} /></div>
+  </div>;
 }

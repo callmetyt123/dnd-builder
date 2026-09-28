@@ -13,7 +13,7 @@ const FLOW: { id: BuilderStep; label: string }[] = [
 ];
 
 export function BuilderShell({ children, previous, next, nextLabel = "下一步", nextDisabled = false }: { children: ReactNode; previous?: BuilderStep; next?: BuilderStep; nextLabel?: string; nextDisabled?: boolean }) {
-  const { state, dispatch } = useBuilder();
+  const { state, dispatch, storageError } = useBuilder();
   const currentIndex = FLOW.findIndex((item) => item.id === state.step);
   return (
     <div className="app-shell">
@@ -22,7 +22,7 @@ export function BuilderShell({ children, previous, next, nextLabel = "下一步"
           <strong>D&D 5R</strong>
           <span>角色创建器</span>
         </div>
-        <span className="saved-indicator">草稿自动保存</span>
+        <span className="saved-indicator">{storageError ? "保存失败" : "草稿自动保存"}</span>
       </header>
       <div className="progress-wrap">
         <div className="progress-mobile">步骤 {currentIndex + 1} / {FLOW.length} · {FLOW[currentIndex]?.label}</div>

@@ -99,6 +99,7 @@ export interface DerivedAttack {
     unlocked: boolean;
   };
   range?: [number, number];
+  disadvantage?: string;
 }
 
 export interface DerivedResource {

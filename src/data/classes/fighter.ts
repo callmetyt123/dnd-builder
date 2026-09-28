@@ -28,6 +28,7 @@ export const FIGHTER = {
       { id: "flail", quantity: 1 },
       { id: "javelin", quantity: 8 },
       { id: "dungeoneers-pack", quantity: 1 },
+      { id: "gp", quantity: 4 },
     ],
   },
 } as const;

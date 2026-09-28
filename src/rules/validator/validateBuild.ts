@@ -1,16 +1,34 @@
+import { GAMING_SETS } from "../../data/characterDetails";
+import { alignmentNames } from "../../translations/zh-CN";
+import { hasBuildShape, isSupportedBuild } from "./buildShape";
 import { SOLDIER } from "../../data/backgrounds/soldier";
 import { FIGHTER } from "../../data/classes/fighter";
 import { STANDARD_ARRAY, STANDARD_LANGUAGE_IDS } from "../../data/core";
 import { WEAPONS } from "../../data/weapons";
-import type { AbilityId, CharacterBuild, ValidationMessage, ValidationResult } from "../types";
+import type { AbilityId, ValidationMessage, ValidationResult } from "../types";
 import { deriveCharacter } from "../engine/deriveCharacter";
 
 function multiset(values: number[]) {
   return [...values].sort((a, b) => a - b).join(",");
 }
 
-export function validateBuild(build: CharacterBuild): ValidationResult {
+export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
+  if (!hasBuildShape(build) || !isSupportedBuild(build)) {
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持 3 级战士／勇士／矮人／士兵。" }] };
+  }
+  if (build.identity.alignment && !Object.prototype.hasOwnProperty.call(alignmentNames, build.identity.alignment)) {
+    messages.push({ id: "identity-alignment-invalid", domain: "rules", severity: "blocker", message: "请选择有效的阵营。", targetStep: "identity" });
+  }
+  if (build.identity.age !== undefined && (!Number.isInteger(build.identity.age) || build.identity.age < 0)) {
+    messages.push({ id: "identity-age", domain: "rules", severity: "blocker", message: "年龄应为非负整数，或留空。", targetStep: "identity" });
+  }
+  if (build.identity.name.length > 60 || (build.identity.gender?.length ?? 0) > 30 || (build.identity.appearance?.length ?? 0) > 300 || (build.identity.description?.length ?? 0) > 600 || (build.identity.personalityTraits?.length ?? 0) > 3 || build.identity.personalityTraits?.some((trait) => trait.length > 30)) {
+    messages.push({ id: "identity-length", domain: "completeness", severity: "blocker", message: "姓名最多 60 字、性别 30 字、外貌 300 字、简介 600 字，性格特点最多 3 项。", targetStep: "identity" });
+  }
+  if (!build.choices.soldierGamingSet || !Object.prototype.hasOwnProperty.call(GAMING_SETS, build.choices.soldierGamingSet)) {
+    messages.push({ id: "gaming-set", domain: "completeness", severity: "blocker", message: "请选择一种游戏套装，作为士兵的工具熟练和起始装备。", targetStep: "background" });
+  }
 
   if (!build.identity.name.trim()) {
     messages.push({ id: "identity-name", domain: "completeness", severity: "blocker", message: "请填写角色姓名。", targetStep: "identity" });
@@ -49,7 +67,7 @@ export function validateBuild(build: CharacterBuild): ValidationResult {
   if (build.choices.weaponMasteries.length !== FIGHTER.weaponMasteryCount || new Set(build.choices.weaponMasteries).size !== FIGHTER.weaponMasteryCount) {
     messages.push({ id: "weapon-mastery-count", domain: "rules", severity: "blocker", message: `3级战士需要选择 ${FIGHTER.weaponMasteryCount} 种不同的精通武器。`, targetStep: "configuration" });
   }
-  if (build.choices.weaponMasteries.some((id) => !(id in WEAPONS))) {
+  if (build.choices.weaponMasteries.some((id) => !Object.prototype.hasOwnProperty.call(WEAPONS, id))) {
     messages.push({ id: "weapon-mastery-known", domain: "rules", severity: "blocker", message: "当前开发切片中存在尚未录入规则数据的武器精通选择。", targetStep: "configuration" });
   }
 

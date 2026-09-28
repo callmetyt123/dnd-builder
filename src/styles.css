@@ -171,3 +171,67 @@ textarea { min-height: 92px; resize: vertical; }
   .attack-row { grid-template-columns: 1fr 1fr; }
   .export-panel { flex-direction: column; }
 }
+
+/* 白纸人物卡与应用主题分离，保证屏幕、打印和图片使用相同的数据排版。 */
+.storage-notice { padding: 14px 20px; background: #3e3020; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.character-hero h1, .review-hero h2 { overflow-wrap: anywhere; }
+.character-page { width: min(100% - 32px, 1000px); }
+.play-panel { padding: 24px; border: 1px solid var(--border); background: var(--surface); border-radius: 16px; }
+.panel-heading, .sheet-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.panel-heading h2 { margin-bottom: 6px; }.panel-heading p { font-size: 13px; margin-bottom: 18px; }
+.rest-actions, .export-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.tracker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.resource-controls { display: grid; gap: 12px; margin-top: 20px; }
+.resource-control { display: flex; justify-content: space-between; gap: 12px; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; }
+.resource-control > div:first-child { display: grid; gap: 5px; }.resource-control small { font-size: 12px; color: var(--muted); }
+.resource-control > div:last-child { display: flex; gap: 12px; align-items: center; }.resource-control output { min-width: 36px; text-align: center; }
+.rest-confirm { margin-top: 20px; padding: 16px; border: 1px solid var(--accent); border-radius: 10px; }.rest-confirm .button { margin-right: 8px; }
+.sheet-toolbar { margin-top: 32px; }.sheet-tabs { display: flex; padding: 4px; background: #202022; border-radius: 12px; }
+.sheet-tabs button { border: 0; background: transparent; border-radius: 8px; padding: 10px 15px; cursor: pointer; }.sheet-tabs [aria-pressed="true"] { color: #19140d; background: var(--accent); }
+.export-actions .button { font-size: 13px; padding: 10px 12px; }.export-status { font-size: 13px; margin: 14px 0; }
+.sheet-preview { container-type: inline-size; }
+.sheet-page { color: #252b31; background: #fff; padding: 32px; margin-bottom: 24px; font: 13px/1.55 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; border-radius: 3px; overflow-wrap: anywhere; }
+.sheet-page p { color: #41484e; line-height: 1.6; margin: 8px 0; }.sheet-page h3 { font-size: 14px; color: #2e4356; border-bottom: 2px solid #c8b07f; padding-bottom: 5px; margin: 18px 0 10px; }.sheet-page h4 { margin: 12px 0 4px; }
+.sheet-header { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid #31475b; padding-bottom: 14px; }.sheet-header h2 { font-size: 28px; line-height: 1.25; margin: 7px 0; color: #1d2e3e; }.sheet-header p { margin: 0; font-size: 12px; }.sheet-kicker { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #78653b; }.sheet-page-number { color: #84909b; white-space: nowrap; font-size: 11px; }
+.sheet-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }.sheet-stats > div { display: grid; text-align: center; padding: 8px; border: 1px solid #cdd5dc; border-radius: 4px; }.sheet-stats strong { font-size: 28px; line-height: 1.5; color: #1d2e3e; }.sheet-stats sub { font-size: 12px; font-weight: 400; vertical-align: baseline; }.sheet-page small { font-size: 10px; color: #64707b; }
+.sheet-abilities { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 16px; }.sheet-abilities > div { display: grid; text-align: center; padding: 7px; background: #f2f4f6; }.sheet-abilities b { font-size: 20px; }
+.sheet-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }.sheet-rolls > div { display: flex; align-items: center; gap: 5px; padding: 3px 0; border-bottom: 1px solid #e8ebee; }.sheet-rolls > div > span { flex: 1; }.sheet-rolls em { font-size: 9px; font-style: normal; padding: 1px 3px; background: #ece7db; border-radius: 2px; }
+.sheet-attacks { border-collapse: collapse; width: 100%; table-layout: fixed; font-size: 12px; }.sheet-attacks th { color: #64707b; font-size: 10px; font-weight: 500; }.sheet-attacks th, .sheet-attacks td { text-align: left; padding: 6px; border-bottom: 1px solid #e0e5e8; }.sheet-attacks th:first-child { width: 44%; }.sheet-attacks th:nth-child(2) { width: 12%; }.sheet-attacks th:nth-child(3) { width: 25%; }.sheet-attacks small { display: block; font-size: 9px; }.sheet-page .rule-alert { color: #943e21; }
+.sheet-page .sheet-note { font-size: 10px; line-height: 1.6; color: #64707b; }.sheet-resources { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }.sheet-resources > div { border: 1px solid #dce1e5; padding: 8px 10px; border-radius: 3px; }.sheet-resources b { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }.sheet-resources small { display: block; margin-top: 3px; }
+.sheet-features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }.sheet-features > div { break-inside: avoid; }.sheet-features b { font-size: 13px; }.sheet-features small { display: block; }.sheet-features p { font-size: 11px; line-height: 1.65; margin: 4px 0 0; }.sheet-masteries p { font-size: 11px; }.sheet-story p { white-space: normal; }.sheet-footer { border-top: 1px solid #dce1e5; margin-top: 24px; padding-top: 10px; font-size: 9px; color: #71808c; }
+.export-root { position: absolute; left: -12000px; top: 0; width: 794px; pointer-events: none; }.export-root .sheet-page { width: 794px; min-height: 1122px; margin: 0; }
+@container (max-width: 600px) {
+  .sheet-page { padding: 18px; }.sheet-header h2 { font-size: 24px; }.sheet-stats { grid-template-columns: 1fr 1fr; }.sheet-abilities { grid-template-columns: repeat(3, 1fr); }.sheet-columns, .sheet-features, .sheet-resources { grid-template-columns: 1fr; }.sheet-columns { gap: 0; }.sheet-attacks { font-size: 11px; }.sheet-attacks th, .sheet-attacks td { padding: 5px 3px; }.sheet-header { gap: 5px; }
+}
+@media (max-width: 600px) {
+  .character-header span { font-size: 11px; }.character-header .button { padding: 8px 10px; }.play-panel { padding: 16px; }.tracker-grid { gap: 8px; }.tracker-grid label { font-size: 11px; }.tracker-grid input { padding: 8px; }.resource-control small { max-width: 150px; }.resource-control .button { padding: 8px 10px; }.sheet-toolbar { gap: 12px; }.export-actions { gap: 6px; }.export-actions .button { font-size: 11px; }.storage-notice { font-size: 13px; }.choice-pills { margin-bottom: 12px; }
+}
+@media print {
+  @page { size: A4; margin: 8mm; }
+  :root, body { background: #fff; color: #000; }
+  .no-print, .sheet-preview, .storage-notice { display: none !important; }
+  .character-page { width: auto; margin: 0; padding: 0; }
+  .export-root { position: static; width: auto; }
+  .export-root .sheet-page { width: auto; min-height: 0; margin: 0; padding: 10px; border-radius: 0; break-after: page; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .export-root .sheet-page:last-child { break-after: auto; }
+  .sheet-page section, .sheet-features > div, .sheet-header, tr { break-inside: avoid; }
+}
+
+.download-link { display: inline-block; margin: 0 0 16px; text-decoration: none; max-width: 100%; overflow-wrap: anywhere; }
+/* 收紧重复的技能行，给 A4 的攻击区保留足够空间。 */
+.sheet-rolls > div { padding: 1px 0; line-height: 1.35; }
+.sheet-page { font-size: 12px; }
+.sheet-page h3 { margin-top: 14px; margin-bottom: 8px; }
+@media print {
+  .sheet-page { font-size: 11px; line-height: 1.4; }
+  .sheet-page h3 { margin-top: 12px; }
+  .sheet-header h2 { font-size: 24px; }
+  .sheet-stats, .sheet-abilities { margin-top: 12px; }
+  .sheet-attacks th, .sheet-attacks td { padding-block: 4px; }
+  .sheet-features { gap: 8px 16px; }
+  .sheet-footer { margin-top: 16px; }
+}
+@media print {
+  /* 为浏览器默认页眉页脚留出空间，速查页不拆到第二张纸。 */
+  .export-root .sheet-page { zoom: .85; }
+}

@@ -20,11 +20,14 @@ export const zhCN = {
     graze: "擦掠",
     sap: "削弱",
     slow: "缓速",
+    vex: "侵扰",
   },
   weapon: {
     greatsword: "巨剑",
     flail: "连枷",
     javelin: "标枪",
+    spear: "矛",
+    shortbow: "短弓",
   },
   armor: {
     "chain-mail": "链甲",
@@ -36,8 +39,8 @@ export const zhCN = {
     "weapon-mastery": "武器精通",
     "improved-critical": "精通重击",
     "remarkable-athlete": "运动健将",
-    "dwarven-toughness": "矮人坚韧",
-    stonecunning: "石中精魂",
+    "dwarven-toughness": "矮人刚毅",
+    stonecunning: "石中精妙",
   },
   language: {
     common: "通用语",
