@@ -13,6 +13,7 @@ export interface WeaponDefinition {
 }
 
 export const WEAPONS: Record<string, WeaponDefinition> = {
+  sickle: { id: "sickle", damageDice: "1d4", damageType: "slashing", category: "simple-melee", mastery: "nick", ability: "strength", properties: "轻型" },
   dagger: { id: "dagger", damageDice: "1d4", damageType: "piercing", category: "simple-melee", mastery: "nick", ability: "dexterity", finesse: true, range: [20, 60], properties: "轻型、灵巧、投掷" },
   quarterstaff: { id: "quarterstaff", damageDice: "1d6", damageType: "bludgeoning", category: "simple-melee", mastery: "topple", ability: "strength", versatileDice: "1d8", properties: "两用（双手近战 1d8）" },
   greatsword: {

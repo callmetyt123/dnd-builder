@@ -50,7 +50,10 @@ export interface Identity {
   description?: string;
 }
 
-export type ClassId = "fighter" | "wizard";
+export type ClassId = "fighter" | "wizard" | "druid";
+export interface DruidChoices {
+  skills: SkillId[]; order: "magician" | "warden"; cantrips: string[]; prepared: string[]; knownForms: string[];
+}
 export interface WizardChoices {
   skills: SkillId[]; scholar: SkillId; cantrips: string[];
   // 分开记录升级来源，防止一级法术书被二环法术填满。
@@ -62,10 +65,10 @@ export interface CharacterBuild {
   schemaVersion: 1;
   level: 3;
   classId: ClassId;
-  subclassId: "champion" | "evoker";
+  subclassId: "champion" | "evoker" | "moon";
   speciesId: "dwarf";
-  backgroundId: "soldier" | "sage";
-  profileId: "fighter-heavy" | "wizard-evoker";
+  backgroundId: "soldier" | "sage" | "hermit";
+  profileId: "fighter-heavy" | "wizard-evoker" | "druid-moon";
   playstyle: {
     tags: string[];
     complexity: "simple" | "balanced" | "deep";
@@ -76,6 +79,7 @@ export interface CharacterBuild {
   };
   choices: {
     wizard?: WizardChoices;
+    druid?: DruidChoices;
     languages: string[];
     soldierGamingSet?: string;
     fighterSkills: SkillId[];
@@ -83,8 +87,8 @@ export interface CharacterBuild {
     weaponMasteries: string[];
   };
   equipment: {
-    classPackage: "fighter-a" | "wizard-a";
-    backgroundPackage: "soldier-a" | "sage-a";
+    classPackage: "fighter-a" | "wizard-a" | "druid-a";
+    backgroundPackage: "soldier-a" | "sage-a" | "hermit-a";
   };
   identity: Identity;
 }
@@ -122,6 +126,8 @@ export interface DerivedCharacter {
   level: 3;
   hitDie: number;
   spellcasting?: { attack: number; dc: number; initiateAttack: number; initiateDc: number; book: string[]; prepared: string[]; cantrips: string[]; initiateSpell: string; initiateCantrips: string[]; ritualSpells: string[] };
+  wildShape?: { knownForms: string[]; temporaryHp: number };
+  armorNote?: string;
   proficiencyBonus: number;
   abilities: Record<AbilityId, { score: number; modifier: number }>;
   maxHp: number;

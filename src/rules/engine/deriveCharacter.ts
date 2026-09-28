@@ -1,3 +1,5 @@
+import { DRUID_ALWAYS, MOON_SPELLS } from "../../data/druidSpells";
+import { legalMoonForm } from "../../data/beasts";
 import { ARMOR } from "../../data/armor";
 import { SOLDIER } from "../../data/backgrounds/soldier";
 import { FIGHTER } from "../../data/classes/fighter";
@@ -30,6 +32,7 @@ function makeRoll(modifier: number, proficiency: ProficiencyRank, advantageSourc
 export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const profile = PROFILES[build.classId];
   const wizard = build.classId === "wizard" ? build.choices.wizard : undefined;
+  const druid = build.classId === "druid" ? build.choices.druid : undefined;
   const fighter = build.classId === "fighter";
   const book = wizard ? [...wizard.earlyBook, ...wizard.level3Book, ...wizard.evocationBook] : [];
   const pb = proficiencyBonus(build.level);
@@ -40,7 +43,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const skillProficiencies = new Set<SkillId>([
     ...profile.backgroundSkills,
-    ...(wizard?.skills ?? build.choices.fighterSkills),
+    ...(druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
   const skills = Object.fromEntries(
@@ -52,7 +55,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       return [
         skillId,
         makeRoll(
-          abilities[ability].modifier + (proficient ? pb * (expertise ? 2 : 1) : 0),
+          abilities[ability].modifier + (proficient ? pb * (expertise ? 2 : 1) : 0) + (druid?.order === "magician" && ["arcana", "nature"].includes(skillId) ? Math.max(1, abilities.wisdom.modifier) : 0),
           expertise ? "expertise" : proficient ? "proficient" : "none",
           advantageSources,
           fighter && skillId === "stealth" ? ["chain-mail"] : [],
@@ -78,7 +81,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const chainMail = ARMOR["chain-mail"];
   const defenseBonus = build.choices.fightingStyle === "defense" ? 1 : 0;
-  const armorClass = fighter ? chainMail.armorClass + defenseBonus : 10 + abilities.dexterity.modifier;
+  const armorClass = fighter ? chainMail.armorClass + defenseBonus : (druid ? 13 : 10) + abilities.dexterity.modifier;
 
   let speed = DWARF.speed;
   if (fighter && abilities.strength.score < chainMail.strengthRequirement) speed -= 10;
@@ -118,7 +121,9 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   return {
     level: 3,
     hitDie: profile.hitDie,
-    spellcasting: wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : undefined,
+    spellcasting: wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], initiateSpell: "", initiateCantrips: [], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : undefined,
+    wildShape: druid ? { knownForms: druid.knownForms.filter(legalMoonForm), temporaryHp: build.level * 3 } : undefined,
+    armorNote: druid ? "皮甲 + 敏捷 + 盾牌" : undefined,
     proficiencyBonus: pb,
     abilities,
     maxHp,
@@ -133,6 +138,10 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       ...(fighter ? [
       { id: "second-wind", max: FIGHTER.secondWindUsesAtLevel3, recovery: "短休恢复1次，长休恢复全部", shortRestRestore: 1 },
       { id: "action-surge", max: FIGHTER.actionSurgeUsesAtLevel3, recovery: "短休或长休恢复", shortRestRestore: 1 },
+      ] : druid ? [
+        { id: "wild-shape", max: 2, recovery: "短休恢复 1 次；长休恢复全部", shortRestRestore: 1 },
+        { id: "spell-slot-1", max: 4, recovery: "长休恢复全部" },
+        { id: "spell-slot-2", max: 2, recovery: "长休恢复全部" },
       ] : [
         { id: "spell-slot-1", max: 4, recovery: "长休恢复；短休可使用奥术回想" },
         { id: "spell-slot-2", max: 2, recovery: "长休恢复；短休可使用奥术回想" },
@@ -142,7 +151,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       { id: "stonecunning", max: pb, recovery: "长休恢复全部" },
     ],
     criticalThreshold: fighter ? CHAMPION.criticalThreshold : 20,
-    languages: ["common", ...build.choices.languages],
+    languages: ["common", ...build.choices.languages, ...(druid ? ["druidic"] : [])],
     senses: { darkvision: DWARF.darkvision },
     resistances: [...DWARF.resistances],
     features: [
@@ -154,7 +163,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       "tactical-mind",
       ...CHAMPION.features,
       SOLDIER.originFeatId,
-      ] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip", "magic-initiate"]),
+      ] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion", "healer"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip", "magic-initiate"]),
       ...DWARF.features,
     ],
     equipment,

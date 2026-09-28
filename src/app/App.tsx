@@ -1,3 +1,4 @@
+import { DruidSpellsPage } from "../pages/DruidSpellsPage";
 import { HomePage } from "../pages/HomePage";
 import { PlaystylePage } from "../pages/PlaystylePage";
 import { ClassPage } from "../pages/ClassPage";
@@ -20,7 +21,7 @@ function CurrentPage() {
     case "background": return <BackgroundPage />;
     case "abilities": return <AbilitiesPage />;
     case "configuration": return <ConfigurationPage />;
-    case "spells": return <SpellsPage />;
+    case "spells": return state.build.classId === "druid" ? <DruidSpellsPage /> : <SpellsPage />;
     case "identity": return <IdentityPage />;
     case "review": return <ReviewPage />;
     case "character": return <CharacterPage />;

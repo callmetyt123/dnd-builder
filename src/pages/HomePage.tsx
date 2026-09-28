@@ -12,7 +12,7 @@ export function HomePage() {
         <button className="button secondary large" onClick={() => dispatch({ type: "step", step: "class" })}>我熟悉 D&D，直接选职业</button>
       </div>
       <div className="landing-points"><span>✓ D&D 5R</span><span>✓ 自动推荐构筑</span><span>✓ 电子人物卡</span></div>
-      <p className="dev-note">三级矮人方案：战士／勇士／士兵，或法师／塑能师／贤者。</p>
+      <p className="dev-note">三级矮人方案：战士／勇士／士兵，法师／塑能师／贤者，或德鲁伊／月亮结社／隐士。</p>
     </div>
   );
 }

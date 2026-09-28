@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
-import type { AbilityId, CharacterBuild, ClassId, SkillId, WizardChoices } from "../rules/types";
+import type { AbilityId, CharacterBuild, ClassId, SkillId, DruidChoices, WizardChoices } from "../rules/types";
 
 import { PROFILES } from "../data/profiles";
 import { defaultBuild } from "../rules/defaultBuild";
@@ -10,6 +10,7 @@ export type { BuilderState, BuilderStep } from "./draft";
 
 type Action =
   | { type: "class"; id: ClassId }
+  | { type: "druid"; patch: Partial<DruidChoices> }
   | { type: "wizard"; patch: Partial<WizardChoices> }
   | { type: "play"; action: PlayAction }
   | { type: "gaming-set"; id: string }
@@ -27,6 +28,7 @@ type Action =
 
 function reducer(state: BuilderState, action: Action): BuilderState {
   if (action.type === "class") return switchClass(state, action.id);
+  if (action.type === "druid" && state.build.choices.druid) return { ...state, build: { ...state.build, choices: { ...state.build.choices, druid: { ...state.build.choices.druid, ...action.patch } } } };
   if (action.type === "wizard" && state.build.choices.wizard) return { ...state, build: { ...state.build, choices: { ...state.build.choices, wizard: { ...state.build.choices.wizard, ...action.patch } } } };
   if (action.type === "play") {
     const character = deriveCharacter(state.build);

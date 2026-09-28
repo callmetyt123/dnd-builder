@@ -2,16 +2,16 @@ import type { AbilityId, AlignmentId, SkillId } from "../rules/types";
 
 export const zhCN = {
   class: {
-    fighter: "战士", wizard: "法师",
+    fighter: "战士", wizard: "法师", druid: "德鲁伊",
   },
   subclass: {
-    champion: "勇士", evoker: "塑能师",
+    champion: "勇士", evoker: "塑能师", moon: "月亮结社",
   },
   species: {
     dwarf: "矮人",
   },
   background: {
-    soldier: "士兵", sage: "贤者",
+    soldier: "士兵", sage: "贤者", hermit: "隐士",
   },
   fightingStyle: {
     defense: "防御",
@@ -23,7 +23,7 @@ export const zhCN = {
     vex: "侵扰",
   },
   weapon: {
-    greatsword: "巨剑", dagger: "匕首", quarterstaff: "长棍",
+    sickle: "镰刀", greatsword: "巨剑", dagger: "匕首", quarterstaff: "长棍",
     flail: "连枷",
     javelin: "标枪",
     spear: "矛",
@@ -43,7 +43,7 @@ export const zhCN = {
     stonecunning: "石中精妙",
   },
   language: {
-    common: "通用语",
+    druidic: "德鲁伊语", common: "通用语",
     "common-sign-language": "通用手语",
     dwarvish: "矮人语",
     elvish: "精灵语",

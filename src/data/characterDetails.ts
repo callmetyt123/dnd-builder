@@ -3,12 +3,21 @@ export const GAMING_SETS: Record<string, string> = {
   "dice-set": "骰子套组", "dragonchess-set": "龙棋套组", "playing-card-set": "纸牌套组", "three-dragon-ante-set": "三龙牌套组",
 };
 export const itemNames: Record<string, string> = {
+  "leather-armor": "皮甲", shield: "盾牌", sickle: "镰刀", "explorers-pack": "探索者套组", "herbalism-kit": "草药工具", bedroll: "铺盖", "philosophy-book": "哲学书", lamp: "油灯", oil: "油（瓶）",
   dagger: "匕首", quarterstaff: "长棍（其中一根为奥术法器）", robe: "长袍", spellbook: "法术书", "scholars-pack": "学者套组", "calligraphers-supplies": "书法工具", "history-book": "历史书", parchment: "羊皮纸",
   "chain-mail": "链甲", greatsword: "巨剑", flail: "连枷", javelin: "标枪", spear: "矛", shortbow: "短弓",
   "dungeoneers-pack": "地城探索者套组", arrow: "箭", quiver: "箭袋", "healers-kit": "医疗包（10 次）", "travelers-clothes": "旅行者服装", gp: "金币（GP）", ...GAMING_SETS,
 };
 export const damageNames: Record<string, string> = { slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击" };
 export const features: Record<string, { name: string; timing: string; text: string }> = {
+  "druid-spellcasting": { name: "德鲁伊施法", timing: "感知", text: "准备 6 道法术，长休可更换；始终准备法术不占名额。仅能以仪式施展已准备的仪式法术。一回合只能消耗一个法术位施法。" },
+  druidic: { name: "德鲁伊语", timing: "语言与法术", text: "掌握德鲁伊语；动物交谈始终准备。可用该语言留下隐秘信息，懂此语言者自动发现。" },
+  magician: { name: "原初职能：术师", timing: "被动", text: "额外学习 1 道德鲁伊戏法；智力（奥秘、自然）检定加感知调整值，最低 +1，已计入。" },
+  warden: { name: "原初职能：卫士", timing: "训练", text: "获得军用武器熟练与中甲训练；起始装备仍为皮甲与盾牌，未自动获得中甲。" },
+  "wild-shape": { name: "荒野变形", timing: "附赠动作", text: "消耗 1 次变为已知野兽；三级已知 4 种。本工具按小时向下取整计至多 1 小时；时间由玩家跟踪。附赠动作恢复原形；失能、死亡或再次变形结束旧形态。临时 HP 耗尽不自动变回原形。" },
+  "circle-forms": { name: "月亮结社形态", timing: "变形时", text: "三级允许 CR 至多 1、无飞行速度的野兽；AC 可为 13 + 感知调整值，取较高值；获得 9 临时 HP，不与已有临时 HP 相加。兽形可施展点点星芒、疗伤术、月华之光。" },
+  "wild-companion": { name: "荒野伙伴", timing: "魔法动作", text: "消耗一个法术位或一次荒野变形，无需材料施展寻获魔宠；魔宠为妖精，完成长休时消失。其形态和行动按寻获魔宠规则由玩家管理。" },
+  healer: { name: "医疗师", timing: "隐士 · 起源专长", text: "利用动作消耗医疗包 1 次，使 5 尺内生物花费一枚生命骰，你掷该骰并加自己的熟练加值为其治疗。施法或此能力的治疗骰掷出 1 可重掷并使用新结果。起始装备没有医疗包，需另行取得；草药工具不能替代。" },
   "spell-slot-1": { name: "一环法术位", timing: "施法", text: "施展一环法术时消耗。" },
   "spell-slot-2": { name: "二环法术位", timing: "施法", text: "可施展二环法术，或升环施展一环法术。" },
   spellcasting: { name: "施法", timing: "智力 · 法师", text: "3 道职业戏法、6 道职业准备法术；法术书或奥术法器可代替无标价且不消耗的材料。一回合只能消耗一个法术位施法。" },

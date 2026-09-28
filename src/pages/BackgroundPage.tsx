@@ -6,6 +6,7 @@ import { GAMING_SETS } from "../data/characterDetails";
 
 export function BackgroundPage() {
   const { state, dispatch } = useBuilder();
+  if (state.build.classId === "druid") return <BuilderShell previous="species" next="abilities"><section className="page-head"><h1>你曾是一名隐士</h1><p>在荒野独居中学习自然与疗愈。</p></section><Card selected><h3>隐士</h3><div className="facts"><span>属性：体质 / 感知 / 魅力</span><span>技能：医药 / 宗教</span><span>工具：草药工具</span><span>起源专长：医疗师</span></div><p>治疗法术的治疗骰掷出 1 可重掷，必须使用新结果。医疗包能力需要另行取得医疗包，草药工具不能替代。</p></Card><p className="muted-panel">背景装备：长棍、草药工具、铺盖、哲学书、油灯、3 瓶油、旅行者服装、16 GP。草药工具熟练与职业重复，不叠加。</p></BuilderShell>;
   if (state.build.classId === "wizard") return <BuilderShell previous="species" next="abilities"><section className="page-head"><h1>你曾是一名贤者</h1><p>你在书卷与研究中积累了奥术知识。</p></section><Card selected><h3>贤者</h3><div className="facts"><span>属性：体质 / 智力 / 感知</span><span>技能：奥秘 / 历史</span><span>工具：书法工具</span><span>起源专长：魔法学徒（法师）</span></div><p>额外获得 2 道戏法和 1 道始终准备的一环法术；在后面的法术页配置。</p></Card><p className="muted-panel">背景装备：长棍、书法工具、历史书、8 张羊皮纸、长袍、8 GP。</p></BuilderShell>;
   return (
     <BuilderShell previous="species" next="abilities">

@@ -1,3 +1,4 @@
+import { DruidSheets } from "./DruidSheets";
 import type { CharacterBuild, DerivedCharacter, DerivedRoll } from "../../rules/types";
 import type { PlayState } from "../../rules/engine/playState";
 import { signed, damageFormula } from "../../rules/engine/format";
@@ -15,13 +16,13 @@ export function Header({ build, title, page }: { build: CharacterBuild; title: s
   return <header className="sheet-header"><div><div className="sheet-kicker">D&D 5R / {title}</div><h2>{build.identity.name}</h2><p>矮人 · {zhCN.class[build.classId]} 3 级 · {zhCN.subclass[build.subclassId]} · {zhCN.background[build.backgroundId]} · {build.identity.alignment && alignmentNames[build.identity.alignment]}</p></div><span className="sheet-page-number">{page}</span></header>;
 }
 export function Stats({ c, play }: { c: DerivedCharacter; play: PlayState }) {
-  return <div className="sheet-stats"><div><small>生命值 HP</small><strong>{play.hp}<sub> / {c.maxHp}</sub></strong><small>临时 HP {play.temporaryHp}</small></div><div><small>护甲等级 AC</small><strong>{c.armorClass}</strong><small>{c.spellcasting ? `无甲；法师护甲生效时 ${13 + c.abilities.dexterity.modifier}` : "链甲 + 防御"}</small></div><div><small>先攻</small><strong>{signed(c.initiative.modifier)}</strong><small>{c.initiative.state === "advantage" ? "优势" : "正常检定"}</small></div><div><small>速度</small><strong>{c.speed}<sub> 尺</sub></strong><small>熟练加值 {signed(c.proficiencyBonus)}</small></div></div>;
+  return <div className="sheet-stats"><div><small>生命值 HP</small><strong>{play.hp}<sub> / {c.maxHp}</sub></strong><small>临时 HP {play.temporaryHp}</small></div><div><small>护甲等级 AC</small><strong>{c.armorClass}</strong><small>{c.armorNote ?? (c.spellcasting ? `无甲；法师护甲生效时 ${13 + c.abilities.dexterity.modifier}` : "链甲 + 防御")}</small></div><div><small>先攻</small><strong>{signed(c.initiative.modifier)}</strong><small>{c.initiative.state === "advantage" ? "优势" : "正常检定"}</small></div><div><small>速度</small><strong>{c.speed}<sub> 尺</sub></strong><small>熟练加值 {signed(c.proficiencyBonus)}</small></div></div>;
 }
 function Attacks({ c }: { c: DerivedCharacter }) {
   return <section><h3>攻击与武器</h3><table className="sheet-attacks"><thead><tr><th>武器 / 射程（尺）</th><th>命中</th><th>伤害</th><th>精通</th></tr></thead><tbody>{c.attacks.map((a) => <tr key={a.weaponId}><td><b>{itemNames[a.weaponId]}</b><small>{WEAPONS[a.weaponId].properties ?? "近战 5 尺"}{a.range ? ` · ${a.range.join(" / ")}` : ""}</small>{a.disadvantage && <small className="rule-alert">{a.disadvantage}</small>}</td><td>{signed(a.attackBonus)}</td><td>{damageFormula(a.damageDice, a.damageModifier)}<small>{damageNames[a.damageType]}</small></td><td>{a.mastery?.unlocked ? masteryName(a.mastery.id) : "未解锁"}</td></tr>)}</tbody></table><p className="sheet-note">攻击动作：1 次攻击。武器与徒手攻击 d20 为 {c.criticalThreshold === 19 ? "19–20" : "20"} 时重击（伤害骰加倍，固定加值不加倍）。超过正常射程的远程攻击具有劣势，不可超过最大射程。</p></section>;
 }
 export function Resources({ c, play }: { c: DerivedCharacter; play: PlayState }) {
-  return <section><h3>资源记录 · 剩余 / 上限</h3><div className="sheet-resources">{c.resources.map((r) => <div key={r.id}><b>{features[r.id].name} <span>{play.remaining[r.id]} / {r.max}</span></b><small>{r.recovery}</small></div>)}<div><b>生命骰 <span>{play.hitDice} / {c.level} d{c.hitDie}</span></b><small>短休可消耗，每骰恢复 max(0, 1d{c.hitDie}{signed(c.abilities.constitution.modifier)}) HP；长休全恢复。</small></div></div></section>;
+  return <section><h3>资源记录 · 剩余 / 上限</h3><div className="sheet-resources">{c.resources.map((r) => <div key={r.id}><b>{features[r.id].name}{r.id === "stonecunning" && c.wildShape && !c.features.includes("stonecunning") ? "（兽形不可用）" : ""} <span>{play.remaining[r.id]} / {r.max}</span></b><small>{r.recovery}</small></div>)}<div><b>生命骰 <span>{play.hitDice} / {c.level} d{c.hitDie}</span></b><small>短休可消耗，每骰恢复 max(1, 1d{c.hitDie}{signed(c.abilities.constitution.modifier)}) HP；长休全恢复。</small></div></div></section>;
 }
 function Masteries({ c }: { c: DerivedCharacter }) {
   const active = [...new Set(c.attacks.filter((a) => a.mastery?.unlocked).map((a) => a.mastery!.id))];
@@ -29,6 +30,7 @@ function Masteries({ c }: { c: DerivedCharacter }) {
   return <section><h3>已解锁精通速查</h3><div className="sheet-masteries">{active.map((id) => <p key={id}><b>{masteryName(id)}</b>　{masteryDescriptions[id]}</p>)}</div></section>;
 }
 export function CharacterSheets({ build, character: c, play, mode }: Props) {
+  if (build.classId === "druid") return <DruidSheets build={build} c={c} play={play} mode={mode} />;
   if (mode === "quick" && c.spellcasting) return <WizardQuickSheet build={build} c={c} play={play} />;
   const total = c.spellcasting ? 3 + Math.ceil(new Set([...c.spellcasting.cantrips, ...c.spellcasting.initiateCantrips, ...c.spellcasting.book, c.spellcasting.initiateSpell]).size / 6) : 3;
   if (mode === "quick") return <article className="sheet-page" data-sheet-page>

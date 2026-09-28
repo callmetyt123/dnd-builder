@@ -1,6 +1,14 @@
 import type { CharacterBuild, ClassId } from "./types";
 
 export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
+  if (classId === "druid") {
+    const base = defaultBuild();
+    return { ...base, classId, subclassId: "moon", backgroundId: "hermit", profileId: "druid-moon",
+      abilities: { baseAssignment: { strength: 8, dexterity: 14, constitution: 13, intelligence: 12, wisdom: 15, charisma: 10 }, backgroundBoosts: { wisdom: 2, constitution: 1 } },
+      choices: { ...base.choices, fighterSkills: [], weaponMasteries: [], druid: { skills: ["perception", "nature"], order: "magician", cantrips: ["guidance", "druidcraft", "thorn-whip"], prepared: ["healing-word", "entangle", "faerie-fire", "detect-magic", "lesser-restoration", "spike-growth"], knownForms: ["brown-bear", "dire-wolf", "cat", "badger"] } },
+      equipment: { classPackage: "druid-a", backgroundPackage: "hermit-a" },
+    };
+  }
   if (classId === "wizard") {
     const base = defaultBuild();
     return { ...base, classId: "wizard", subclassId: "evoker", backgroundId: "sage", profileId: "wizard-evoker",

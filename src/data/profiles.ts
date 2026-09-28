@@ -10,6 +10,10 @@ export interface Profile {
 }
 export const SCHOLAR_SKILLS: SkillId[] = ["arcana", "history", "investigation", "medicine", "nature", "religion"];
 export const PROFILES: Record<ClassId, Profile> = {
+  druid: { name: "德鲁伊", subclass: "月亮结社", background: "隐士", hitDie: 8, fixedHp: 5,
+    saves: ["intelligence", "wisdom"], skills: ["arcana", "animal-handling", "insight", "medicine", "nature", "perception", "religion", "survival"],
+    backgroundSkills: ["medicine", "religion"], boostOptions: ["constitution", "wisdom", "charisma"],
+    equipment: [{ id: "leather-armor", quantity: 1 }, { id: "shield", quantity: 1 }, { id: "sickle", quantity: 1 }, { id: "quarterstaff", quantity: 2 }, { id: "explorers-pack", quantity: 1 }, { id: "herbalism-kit", quantity: 2 }, { id: "gp", quantity: 25 }, { id: "bedroll", quantity: 1 }, { id: "philosophy-book", quantity: 1 }, { id: "lamp", quantity: 1 }, { id: "oil", quantity: 3 }, { id: "travelers-clothes", quantity: 1 }] },
   fighter: { name: "战士", subclass: "勇士", background: "士兵", hitDie: FIGHTER.hitDie, fixedHp: FIGHTER.fixedHpAfterFirstLevel,
     saves: FIGHTER.savingThrowProficiencies, skills: FIGHTER.skillOptions, backgroundSkills: SOLDIER.skillProficiencies,
     boostOptions: SOLDIER.abilityOptions, equipment: [...FIGHTER.equipmentPackages["fighter-a"], ...SOLDIER.equipmentPackages["soldier-a"]] },

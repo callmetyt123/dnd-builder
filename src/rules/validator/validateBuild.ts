@@ -1,3 +1,4 @@
+import { validateDruid } from "./validateDruid";
 import { PROFILES } from "../../data/profiles";
 import { validateWizard } from "./validateWizard";
 import { GAMING_SETS } from "../../data/characterDetails";
@@ -17,7 +18,7 @@ function multiset(values: number[]) {
 export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
   if (!hasBuildShape(build) || !isSupportedBuild(build)) {
-    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级矮人：战士／勇士／士兵，或法师／塑能师／贤者。" }] };
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级矮人：战士／勇士／士兵，法师／塑能师／贤者，或德鲁伊／月亮结社／隐士。" }] };
   }
   const fighter = build.classId === "fighter";
   const profile = PROFILES[build.classId];
@@ -76,7 +77,8 @@ export function validateBuild(build: unknown): ValidationResult {
     messages.push({ id: "weapon-mastery-known", domain: "rules", severity: "blocker", message: "当前开发切片中存在尚未录入规则数据的武器精通选择。", targetStep: "configuration" });
   }
 
-  } else messages.push(...validateWizard(build.choices.wizard!));
+  } else if (build.classId === "druid") messages.push(...validateDruid(build.choices.druid!));
+  else messages.push(...validateWizard(build.choices.wizard!));
 
   if (build.choices.languages.length !== 2 || new Set(build.choices.languages).size !== 2) {
     messages.push({ id: "language-count", domain: "rules", severity: "blocker", message: "角色需要另外选择两种不同的标准语言。", targetStep: "species" });

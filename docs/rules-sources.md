@@ -8,7 +8,7 @@ V1 只考虑 5R 三宝书内容：
 - Dungeon Master's Guide (2024)
 - Monster Manual (2025)
 
-角色创建阶段主要使用 PHB 2024；MM 数据后续用于德鲁伊荒野变形等功能。
+角色创建阶段主要使用 PHB 2024；v0.4 已使用 MM 2025 数据实现德鲁伊荒野变形。
 
 ## 中文术语
 
@@ -52,3 +52,20 @@ V1 只考虑 5R 三宝书内容：
 - [法师](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/法师/法师.htm)：仪式学家、奥术回想、学者。
 - [塑能师](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/法师/塑能师.htm)：塑能学者、强力戏法；法术塑形明确为六级能力，不授予三级角色。
 - [戏法](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/0环.htm)、[一环](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/1环.htm)、[二环](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/2环.htm)：火焰箭、冷冻射线、粉碎音波等。
+
+## v0.4 月亮德鲁伊核对（2026-09-28）
+
+- [D&D Beyond 2024 德鲁伊](https://www.dndbeyond.com/sources/dnd/br-2024/character-classes)：d8、4/2 法术位、6 个准备名额、原初职能、德鲁伊语、四种已知形态、两次变形及短休恢复一次。保留 HP、生命骰、心智属性、语言、职业能力与熟练；装备可融入但不提供效果。
+- [官方月亮结社介绍](https://www.dndbeyond.com/posts/1755-the-2024-circle-of-the-moon-druid-and-changes-to)：三级 CR 上限 1、AC 至少 13 + 感知、临时 HP 为等级三倍。
+- [2024 伤害与治疗](https://www.dndbeyond.com/sources/dnd/br-2024/playing-the-game)：临时 HP 不叠加，持续至耗尽或长休；本实现保留变回原形后的临时 HP。此为对通则与变形条文的合并解释，界面允许按主持人裁定修正。
+- [2024 规则术语表](https://www.dndbeyond.com/sources/dnd/br-2024/rules-glossary)：长休开始时须至少 1 HP；短休花费生命骰时治疗量至少 1 HP。
+- [贤者谏言](https://www.dndbeyond.com/sources/dnd/sae/sage-advice-compendium)：临时 HP 吸收伤害仍需要专注检定，使用完整实际伤害计算 DC。
+
+中文与具体条目核对 `DND5eChm/5echm_web` 的 `pages` 分支：
+
+- [德鲁伊](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/德鲁伊/德鲁伊.htm)、[月亮结社](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/德鲁伊/月亮结社.htm)、[隐士](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色起源/背景/隐士.htm)。
+- [起源专长](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/专长/起源专长.htm)：医疗师的战地医疗与治疗骰重掷；起始草药工具不等于医疗包。
+- [戏法](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/0环.htm)、[一环](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/1环.htm)、[二环](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/2环.htm)：疗伤术 2d8、治愈真言 2d4、次等复原术附赠动作、2024 月华之光触发时机。
+- MM 2025 附录 A：[棕熊](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/棕熊.htm)、[恐狼](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/恐狼.htm)、[狼](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/狼.htm)、[猫](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/猫.htm)、[獾](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/獾.htm)、[豹](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/豹.htm)。不混用 2014 棕熊爪击、狼倒地豁免或豹的猛扑。
+
+持续时间按“德鲁伊等级一半的小时数”结合一般向下取整规则，在三级显示 1 小时；不使用墙钟自动计时。法器全部融入时无法用于月华之光的材料成分，界面提示玩家安排外部材料或与主持人确认。

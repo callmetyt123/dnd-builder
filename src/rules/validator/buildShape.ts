@@ -16,6 +16,8 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   if (!isRecord(a) || !isRecord(c) || !isRecord(e) || !isRecord(i) || !isRecord(p)) return false;
   if (!isRecord(a.baseAssignment) || !isRecord(a.backgroundBoosts)) return false;
   const base = a.baseAssignment;
+  const d = c.druid;
+  if (value.classId === "druid" && (!isRecord(d) || !["skills", "cantrips", "prepared", "knownForms"].every((k) => strings(d[k])) || typeof d.order !== "string")) return false;
   const w = c.wizard;
   if (value.classId === "wizard" && (!isRecord(w) || !["skills", "cantrips", "earlyBook", "level3Book", "evocationBook", "prepared", "initiateCantrips"].every((k) => strings(w[k])) || typeof w.scholar !== "string" || typeof w.initiateSpell !== "string" || !["intelligence", "wisdom", "charisma"].includes(String(w.initiateAbility)))) return false;
   return ABILITIES.every((id) => finite(base[id])) && Object.keys(base).length === 6
@@ -31,6 +33,7 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
 
 export function isSupportedBuild(build: CharacterBuild): boolean {
   if (build.schemaVersion !== 1 || build.level !== 3 || build.speciesId !== "dwarf") return false;
+  if (build.classId === "druid") return build.subclassId === "moon" && build.backgroundId === "hermit" && build.profileId === "druid-moon" && build.equipment.classPackage === "druid-a" && build.equipment.backgroundPackage === "hermit-a";
   if (build.classId === "wizard") return build.subclassId === "evoker" && build.backgroundId === "sage" && build.profileId === "wizard-evoker" && build.equipment.classPackage === "wizard-a" && build.equipment.backgroundPackage === "sage-a";
   return build.classId === "fighter" && build.subclassId === "champion" && build.backgroundId === "soldier"
     && build.profileId === "fighter-heavy" && build.choices.fightingStyle === "defense"

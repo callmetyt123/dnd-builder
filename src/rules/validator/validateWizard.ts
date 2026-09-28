@@ -1,6 +1,9 @@
 import { PROFILES, SCHOLAR_SKILLS } from "../../data/profiles";
-import { spell } from "../../data/spells";
+import { spell as anySpell, SPELL_LIST } from "../../data/spells";
 import type { ValidationMessage, WizardChoices } from "../types";
+
+// 职业列表边界独立于共享法术字典，防止导入德鲁伊专属法术。
+const spell = (id: string) => SPELL_LIST.some((s) => s.id === id) ? anySpell(id) : undefined;
 
 // Learning sources have different level/school constraints; prepared spells are a subset of the book.
 export function validateWizard(w: WizardChoices): ValidationMessage[] {

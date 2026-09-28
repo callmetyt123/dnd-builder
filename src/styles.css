@@ -254,3 +254,18 @@ textarea { min-height: 92px; resize: vertical; }
 .spell-source { font-size: 10px; color: #6b582d; font-weight: 600; }.casting-strip { padding: 12px; background: #f0f3f6; }
 @media (max-width: 650px) { .class-options, .spell-choices { grid-template-columns: 1fr; } }
 @container (max-width: 600px) { .spell-card-grid { grid-template-columns: 1fr; } }
+
+/* 形态与法术选择沿用深色主题；新增规则限定在德鲁伊组件内。 */
+.beast-options, .druid-spell-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.beast-option, .druid-spell-choice { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.beast-option.selected, .druid-spell-choice:has(input:checked) { border-color: #819368; background: #242b20; }
+.beast-option input, .druid-spell-choice input, .inline-check input { width: 18px; height: 18px; flex: 0 0 auto; margin-top: 4px; accent-color: var(--accent); }
+.beast-option span, .druid-spell-choice span { display: grid; gap: 6px; }
+.beast-option small, .druid-spell-choice small { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.druid-spell-choice input:disabled + span { opacity: .6; }
+.wild-shape-panel { background: #1c211b; border: 1px solid #44513b; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.wild-shape-panel h2 { margin: 8px 0; }
+.wild-shape-panel .form-grid { align-items: end; }
+.wild-shape-panel .inline-check { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+.wild-shape-panel p { line-height: 1.7; }
+@media (max-width: 650px) { .beast-options, .druid-spell-options { grid-template-columns: 1fr; } .wild-shape-panel { padding: 16px; } }

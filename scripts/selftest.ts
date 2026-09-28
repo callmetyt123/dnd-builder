@@ -1,3 +1,4 @@
+import { druidChecks } from "./druidSelftest";
 import { wizardChecks } from "./wizardSelftest";
 import { parseDraft } from "../src/store/draft";
 import { normalizePlayState, updatePlayState } from "../src/rules/engine/playState";
@@ -115,4 +116,5 @@ const clamped = normalizePlayState({ hp: 999, temporaryHp: -1, hitDice: 8, remai
 assert(clamped.hp === 31 && clamped.temporaryHp === 0 && clamped.hitDice === 3 && clamped.remaining["second-wind"] === 2 && clamped.remaining["action-surge"] === 1, "tampered play state must be bounded");
 assert(parseDraft(JSON.stringify({ step: "character", build, play })).state?.play?.hp === 8, "play state must survive draft serialization");
 wizardChecks(assert);
+druidChecks(assert);
 console.log(`rules selftest: OK (${checks} checks)`);
