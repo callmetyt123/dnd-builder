@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "rootDir": "."
+  },
+  "include": [
+    "src/rules/**/*.ts",
+    "src/data/**/*.ts",
+    "src/translations/zh-CN.ts",
+    "scripts/selftest.ts"
+  ]
+}

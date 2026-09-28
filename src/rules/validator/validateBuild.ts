@@ -1,0 +1,88 @@
+import { SOLDIER } from "../../data/backgrounds/soldier";
+import { FIGHTER } from "../../data/classes/fighter";
+import { STANDARD_ARRAY, STANDARD_LANGUAGE_IDS } from "../../data/core";
+import { WEAPONS } from "../../data/weapons";
+import type { AbilityId, CharacterBuild, ValidationMessage, ValidationResult } from "../types";
+import { deriveCharacter } from "../engine/deriveCharacter";
+
+function multiset(values: number[]) {
+  return [...values].sort((a, b) => a - b).join(",");
+}
+
+export function validateBuild(build: CharacterBuild): ValidationResult {
+  const messages: ValidationMessage[] = [];
+
+  if (!build.identity.name.trim()) {
+    messages.push({ id: "identity-name", domain: "completeness", severity: "blocker", message: "请填写角色姓名。", targetStep: "identity" });
+  }
+  if (!build.identity.alignment) {
+    messages.push({ id: "identity-alignment", domain: "completeness", severity: "blocker", message: "请选择角色阵营。", targetStep: "identity" });
+  }
+
+  if (multiset(Object.values(build.abilities.baseAssignment)) !== multiset([...STANDARD_ARRAY])) {
+    messages.push({ id: "abilities-standard-array", domain: "rules", severity: "blocker", message: "属性基础值必须使用标准数组 15 / 14 / 13 / 12 / 10 / 8，并且每个数值只能使用一次。", targetStep: "abilities" });
+  }
+
+  const boosts = Object.entries(build.abilities.backgroundBoosts) as [AbilityId, number][];
+  const allowedBoosts = new Set<AbilityId>(SOLDIER.abilityOptions);
+  if (boosts.some(([ability]) => !allowedBoosts.has(ability))) {
+    messages.push({ id: "background-boost-target", domain: "rules", severity: "blocker", message: "士兵背景只能提升力量、敏捷或体质。", targetStep: "abilities" });
+  }
+  const boostValues = boosts.map(([, value]) => value).filter(Boolean).sort();
+  const legalBoost = JSON.stringify(boostValues) === JSON.stringify([1, 2]) || JSON.stringify(boostValues) === JSON.stringify([1, 1, 1]);
+  if (!legalBoost) {
+    messages.push({ id: "background-boost-shape", domain: "rules", severity: "blocker", message: "背景属性提升必须是 +2/+1，或三项各 +1。", targetStep: "abilities" });
+  }
+
+  if (build.choices.fighterSkills.length !== FIGHTER.skillCount || new Set(build.choices.fighterSkills).size !== FIGHTER.skillCount) {
+    messages.push({ id: "fighter-skills-count", domain: "rules", severity: "blocker", message: `战士需要选择 ${FIGHTER.skillCount} 项不同的职业技能。`, targetStep: "configuration" });
+  }
+  const invalidFighterSkill = build.choices.fighterSkills.find((skill) => !(FIGHTER.skillOptions as readonly string[]).includes(skill));
+  if (invalidFighterSkill) {
+    messages.push({ id: "fighter-skills-list", domain: "rules", severity: "blocker", message: "存在不属于战士职业技能列表的选择。", targetStep: "configuration" });
+  }
+  const duplicatedBackgroundSkill = build.choices.fighterSkills.find((skill) => (SOLDIER.skillProficiencies as readonly string[]).includes(skill));
+  if (duplicatedBackgroundSkill) {
+    messages.push({ id: "duplicate-skill", domain: "recommendation", severity: "warning", message: "你选择了一项已经由士兵背景提供的技能熟练；熟练加值不会因此叠加。", targetStep: "configuration" });
+  }
+
+  if (build.choices.weaponMasteries.length !== FIGHTER.weaponMasteryCount || new Set(build.choices.weaponMasteries).size !== FIGHTER.weaponMasteryCount) {
+    messages.push({ id: "weapon-mastery-count", domain: "rules", severity: "blocker", message: `3级战士需要选择 ${FIGHTER.weaponMasteryCount} 种不同的精通武器。`, targetStep: "configuration" });
+  }
+  if (build.choices.weaponMasteries.some((id) => !(id in WEAPONS))) {
+    messages.push({ id: "weapon-mastery-known", domain: "rules", severity: "blocker", message: "当前开发切片中存在尚未录入规则数据的武器精通选择。", targetStep: "configuration" });
+  }
+
+  if (build.choices.languages.length !== 2 || new Set(build.choices.languages).size !== 2) {
+    messages.push({ id: "language-count", domain: "rules", severity: "blocker", message: "角色需要另外选择两种不同的标准语言。", targetStep: "species" });
+  }
+  if (build.choices.languages.some((id) => !(STANDARD_LANGUAGE_IDS as readonly string[]).includes(id) || id === "common")) {
+    messages.push({ id: "language-list", domain: "rules", severity: "blocker", message: "请选择两种合法的额外标准语言。", targetStep: "species" });
+  }
+
+  const derived = deriveCharacter(build);
+  if (derived.abilities.strength.score < 14) {
+    messages.push({ id: "heavy-fighter-low-str", domain: "recommendation", severity: "warning", message: `当前力量为 ${derived.abilities.strength.score}；这会降低推荐的重武器战士命中与伤害。`, targetStep: "abilities" });
+  }
+  if (derived.speed < 30) {
+    messages.push({ id: "heavy-armor-speed", domain: "recommendation", severity: "warning", message: "当前力量不足以满足所穿重甲的力量要求，因此速度降低 10 尺。", targetStep: "abilities" });
+  }
+
+  const carriedIds = new Set(derived.equipment.map((item) => item.id));
+  const notCarried = build.choices.weaponMasteries.filter((id) => !carriedIds.has(id));
+  if (notCarried.length > 0) {
+    messages.push({ id: "mastery-not-carried", domain: "recommendation", severity: "info", message: `你精通的 ${notCarried.length} 种武器当前不在起始装备中；获得这些武器前无法立即利用对应精通。`, targetStep: "configuration" });
+  }
+
+  const rulesLegal = !messages.some((m) => m.domain === "rules" && m.severity === "blocker");
+  const complete = !messages.some((m) => m.domain === "completeness" && m.severity === "blocker");
+  const supported = !messages.some((m) => m.domain === "support" && m.severity === "blocker");
+
+  return {
+    rulesLegal,
+    complete,
+    supported,
+    canGenerate: rulesLegal && complete && supported,
+    messages,
+  };
+}
