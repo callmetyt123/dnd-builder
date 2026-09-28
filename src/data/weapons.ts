@@ -3,15 +3,18 @@ export interface WeaponDefinition {
   damageDice: string;
   damageType: "slashing" | "bludgeoning" | "piercing";
   category: "martial-melee" | "martial-ranged" | "simple-melee" | "simple-ranged";
-  mastery: "graze" | "sap" | "slow" | "nick" | "vex";
+  mastery: "graze" | "sap" | "slow" | "nick" | "vex" | "topple";
   ability: "strength" | "dexterity";
   range?: [number, number];
   properties?: string;
   versatileDice?: string;
   heavy?: boolean;
+  finesse?: boolean;
 }
 
 export const WEAPONS: Record<string, WeaponDefinition> = {
+  dagger: { id: "dagger", damageDice: "1d4", damageType: "piercing", category: "simple-melee", mastery: "nick", ability: "dexterity", finesse: true, range: [20, 60], properties: "轻型、灵巧、投掷" },
+  quarterstaff: { id: "quarterstaff", damageDice: "1d6", damageType: "bludgeoning", category: "simple-melee", mastery: "topple", ability: "strength", versatileDice: "1d8", properties: "两用（双手近战 1d8）" },
   greatsword: {
     id: "greatsword",
     properties: "重型、双手",

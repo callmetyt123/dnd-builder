@@ -2,28 +2,28 @@ import type { AbilityId, AlignmentId, SkillId } from "../rules/types";
 
 export const zhCN = {
   class: {
-    fighter: "战士",
+    fighter: "战士", wizard: "法师",
   },
   subclass: {
-    champion: "勇士",
+    champion: "勇士", evoker: "塑能师",
   },
   species: {
     dwarf: "矮人",
   },
   background: {
-    soldier: "士兵",
+    soldier: "士兵", sage: "贤者",
   },
   fightingStyle: {
     defense: "防御",
   },
   mastery: {
-    graze: "擦掠",
+    graze: "擦掠", nick: "迅击", topple: "推倒",
     sap: "削弱",
     slow: "缓速",
     vex: "侵扰",
   },
   weapon: {
-    greatsword: "巨剑",
+    greatsword: "巨剑", dagger: "匕首", quarterstaff: "长棍",
     flail: "连枷",
     javelin: "标枪",
     spear: "矛",

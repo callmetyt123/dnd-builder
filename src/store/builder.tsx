@@ -1,13 +1,16 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
-import type { AbilityId, CharacterBuild, SkillId } from "../rules/types";
+import type { AbilityId, CharacterBuild, ClassId, SkillId, WizardChoices } from "../rules/types";
 
+import { PROFILES } from "../data/profiles";
 import { defaultBuild } from "../rules/defaultBuild";
 import { deriveCharacter } from "../rules/engine/deriveCharacter";
 import { normalizePlayState, updatePlayState, type PlayAction } from "../rules/engine/playState";
-import { parseDraft, STORAGE_KEY, type BuilderState, type BuilderStep, type DraftRestore } from "./draft";
+import { switchClass, parseDraft, STORAGE_KEY, type BuilderState, type BuilderStep, type DraftRestore } from "./draft";
 export type { BuilderState, BuilderStep } from "./draft";
 
 type Action =
+  | { type: "class"; id: ClassId }
+  | { type: "wizard"; patch: Partial<WizardChoices> }
   | { type: "play"; action: PlayAction }
   | { type: "gaming-set"; id: string }
   | { type: "boosts-equal" }
@@ -23,13 +26,15 @@ type Action =
   | { type: "identity"; patch: Partial<CharacterBuild["identity"]> };
 
 function reducer(state: BuilderState, action: Action): BuilderState {
+  if (action.type === "class") return switchClass(state, action.id);
+  if (action.type === "wizard" && state.build.choices.wizard) return { ...state, build: { ...state.build, choices: { ...state.build.choices, wizard: { ...state.build.choices.wizard, ...action.patch } } } };
   if (action.type === "play") {
     const character = deriveCharacter(state.build);
     return { ...state, play: updatePlayState(normalizePlayState(state.play, character), action.action, character) };
   }
   if (action.type === "gaming-set") return { ...state, build: { ...state.build, choices: { ...state.build.choices, soldierGamingSet: action.id } } };
-  if (action.type === "abilities-default") return { ...state, build: { ...state.build, abilities: defaultBuild().abilities } };
-  if (action.type === "boosts-equal") return { ...state, build: { ...state.build, abilities: { ...state.build.abilities, backgroundBoosts: { strength: 1, dexterity: 1, constitution: 1 } } } };
+  if (action.type === "abilities-default") return { ...state, build: { ...state.build, abilities: defaultBuild(state.build.classId).abilities } };
+  if (action.type === "boosts-equal") return { ...state, build: { ...state.build, abilities: { ...state.build.abilities, backgroundBoosts: Object.fromEntries(PROFILES[state.build.classId].boostOptions.map((id) => [id, 1])) } } };
   if (action.type === "step") return { ...state, step: action.step };
   if (action.type === "reset") return { step: "home", build: defaultBuild() };
   if (action.type === "playstyle") return { ...state, build: { ...state.build, playstyle: { tags: action.tags, complexity: action.complexity } } };

@@ -37,3 +37,18 @@ V1 只考虑 5R 三宝书内容：
 - [2024 武器](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/装备/武器.htm)：矛、短弓、侵扰。
 - [起源专长](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/专长/起源专长.htm)：凶蛮打手。
 - [矮人](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色起源/种族/矮人.htm)：矮人体魄、矮人刚毅、石中精妙；替换了 v0.1 使用的旧显示名称。
+
+## v0.3 法师核对（2026-09-28）
+
+- [2024 法师与塑能师](https://www.dndbeyond.com/sources/dnd/br-2024/character-classes)：三级 3 道职业戏法、6 道职业准备法术、4/2 法术位；初始 6 道一环、二级新增 2 道一环、三级新增 2 道一或二环，塑能学者额外 2 道塑能法术；仪式学家、学者专精、奥术回想。
+- [2024 贤者背景](https://www.dndbeyond.com/sources/dnd/br-2024/character-origins)：体质／智力／感知提升，奥秘／历史熟练、书法工具、魔法学徒（法师）及起始包 A。
+- [2024 魔法学徒](https://www.dndbeyond.com/sources/dnd/br-2024/feats)：2 道戏法、1 道始终准备的一环法术，施法属性从智力／感知／魅力中选；免费施法每长休一次，也能消耗法术位。
+- [2024 法术](https://www.dndbeyond.com/sources/dnd/br-2024/spell-descriptions)：收录 20 道法师法术；特别区分新版睡眠术的感知豁免与旧版 HP 骰池、新版电爪只阻止借机攻击。
+- [2024 装备](https://www.dndbeyond.com/sources/dnd/br-2024/equipment)：匕首灵巧、长棍两用、学者套组内容。
+- [2024 规则术语](https://www.dndbeyond.com/sources/dnd/br-2024/rules-glossary)：专注豁免 DC 上限 30，失能／死亡结束专注。
+
+中文名称与法术条件核对以下 `pages` 分支内容；法术卡是本项目重新编写的三级速查摘要：
+
+- [法师](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/法师/法师.htm)：仪式学家、奥术回想、学者。
+- [塑能师](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/法师/塑能师.htm)：塑能学者、强力戏法；法术塑形明确为六级能力，不授予三级角色。
+- [戏法](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/0环.htm)、[一环](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/1环.htm)、[二环](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/法术详述/2环.htm)：火焰箭、冷冻射线、粉碎音波等。

@@ -12,7 +12,7 @@ export type PlayAction =
   | { type: "temporary-hp"; value: number }
   | { type: "hit-dice"; value: number }
   | { type: "resource"; id: string; value: number }
-  | { type: "rest"; kind: "short" | "long" };
+  | { type: "rest"; kind: "short" | "long"; recover?: "one-first" | "two-first" | "one-second" };
 const clamp = (value: unknown, max: number, fallback: number): number =>
   typeof value === "number" && Number.isFinite(value) ? Math.min(max, Math.max(0, Math.trunc(value))) : fallback;
 
@@ -37,8 +37,17 @@ export function updatePlayState(state: PlayState, action: PlayAction, c: Derived
     // 短休不会自动治疗；生命骰的实际治疗量由玩家掷骰后记录。
     if (action.kind === "long") next = normalizePlayState(undefined, c);
     else {
-      next.remaining["second-wind"] += 1;
-      next.remaining["action-surge"] = c.resources.find((r) => r.id === "action-surge")!.max;
+      for (const resource of c.resources) next.remaining[resource.id] += resource.shortRestRestore ?? 0;
+      // Recovery is atomic: insufficient expended slots never consume the daily use.
+      if (c.spellcasting && next.remaining["arcane-recovery"] > 0 && action.recover) {
+        const id = action.recover === "one-second" ? "spell-slot-2" : "spell-slot-1";
+        const amount = action.recover === "two-first" ? 2 : 1;
+        const max = c.resources.find((r) => r.id === id)!.max;
+        if (next.remaining[id] + amount <= max) {
+          next.remaining[id] += amount;
+          next.remaining["arcane-recovery"] -= 1;
+        }
+      }
     }
   }
   return normalizePlayState(next, c);

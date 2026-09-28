@@ -1,6 +1,8 @@
 import { ARMOR } from "../../data/armor";
 import { SOLDIER } from "../../data/backgrounds/soldier";
 import { FIGHTER } from "../../data/classes/fighter";
+import { PROFILES } from "../../data/profiles";
+import { spell } from "../../data/spells";
 import { ABILITIES, SKILLS } from "../../data/core";
 import { DWARF } from "../../data/species/dwarf";
 import { CHAMPION } from "../../data/subclasses/champion";
@@ -26,6 +28,10 @@ function makeRoll(modifier: number, proficiency: ProficiencyRank, advantageSourc
 }
 
 export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
+  const profile = PROFILES[build.classId];
+  const wizard = build.classId === "wizard" ? build.choices.wizard : undefined;
+  const fighter = build.classId === "fighter";
+  const book = wizard ? [...wizard.earlyBook, ...wizard.level3Book, ...wizard.evocationBook] : [];
   const pb = proficiencyBonus(build.level);
   const finalScores = addAbilityBoosts(build.abilities.baseAssignment, build.abilities.backgroundBoosts);
   const abilities = Object.fromEntries(
@@ -33,28 +39,29 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   ) as DerivedCharacter["abilities"];
 
   const skillProficiencies = new Set<SkillId>([
-    ...SOLDIER.skillProficiencies,
-    ...build.choices.fighterSkills,
+    ...profile.backgroundSkills,
+    ...(wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
   const skills = Object.fromEntries(
     (Object.keys(SKILLS) as SkillId[]).map((skillId) => {
       const ability = SKILLS[skillId].defaultAbility;
       const proficient = skillProficiencies.has(skillId);
-      const advantageSources = skillId === "athletics" && CHAMPION.athleticsAdvantage ? ["remarkable-athlete"] : [];
+      const expertise = proficient && wizard?.scholar === skillId;
+      const advantageSources = fighter && skillId === "athletics" && CHAMPION.athleticsAdvantage ? ["remarkable-athlete"] : [];
       return [
         skillId,
         makeRoll(
-          abilities[ability].modifier + (proficient ? pb : 0),
-          proficient ? "proficient" : "none",
+          abilities[ability].modifier + (proficient ? pb * (expertise ? 2 : 1) : 0),
+          expertise ? "expertise" : proficient ? "proficient" : "none",
           advantageSources,
-          skillId === "stealth" ? ["chain-mail"] : [],
+          fighter && skillId === "stealth" ? ["chain-mail"] : [],
         ),
       ];
     }),
   ) as Record<SkillId, DerivedRoll>;
 
-  const savingThrowProficiencies = new Set<AbilityId>(FIGHTER.savingThrowProficiencies);
+  const savingThrowProficiencies = new Set<AbilityId>(profile.saves);
   const savingThrows = Object.fromEntries(
     ABILITIES.map((ability) => [
       ability,
@@ -65,24 +72,24 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     ]),
   ) as Record<AbilityId, DerivedRoll>;
 
-  const classHp = FIGHTER.hitDie + abilities.constitution.modifier
-    + (build.level - 1) * (FIGHTER.fixedHpAfterFirstLevel + abilities.constitution.modifier);
+  const classHp = profile.hitDie + abilities.constitution.modifier
+    + (build.level - 1) * (profile.fixedHp + abilities.constitution.modifier);
   const maxHp = classHp + DWARF.hpBonusPerLevel * build.level;
 
   const chainMail = ARMOR["chain-mail"];
   const defenseBonus = build.choices.fightingStyle === "defense" ? 1 : 0;
-  const armorClass = chainMail.armorClass + defenseBonus;
+  const armorClass = fighter ? chainMail.armorClass + defenseBonus : 10 + abilities.dexterity.modifier;
 
   let speed = DWARF.speed;
-  if (abilities.strength.score < chainMail.strengthRequirement) speed -= 10;
+  if (fighter && abilities.strength.score < chainMail.strengthRequirement) speed -= 10;
 
-  const initiativeAdvantages = CHAMPION.initiativeAdvantage ? ["remarkable-athlete"] : [];
+  const initiativeAdvantages = fighter && CHAMPION.initiativeAdvantage ? ["remarkable-athlete"] : [];
   const initiative = makeRoll(abilities.dexterity.modifier, "none", initiativeAdvantages);
 
   const masterySet = new Set(build.choices.weaponMasteries);
   // 合并两个来源的装备，避免背景武器和重复金币在人物卡中丢失。
   const inventory = new Map<string, number>();
-  for (const item of [...FIGHTER.equipmentPackages[build.equipment.classPackage], ...SOLDIER.equipmentPackages[build.equipment.backgroundPackage]]) {
+  for (const item of profile.equipment) {
     const id = item.id === "gaming-set" ? build.choices.soldierGamingSet ?? "gaming-set" : item.id;
     inventory.set(id, (inventory.get(id) ?? 0) + item.quantity);
   }
@@ -91,7 +98,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const attacks = carriedWeaponIds.map((weaponId) => {
     const weapon = WEAPONS[weaponId];
-    const mod = abilities[weapon.ability].modifier;
+    const mod = weapon.finesse ? Math.max(abilities.strength.modifier, abilities.dexterity.modifier) : abilities[weapon.ability].modifier;
     return {
       weaponId,
       disadvantage: weapon.heavy && abilities.strength.score < 13 ? "力量低于 13，重型近战武器攻击具有劣势" : undefined,
@@ -101,7 +108,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       damageType: weapon.damageType,
       mastery: {
         id: weapon.mastery,
-        unlocked: masterySet.has(weaponId),
+        unlocked: fighter && masterySet.has(weaponId),
       },
       range: weapon.range,
     };
@@ -110,6 +117,8 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   return {
     level: 3,
+    hitDie: profile.hitDie,
+    spellcasting: wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : undefined,
     proficiencyBonus: pb,
     abilities,
     maxHp,
@@ -121,23 +130,32 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     passivePerception: 10 + skills.perception.modifier,
     attacks,
     resources: [
-      { id: "second-wind", max: FIGHTER.secondWindUsesAtLevel3, recovery: "短休恢复1次，长休恢复全部" },
-      { id: "action-surge", max: FIGHTER.actionSurgeUsesAtLevel3, recovery: "短休或长休恢复" },
+      ...(fighter ? [
+      { id: "second-wind", max: FIGHTER.secondWindUsesAtLevel3, recovery: "短休恢复1次，长休恢复全部", shortRestRestore: 1 },
+      { id: "action-surge", max: FIGHTER.actionSurgeUsesAtLevel3, recovery: "短休或长休恢复", shortRestRestore: 1 },
+      ] : [
+        { id: "spell-slot-1", max: 4, recovery: "长休恢复；短休可使用奥术回想" },
+        { id: "spell-slot-2", max: 2, recovery: "长休恢复；短休可使用奥术回想" },
+        { id: "arcane-recovery", max: 1, recovery: "长休恢复；短休时可恢复总环阶至多 2 的法术位" },
+        { id: "magic-initiate", max: 1, recovery: "长休恢复；免费施展所选一环法术" },
+      ]),
       { id: "stonecunning", max: pb, recovery: "长休恢复全部" },
     ],
-    criticalThreshold: CHAMPION.criticalThreshold,
+    criticalThreshold: fighter ? CHAMPION.criticalThreshold : 20,
     languages: ["common", ...build.choices.languages],
     senses: { darkvision: DWARF.darkvision },
     resistances: [...DWARF.resistances],
     features: [
+      ...(fighter ? [
       "fighting-style-defense",
       "second-wind",
       "weapon-mastery",
       "action-surge",
       "tactical-mind",
       ...CHAMPION.features,
-      ...DWARF.features,
       SOLDIER.originFeatId,
+      ] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip", "magic-initiate"]),
+      ...DWARF.features,
     ],
     equipment,
   };

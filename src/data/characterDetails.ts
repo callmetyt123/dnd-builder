@@ -3,11 +3,21 @@ export const GAMING_SETS: Record<string, string> = {
   "dice-set": "骰子套组", "dragonchess-set": "龙棋套组", "playing-card-set": "纸牌套组", "three-dragon-ante-set": "三龙牌套组",
 };
 export const itemNames: Record<string, string> = {
+  dagger: "匕首", quarterstaff: "长棍（其中一根为奥术法器）", robe: "长袍", spellbook: "法术书", "scholars-pack": "学者套组", "calligraphers-supplies": "书法工具", "history-book": "历史书", parchment: "羊皮纸",
   "chain-mail": "链甲", greatsword: "巨剑", flail: "连枷", javelin: "标枪", spear: "矛", shortbow: "短弓",
   "dungeoneers-pack": "地城探索者套组", arrow: "箭", quiver: "箭袋", "healers-kit": "医疗包（10 次）", "travelers-clothes": "旅行者服装", gp: "金币（GP）", ...GAMING_SETS,
 };
 export const damageNames: Record<string, string> = { slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击" };
 export const features: Record<string, { name: string; timing: string; text: string }> = {
+  "spell-slot-1": { name: "一环法术位", timing: "施法", text: "施展一环法术时消耗。" },
+  "spell-slot-2": { name: "二环法术位", timing: "施法", text: "可施展二环法术，或升环施展一环法术。" },
+  spellcasting: { name: "施法", timing: "智力 · 法师", text: "3 道职业戏法、6 道职业准备法术；法术书或奥术法器可代替无标价且不消耗的材料。一回合只能消耗一个法术位施法。" },
+  "ritual-adept": { name: "仪式学家", timing: "施法时间额外 +10 分钟", text: "读法术书可施展书中带仪式标签的法术，无须准备、不耗法术位。施法期间需持续专注，每回合使用魔法动作。" },
+  "arcane-recovery": { name: "奥术回想", timing: "短休结束时 · 每长休一次", text: "恢复已消耗的法术位，总环阶至多为 2：一个二环，或一至两个一环。普通短休不会自动恢复法术位。" },
+  scholar: { name: "学者", timing: "技能专精 · 法师", text: "所选已熟练学术技能的熟练加值翻倍，已计入技能栏。" },
+  "evocation-savant": { name: "塑能学者", timing: "法术书 · 塑能师", text: "额外学习两道不高于二环的塑能法术，已加入法术书；仍需准备才能正常施展。" },
+  "potent-cantrip": { name: "强力戏法", timing: "伤害戏法失手或目标豁免成功", text: "目标生物仍受到戏法的一半伤害（向下取整），但不承受其他效果。二环灼热射线不适用。三级尚无保护盟友的法术塑形。" },
+  "magic-initiate": { name: "魔法学徒", timing: "贤者 · 每长休一次免费施法", text: "所选 2 道戏法及 1 道一环法术使用指定施法属性。一环法术始终准备、不占职业名额；可免费施展一次，也可用法术位施展。" },
   "fighting-style-defense": { name: "防御", timing: "被动 · 战斗风格", text: "穿着轻甲、中甲或重甲时 AC +1，已计入。" },
   "second-wind": { name: "回气", timing: "附赠动作 · 战士", text: "恢复 1d10+3 HP。与战术思维共用次数；短休恢复 1 次，长休全部恢复。" },
   "weapon-mastery": { name: "武器精通", timing: "被动 · 战士", text: "可用已选 3 种武器的精通属性；长休后可更换其中 1 种。" },

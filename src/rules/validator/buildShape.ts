@@ -16,6 +16,8 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   if (!isRecord(a) || !isRecord(c) || !isRecord(e) || !isRecord(i) || !isRecord(p)) return false;
   if (!isRecord(a.baseAssignment) || !isRecord(a.backgroundBoosts)) return false;
   const base = a.baseAssignment;
+  const w = c.wizard;
+  if (value.classId === "wizard" && (!isRecord(w) || !["skills", "cantrips", "earlyBook", "level3Book", "evocationBook", "prepared", "initiateCantrips"].every((k) => strings(w[k])) || typeof w.scholar !== "string" || typeof w.initiateSpell !== "string" || !["intelligence", "wisdom", "charisma"].includes(String(w.initiateAbility)))) return false;
   return ABILITIES.every((id) => finite(base[id])) && Object.keys(base).length === 6
     && Object.values(a.backgroundBoosts).every(finite)
     && strings(c.languages) && strings(c.fighterSkills) && strings(c.weaponMasteries)
@@ -28,8 +30,9 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
 }
 
 export function isSupportedBuild(build: CharacterBuild): boolean {
-  return build.schemaVersion === 1 && build.level === 3 && build.classId === "fighter"
-    && build.subclassId === "champion" && build.speciesId === "dwarf" && build.backgroundId === "soldier"
+  if (build.schemaVersion !== 1 || build.level !== 3 || build.speciesId !== "dwarf") return false;
+  if (build.classId === "wizard") return build.subclassId === "evoker" && build.backgroundId === "sage" && build.profileId === "wizard-evoker" && build.equipment.classPackage === "wizard-a" && build.equipment.backgroundPackage === "sage-a";
+  return build.classId === "fighter" && build.subclassId === "champion" && build.backgroundId === "soldier"
     && build.profileId === "fighter-heavy" && build.choices.fightingStyle === "defense"
     && build.equipment.classPackage === "fighter-a" && build.equipment.backgroundPackage === "soldier-a";
 }

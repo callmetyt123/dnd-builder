@@ -50,14 +50,22 @@ export interface Identity {
   description?: string;
 }
 
+export type ClassId = "fighter" | "wizard";
+export interface WizardChoices {
+  skills: SkillId[]; scholar: SkillId; cantrips: string[];
+  // 分开记录升级来源，防止一级法术书被二环法术填满。
+  earlyBook: string[]; level3Book: string[]; evocationBook: string[]; prepared: string[];
+  initiateCantrips: string[]; initiateSpell: string; initiateAbility: "intelligence" | "wisdom" | "charisma";
+}
+
 export interface CharacterBuild {
   schemaVersion: 1;
   level: 3;
-  classId: "fighter";
-  subclassId: "champion";
+  classId: ClassId;
+  subclassId: "champion" | "evoker";
   speciesId: "dwarf";
-  backgroundId: "soldier";
-  profileId: "fighter-heavy";
+  backgroundId: "soldier" | "sage";
+  profileId: "fighter-heavy" | "wizard-evoker";
   playstyle: {
     tags: string[];
     complexity: "simple" | "balanced" | "deep";
@@ -67,6 +75,7 @@ export interface CharacterBuild {
     backgroundBoosts: Partial<Record<AbilityId, number>>;
   };
   choices: {
+    wizard?: WizardChoices;
     languages: string[];
     soldierGamingSet?: string;
     fighterSkills: SkillId[];
@@ -74,8 +83,8 @@ export interface CharacterBuild {
     weaponMasteries: string[];
   };
   equipment: {
-    classPackage: "fighter-a";
-    backgroundPackage: "soldier-a";
+    classPackage: "fighter-a" | "wizard-a";
+    backgroundPackage: "soldier-a" | "sage-a";
   };
   identity: Identity;
 }
@@ -106,10 +115,13 @@ export interface DerivedResource {
   id: string;
   max: number;
   recovery: string;
+  shortRestRestore?: number;
 }
 
 export interface DerivedCharacter {
   level: 3;
+  hitDie: number;
+  spellcasting?: { attack: number; dc: number; initiateAttack: number; initiateDc: number; book: string[]; prepared: string[]; cantrips: string[]; initiateSpell: string; initiateCantrips: string[]; ritualSpells: string[] };
   proficiencyBonus: number;
   abilities: Record<AbilityId, { score: number; modifier: number }>;
   maxHp: number;

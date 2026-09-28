@@ -1,6 +1,7 @@
 import { BuilderShell } from "../components/builder/BuilderShell";
 import { damageNames } from "../data/characterDetails";
 import { FIGHTER } from "../data/classes/fighter";
+import { PROFILES, SCHOLAR_SKILLS } from "../data/profiles";
 import { WEAPONS } from "../data/weapons";
 import type { SkillId } from "../rules/types";
 import { masteryName, skillNames, zhCN } from "../translations/zh-CN";
@@ -13,12 +14,21 @@ export function ConfigurationPage() {
     const next = current.includes(skill) ? current.filter((id) => id !== skill) : current.length >= 2 ? [current[1], skill] : [...current, skill];
     dispatch({ type: "fighter-skills", skills: next });
   };
-  const masteryIds = Object.keys(WEAPONS);
+  const masteryIds = ["greatsword", "flail", "javelin", "spear", "shortbow"];
   const toggleMastery = (id: string) => {
     const current = state.build.choices.weaponMasteries;
     const next = current.includes(id) ? current.filter((v) => v !== id) : current.length >= 3 ? [current[1], current[2], id] : [...current, id];
     dispatch({ type: "weapon-masteries", ids: next });
   };
+  if (state.build.classId === "wizard") {
+    const w = state.build.choices.wizard!;
+    const proficient = [...PROFILES.wizard.backgroundSkills, ...w.skills];
+    return <BuilderShell previous="abilities" next="spells"><section className="page-head"><h1>完善法师配置</h1><p>贤者已提供奥秘、历史熟练；再选择 2 项职业技能和 1 项学者专精。</p></section>
+      <section className="section"><h2>职业技能 · {w.skills.length}/2</h2><div className="choice-pills">{PROFILES.wizard.skills.map((skill) => <button key={skill} aria-pressed={w.skills.includes(skill)} disabled={PROFILES.wizard.backgroundSkills.includes(skill) || (!w.skills.includes(skill) && w.skills.length >= 2)} onClick={() => dispatch({ type: "wizard", patch: { skills: w.skills.includes(skill) ? w.skills.filter((id) => id !== skill) : [...w.skills, skill] } })}>{skillNames[skill]}{PROFILES.wizard.backgroundSkills.includes(skill) ? "（背景）" : ""}</button>)}</div></section>
+      <section className="section"><h2>学者专精</h2><p>所选技能熟练加值翻倍。推荐奥秘，适合研究魔法。</p><label>专精技能<select value={w.scholar} onChange={(e) => dispatch({ type: "wizard", patch: { scholar: e.target.value as SkillId } })}>{SCHOLAR_SKILLS.map((id) => <option value={id} key={id} disabled={!proficient.includes(id)}>{skillNames[id]}{!proficient.includes(id) ? "（尚未熟练）" : ""}</option>)}</select></label></section>
+      <section className="section"><h2>起始装备 · 包 A</h2><p>2 把匕首、奥术法器（长棍）、长袍、法术书、学者套组与 5 GP；另加贤者装备。未穿护甲，基础 AC 为 10 + 敏捷调整值。</p></section>
+    </BuilderShell>;
+  }
   return (
     <BuilderShell previous="abilities" next="identity">
       <section className="page-head"><h1>完善角色配置</h1><p>新人可以直接保留推荐项；理解规则后也可以修改。</p></section>

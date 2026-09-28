@@ -5,6 +5,7 @@ import { SpeciesPage } from "../pages/SpeciesPage";
 import { BackgroundPage } from "../pages/BackgroundPage";
 import { AbilitiesPage } from "../pages/AbilitiesPage";
 import { ConfigurationPage } from "../pages/ConfigurationPage";
+import { SpellsPage } from "../pages/SpellsPage";
 import { IdentityPage } from "../pages/IdentityPage";
 import { ReviewPage } from "../pages/ReviewPage";
 import { CharacterPage } from "../pages/CharacterPage";
@@ -19,6 +20,7 @@ function CurrentPage() {
     case "background": return <BackgroundPage />;
     case "abilities": return <AbilitiesPage />;
     case "configuration": return <ConfigurationPage />;
+    case "spells": return <SpellsPage />;
     case "identity": return <IdentityPage />;
     case "review": return <ReviewPage />;
     case "character": return <CharacterPage />;

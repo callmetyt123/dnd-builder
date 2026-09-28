@@ -1,3 +1,5 @@
+import { PROFILES } from "../../data/profiles";
+import { validateWizard } from "./validateWizard";
 import { GAMING_SETS } from "../../data/characterDetails";
 import { alignmentNames } from "../../translations/zh-CN";
 import { hasBuildShape, isSupportedBuild } from "./buildShape";
@@ -15,8 +17,10 @@ function multiset(values: number[]) {
 export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
   if (!hasBuildShape(build) || !isSupportedBuild(build)) {
-    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持 3 级战士／勇士／矮人／士兵。" }] };
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级矮人：战士／勇士／士兵，或法师／塑能师／贤者。" }] };
   }
+  const fighter = build.classId === "fighter";
+  const profile = PROFILES[build.classId];
   if (build.identity.alignment && !Object.prototype.hasOwnProperty.call(alignmentNames, build.identity.alignment)) {
     messages.push({ id: "identity-alignment-invalid", domain: "rules", severity: "blocker", message: "请选择有效的阵营。", targetStep: "identity" });
   }
@@ -26,7 +30,7 @@ export function validateBuild(build: unknown): ValidationResult {
   if (build.identity.name.length > 60 || (build.identity.gender?.length ?? 0) > 30 || (build.identity.appearance?.length ?? 0) > 300 || (build.identity.description?.length ?? 0) > 600 || (build.identity.personalityTraits?.length ?? 0) > 3 || build.identity.personalityTraits?.some((trait) => trait.length > 30)) {
     messages.push({ id: "identity-length", domain: "completeness", severity: "blocker", message: "姓名最多 60 字、性别 30 字、外貌 300 字、简介 600 字，性格特点最多 3 项。", targetStep: "identity" });
   }
-  if (!build.choices.soldierGamingSet || !Object.prototype.hasOwnProperty.call(GAMING_SETS, build.choices.soldierGamingSet)) {
+  if (fighter && (!build.choices.soldierGamingSet || !Object.prototype.hasOwnProperty.call(GAMING_SETS, build.choices.soldierGamingSet))) {
     messages.push({ id: "gaming-set", domain: "completeness", severity: "blocker", message: "请选择一种游戏套装，作为士兵的工具熟练和起始装备。", targetStep: "background" });
   }
 
@@ -42,9 +46,9 @@ export function validateBuild(build: unknown): ValidationResult {
   }
 
   const boosts = Object.entries(build.abilities.backgroundBoosts) as [AbilityId, number][];
-  const allowedBoosts = new Set<AbilityId>(SOLDIER.abilityOptions);
+  const allowedBoosts = new Set<AbilityId>(profile.boostOptions);
   if (boosts.some(([ability]) => !allowedBoosts.has(ability))) {
-    messages.push({ id: "background-boost-target", domain: "rules", severity: "blocker", message: "士兵背景只能提升力量、敏捷或体质。", targetStep: "abilities" });
+    messages.push({ id: "background-boost-target", domain: "rules", severity: "blocker", message: "属性提升必须属于所选背景允许的三项属性。", targetStep: "abilities" });
   }
   const boostValues = boosts.map(([, value]) => value).filter(Boolean).sort();
   const legalBoost = JSON.stringify(boostValues) === JSON.stringify([1, 2]) || JSON.stringify(boostValues) === JSON.stringify([1, 1, 1]);
@@ -52,6 +56,7 @@ export function validateBuild(build: unknown): ValidationResult {
     messages.push({ id: "background-boost-shape", domain: "rules", severity: "blocker", message: "背景属性提升必须是 +2/+1，或三项各 +1。", targetStep: "abilities" });
   }
 
+  if (fighter) {
   if (build.choices.fighterSkills.length !== FIGHTER.skillCount || new Set(build.choices.fighterSkills).size !== FIGHTER.skillCount) {
     messages.push({ id: "fighter-skills-count", domain: "rules", severity: "blocker", message: `战士需要选择 ${FIGHTER.skillCount} 项不同的职业技能。`, targetStep: "configuration" });
   }
@@ -71,6 +76,8 @@ export function validateBuild(build: unknown): ValidationResult {
     messages.push({ id: "weapon-mastery-known", domain: "rules", severity: "blocker", message: "当前开发切片中存在尚未录入规则数据的武器精通选择。", targetStep: "configuration" });
   }
 
+  } else messages.push(...validateWizard(build.choices.wizard!));
+
   if (build.choices.languages.length !== 2 || new Set(build.choices.languages).size !== 2) {
     messages.push({ id: "language-count", domain: "rules", severity: "blocker", message: "角色需要另外选择两种不同的标准语言。", targetStep: "species" });
   }
@@ -79,7 +86,7 @@ export function validateBuild(build: unknown): ValidationResult {
   }
 
   const derived = deriveCharacter(build);
-  if (derived.abilities.strength.score < 14) {
+  if (fighter && derived.abilities.strength.score < 14) {
     messages.push({ id: "heavy-fighter-low-str", domain: "recommendation", severity: "warning", message: `当前力量为 ${derived.abilities.strength.score}；这会降低推荐的重武器战士命中与伤害。`, targetStep: "abilities" });
   }
   if (derived.speed < 30) {

@@ -1,19 +1,21 @@
 import type { ReactNode } from "react";
 import { useBuilder, type BuilderStep } from "../../store/builder";
 
-const FLOW: { id: BuilderStep; label: string }[] = [
+const ALL_STEPS: { id: BuilderStep; label: string }[] = [
   { id: "playstyle", label: "玩法" },
   { id: "class", label: "职业" },
   { id: "species", label: "种族" },
   { id: "background", label: "背景" },
   { id: "abilities", label: "属性" },
   { id: "configuration", label: "配置" },
+  { id: "spells", label: "法术" },
   { id: "identity", label: "身份" },
   { id: "review", label: "检查" },
 ];
 
 export function BuilderShell({ children, previous, next, nextLabel = "下一步", nextDisabled = false }: { children: ReactNode; previous?: BuilderStep; next?: BuilderStep; nextLabel?: string; nextDisabled?: boolean }) {
   const { state, dispatch, storageError } = useBuilder();
+  const FLOW = ALL_STEPS.filter((s) => s.id !== "spells" || state.build.classId === "wizard");
   const currentIndex = FLOW.findIndex((item) => item.id === state.step);
   return (
     <div className="app-shell">

@@ -235,3 +235,22 @@ textarea { min-height: 92px; resize: vertical; }
   /* 为浏览器默认页眉页脚留出空间，速查页不拆到第二张纸。 */
   .export-root .sheet-page { zoom: .85; }
 }
+
+/* 法术选择以来源分组；禁用新选择时仍允许取消现有选择。 */
+.class-options { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.class-option { text-align: left; padding: 24px; border: 1px solid var(--border); background: var(--surface); border-radius: 14px; cursor: pointer; }
+.class-option.selected, .spell-choice.selected { border-color: var(--accent); background: #28241d; }
+.class-option h2 { margin-top: 12px; }.class-option span:last-child { color: var(--muted); font-size: 13px; }
+.spell-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.spell-choice { padding: 13px; border: 1px solid var(--border); border-radius: 9px; }
+.spell-choice label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.spell-choice input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--accent); flex: 0 0 auto; }
+.spell-choice small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+.spell-choice details { margin-top: 10px; font-size: 12px; }.spell-choice details summary { padding: 0; cursor: pointer; color: var(--accent); }
+.spell-choice a { color: var(--accent); }.spell-choice input:disabled + span { opacity: .6; }
+.spell-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+.spell-card { border: 1px solid #dce1e5; padding: 14px; border-radius: 5px; break-inside: avoid; }
+.sheet-page .spell-card h3 { margin-top: 0; }.sheet-page .spell-card p { font-size: 11px; line-height: 1.65; }
+.spell-source { font-size: 10px; color: #6b582d; font-weight: 600; }.casting-strip { padding: 12px; background: #f0f3f6; }
+@media (max-width: 650px) { .class-options, .spell-choices { grid-template-columns: 1fr; } }
+@container (max-width: 600px) { .spell-card-grid { grid-template-columns: 1fr; } }
