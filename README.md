@@ -79,3 +79,9 @@ src/
 ```
 
 架构说明见 [`docs/architecture.md`](docs/architecture.md)。规则来源说明见 [`docs/rules-sources.md`](docs/rules-sources.md)。
+
+## GitHub Pages
+
+[Website](https://callmetyt123.github.io/dnd-builder/) | [Deployment guide](docs/deployment.md)
+
+Local development: `http://localhost:5173/dnd-builder/`. Production preview: `http://localhost:4173/dnd-builder/`.

@@ -44,7 +44,7 @@
 | 完整卡 DOM | 原形 8 页，当前兽形额外 1 页；默认构筑每个导出 DOM 页面 794 × 1122，无超高页 |
 | 浏览器控制台 | 未发现 warning/error |
 
-截图：[桌面](../../v0.4-druid-desktop.png)、[手机](../../v0.4-druid-mobile.png)。截图为本地测试角色苔拉·月痕。
+截图：[桌面](screenshots/v0.4-druid-desktop.png)、[手机](screenshots/v0.4-druid-mobile.png)。截图为本地测试角色苔拉·月痕。
 
 ## 明确边界
 
