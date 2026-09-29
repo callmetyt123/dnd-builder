@@ -1,3 +1,4 @@
+import { NEW_CLASSES } from "./newClasses";
 import { FIGHTER } from "./classes/fighter";
 import type { AbilityId, ClassId, SkillId } from "../rules/types";
 // 职业定义不含背景规则；背景选择不会改变职业的生命骰、豁免或装备包。
@@ -7,7 +8,7 @@ export interface Profile {
   equipment: readonly { id: string; quantity: number }[];
 }
 export const SCHOLAR_SKILLS: SkillId[] = ["arcana", "history", "investigation", "medicine", "nature", "religion"];
-export const PROFILES: Record<ClassId, Profile> = {
+export const PROFILES: Record<ClassId, Profile> = { ...NEW_CLASSES,
   rogue: { name: "游荡者", subclass: "盗贼", hitDie: 8, fixedHp: 5,
     saves: ["dexterity", "intelligence"], skills: ["acrobatics", "athletics", "deception", "insight", "intimidation", "investigation", "perception", "persuasion", "sleight-of-hand", "stealth"],
     equipment: [{ id: "leather-armor", quantity: 1 }, { id: "dagger", quantity: 2 }, { id: "shortsword", quantity: 1 }, { id: "shortbow", quantity: 1 }, { id: "arrow", quantity: 20 }, { id: "quiver", quantity: 1 }, { id: "thieves-tools", quantity: 1 }, { id: "burglars-pack", quantity: 1 }, { id: "gp", quantity: 8 }] },

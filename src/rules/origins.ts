@@ -1,3 +1,4 @@
+import { isNewClass, NEW_CLASSES } from "../data/newClasses";
 import { FEY_SKILLS } from "../data/primalSubclasses";
 import { SKILLS } from "../data/core";
 import { TOOL_OPTIONS, CRAFTER_TOOLS, INSTRUMENTS } from "../data/originOptions";
@@ -9,6 +10,13 @@ import { PROFILES, SCHOLAR_SKILLS } from "../data/profiles";
 import type { AbilityId, BackgroundId, CharacterBuild, ClassId, OriginChoices, SkillId } from "./types";
 
 export const ABILITY_PRIORITY: Record<ClassId, AbilityId[]> = {
+barbarian: ["strength", "constitution", "dexterity", "wisdom", "charisma", "intelligence"],
+bard: ["charisma", "dexterity", "constitution", "wisdom", "intelligence", "strength"],
+cleric: ["wisdom", "constitution", "dexterity", "strength", "charisma", "intelligence"],
+monk: ["dexterity", "wisdom", "constitution", "strength", "intelligence", "charisma"],
+paladin: ["strength", "charisma", "constitution", "wisdom", "dexterity", "intelligence"],
+sorcerer: ["charisma", "constitution", "dexterity", "wisdom", "intelligence", "strength"],
+
   rogue: ["dexterity", "constitution", "intelligence", "wisdom", "strength", "charisma"],
   fighter: ["strength", "constitution", "dexterity", "wisdom", "charisma", "intelligence"],
   wizard: ["intelligence", "constitution", "dexterity", "wisdom", "charisma", "strength"],
@@ -22,7 +30,7 @@ export function recommendedBoosts(classId: ClassId, backgroundId: BackgroundId) 
   return { [allowed[0]]: 2, [allowed[1]]: 1 };
 }
 export function defaultMagic(list: MagicList, classId: ClassId = "fighter") {
-  const ability = classId === "warlock" ? "charisma" as const : (classId === "wizard" || classId === "rogue") ? "intelligence" as const : "wisdom" as const;
+  const ability = ["warlock", "bard", "paladin", "sorcerer"].includes(classId) ? "charisma" as const : (classId === "wizard" || classId === "rogue") ? "intelligence" as const : "wisdom" as const;
   return { ability, cantrips: list === "cleric" ? ["guidance", "sacred-flame"] : list === "druid" ? ["guidance", "druidcraft"] : [classId === "wizard" ? "light" : "prestidigitation", "mage-hand"], spell: list === "wizard" ? classId === "wizard" ? "mage-armor" : "shield" : "healing-word" };
 }
 export function defaultFeatChoices(classId: ClassId = "fighter"): FeatChoices {
@@ -66,11 +74,15 @@ export function changeBackground(build: CharacterBuild, backgroundId: Background
 // 一键修复只动重复技能和失效专精；从本职业列表补齐，不额外授予熟练。
 export function recommendSkills(build: CharacterBuild): CharacterBuild {
   const background = BACKGROUNDS[build.backgroundId];
-  const count = build.classId === "rogue" ? 4 : build.classId === "ranger" ? 3 : 2;
+  const count = isNewClass(build.classId) ? NEW_CLASSES[build.classId].count : build.classId === "rogue" ? 4 : build.classId === "ranger" ? 3 : 2;
   const options = PROFILES[build.classId].skills.filter((id) => ![...background.skills, ...extraSkills(build)].includes(id));
   const skills = [...new Set([...classSkills(build).filter((id) => options.includes(id)), ...options, ...PROFILES[build.classId].skills])].slice(0, count);
   const choices = { ...build.choices };
-  if (build.classId === "fighter") {
+  if (isNewClass(build.classId)) {
+    const q = choices[build.classId]!;
+    const available = [...new Set([...skills, ...background.skills, ...extraSkills(build)])];
+    choices[build.classId] = { ...q, skills, expertise: build.classId === "bard" ? [...new Set([...q.expertise.filter((s) => available.includes(s)), ...available])].slice(0, 2) : [] };
+  } else if (build.classId === "fighter") {
     choices.fighterSkills = skills;
     if (build.subclassId === "battle-master" && choices.fighter) choices.fighter = { ...choices.fighter, studentSkill: PROFILES.fighter.skills.find((id) => ![...skills, ...background.skills, ...extraSkills(build)].includes(id)) ?? PROFILES.fighter.skills.find((id) => !skills.includes(id))! };
   }
@@ -98,6 +110,7 @@ export function backgroundTool(build: CharacterBuild): string {
   return tool === "gaming-set" ? build.choices.origin.gamingSet : tool === "artisan-tool" ? build.choices.origin.artisanTool : tool === "instrument" ? build.choices.origin.instrument : tool;
 }
 export function classTools(build: CharacterBuild): string[] {
+  if (isNewClass(build.classId)) return build.choices[build.classId]!.tools;
   return build.classId === "fighter" && build.subclassId === "battle-master" && build.choices.fighter ? [build.choices.fighter.artisanTool] : build.classId === "druid" ? ["herbalism-kit"] : build.classId === "rogue" ? ["thieves-tools", ...(build.subclassId === "assassin" ? ["disguise-kit", "poisoners-kit"] : [])] : [];
 }
 export function toolProficiencies(build: CharacterBuild): string[] {

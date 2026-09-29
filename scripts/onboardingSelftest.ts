@@ -9,7 +9,7 @@ import { BACKGROUNDS } from "../src/data/backgrounds";
 import type { ClassId, SpeciesId, BackgroundId, RogueSubclass } from "../src/rules/types";
 
 export function onboardingChecks(assert: (ok: unknown, message: string) => void) {
-  for (const [tag, complexity, expected] of [["stealth", "simple", "rogue"], ["melee", "simple", "fighter"], ["magic", "simple", "warlock"], ["magic", "deep", "wizard"], ["support", "simple", "druid"], ["nature", "deep", "ranger"]] as const) {
+  for (const [tag, complexity, expected] of [["stealth", "simple", "rogue"], ["melee", "simple", "fighter"], ["magic", "simple", "warlock"], ["magic", "deep", "wizard"], ["support", "simple", "cleric"], ["nature", "deep", "ranger"]] as const) {
     assert(recommendClasses({ tags: [tag], complexity })[0].id === expected, `${tag}/${complexity}: preference drives recommendation`);
   }
   assert(parseDraft(JSON.stringify({build: defaultBuild(), step: "class"})).state?.build.playstyle.tags[0] === "melee", "preference survives draft reload");

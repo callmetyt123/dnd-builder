@@ -1,3 +1,5 @@
+import { newClassGuide } from "./newClassGuide";
+import { isNewClass } from "../../data/newClasses";
 import { primalAction } from "./primalGuide";
 import { MANEUVERS } from "../../data/expandedSubclasses";
 import type { CharacterBuild, DerivedCharacter, DerivedAttack, SkillId } from "../types";
@@ -49,6 +51,7 @@ const spellUses: Record<string, [string, string]> = {
   "charm-person": ["想尝试缓和与类人生物的交涉", "30 尺内目标作感知豁免；失败后被你魅惑并对你友好。不是控制思想；法术结束后它会知道被你魅惑。"],
 };
 const attackCantrips: Record<string, [string, string, string]> = {
+  "vicious-mockery": ["感知豁免", "1d6 心灵；下回合结束前的下一次攻击有劣势", "60 尺"], "sacred-flame": ["敏捷豁免", "1d8 光耀；该豁免不受半身或四分之三掩护影响", "60 尺"], "sorcerous-burst": ["远程法术攻击", "1d8 所选类型；掷出 8 可追加骰，见完整卡", "120 尺"],
   "fire-bolt": ["远程法术攻击", "1d10 火焰", "120 尺"], "ray-of-frost": ["远程法术攻击", "1d8 寒冷；速度 −10 尺至其下回合开始", "60 尺"],
   "shocking-grasp": ["近战法术攻击", "1d8 闪电；目标至其下回合开始不能借机攻击", "触碰"], "thorn-whip": ["近战法术攻击", "1d6 穿刺；大型或更小目标可被拉近至多 10 尺", "30 尺"],
   "starry-wisp": ["远程法术攻击", "1d8 光耀；目标发光，至你的下回合结束无法受益于隐形", "60 尺"],
@@ -80,7 +83,7 @@ function basicAction(c: DerivedCharacter): GuideAction {
     const effect = warlockCantrip(c, id), simple = attackCantrips[id];
     if (!effect && !simple) continue;
     const attack = effect ? effect.attack : simple[0].includes("攻击");
-    return { id, title: spell(id)!.name, when: "想保留法术位、继续造成伤害时", how: `${effect ? effect.rangeLabel ?? `${effect.range} 尺` : simple[2]}内，${attack ? `掷 d20${signed(c.spellcasting!.attack)} 作${effect ? effect.attackLabel : simple[0]}，达到目标 AC 命中` : `目标作${effect?.save ?? "智力"}豁免（DC ${c.spellcasting!.dc}），失败`}后造成 ${effect ? effect.damage : simple[1]}。${effect?.note ?? ""}${effect?.push ? "命中大型或更小生物，可推离至多 10 尺。" : ""}`, cost: "动作 · 戏法，不消耗法术位" };
+    return { id, title: spell(id)!.name, when: "想保留法术位、继续造成伤害时", how: `${effect ? effect.rangeLabel ?? `${effect.range} 尺` : simple[2]}内，${attack ? `掷 d20${signed(c.spellcasting!.attack)} 作${effect ? effect.attackLabel : simple[0]}，达到目标 AC 命中` : `目标作${effect?.save ?? simple[0].replace("豁免", "")}豁免（DC ${c.spellcasting!.dc}），失败`}后造成 ${effect ? effect.damage : simple[1]}。${effect?.note ?? ""}${effect?.push ? "命中大型或更小生物，可推离至多 10 尺。" : ""}`, cost: "动作 · 戏法，不消耗法术位" };
   }
   return weaponAction(c);
 }
@@ -163,6 +166,10 @@ export function beginnerGuide(build: CharacterBuild, c: DerivedCharacter): Begin
     };
     actions[2] = abilities[build.subclassId];
     reminders[0] = build.subclassId === "illusionist" ? "幻术无需言语；原施法距离至少 10 尺时增加 60 尺，完整卡已显示调整结果。幻象的实际作用需与主持人沟通。" : "有四个一环位和两个二环位，长休恢复；短休时每长休一次可用奥术回想恢复总环阶至多二的法术位。";
+  }
+  if (isNewClass(build.classId)) {
+    const guide = newClassGuide(build, c, basicAction(c), weaponAction(c), build.classId === "cleric" ? spellAction(c, "cure-wounds") : undefined)!;
+    ({role, approach, actions, reminders} = guide);
   }
   const skills = (Object.keys(c.skills) as SkillId[]).filter((id) => c.skills[id].proficiency !== "none").sort((a, b) => c.skills[b].modifier - c.skills[a].modifier).slice(0, 3).map((id) => ({ id, name: skillNames[id], modifier: c.skills[id].modifier, example: skillExamples[id] }));
   return { role, approach, actions, reminders, skills, originNames: [...c.speciesFeatures.filter((id) => features[id]), ...ORIGIN_FEATS.filter((id) => c.features.includes(id))].map((id) => features[id].name) };

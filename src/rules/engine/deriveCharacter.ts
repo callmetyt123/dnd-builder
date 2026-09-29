@@ -1,3 +1,6 @@
+import { deriveNewClass } from "./newClasses";
+import { isNewClass } from "../../data/newClasses";
+import { newChoices } from "../newClasses";
 import { automaticMagic, primalSubclass } from "../../data/primalSubclasses";
 import { illusionCantrip, subclassFeatures } from "../expandedSubclasses";
 import { rogueFeatures, rogueWeaponProficient } from "../../data/rogue";
@@ -37,6 +40,7 @@ function makeRoll(modifier: number, proficiency: ProficiencyRank, advantageSourc
 
 export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const profile = PROFILES[build.classId];
+  const newcomer = newChoices(build);
   const background = BACKGROUNDS[build.backgroundId];
   const species = SPECIES[build.speciesId];
   const feats = originFeats(build);
@@ -69,14 +73,14 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     ...extraSkills(build),
     ...(fey ? [ranger!.feySkill ?? "persuasion"] : []),
     ...(battleMaster && build.choices.fighter ? [build.choices.fighter.studentSkill] : []),
-    ...(rogue?.skills ?? ranger?.skills ?? warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
+    ...(newcomer?.skills ?? rogue?.skills ?? ranger?.skills ?? warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
   const skills = Object.fromEntries(
     (Object.keys(SKILLS) as SkillId[]).map((skillId) => {
       const ability = SKILLS[skillId].defaultAbility;
       const proficient = skillProficiencies.has(skillId);
-      const expertise = proficient && (wizard?.scholar === skillId || ranger?.expertise === skillId || rogue?.expertise.includes(skillId));
+      const expertise = proficient && ((build.classId === "bard" && newcomer?.expertise.includes(skillId)) || wizard?.scholar === skillId || ranger?.expertise === skillId || rogue?.expertise.includes(skillId));
       const advantageSources = champion && skillId === "athletics" && CHAMPION.athleticsAdvantage ? ["remarkable-athlete"] : [];
       return [
         skillId,
@@ -84,7 +88,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
           abilities[ability].modifier + (fey && ability === "charisma" ? Math.max(1, abilities.wisdom.modifier) : 0) + (proficient ? pb * (expertise ? 2 : 1) : 0) + (druid?.order === "magician" && ["arcana", "nature"].includes(skillId) ? Math.max(1, abilities.wisdom.modifier) : 0),
           expertise ? "expertise" : proficient ? "proficient" : "none",
           advantageSources,
-          fighter && skillId === "stealth" ? ["chain-mail"] : [],
+          (fighter || build.classId === "paladin") && skillId === "stealth" ? ["chain-mail"] : [],
         ),
       ];
     }),
@@ -121,7 +125,8 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const inventory = new Map<string, number>();
   for (const item of [...profile.equipment, ...background.equipment]) {
     const id = item.id === "gaming-set" ? build.choices.origin.gamingSet : ["artisan-tool", "instrument"].includes(item.id) ? backgroundTool(build) : item.id;
-    inventory.set(id, (inventory.get(id) ?? 0) + item.quantity);
+    const resolved = id === "class-instrument" ? newcomer!.instrument : id === "class-tool" ? newcomer!.tools[0] ?? "calligraphers-supplies" : id;
+    inventory.set(resolved, (inventory.get(resolved) ?? 0) + item.quantity);
   }
   if (rogue && build.subclassId === "assassin") for (const id of ["disguise-kit", "poisoners-kit"]) inventory.set(id, (inventory.get(id) ?? 0) + 1);
   if (druid && build.subclassId === "stars") inventory.set("star-map", 1);
@@ -155,7 +160,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     : build.speciesId === "orc" ? [{ id: "adrenaline-rush", max: pb, recovery: "短休或长休恢复全部", shortRestRestore: pb }, { id: "relentless-endurance", max: 1, recovery: "长休恢复" }] : [];
 
 
-  return {
+  const result: DerivedCharacter = {
     level: 3,
     hitDie: profile.hitDie,
     tools: toolProficiencies(build),
@@ -224,4 +229,5 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     ],
     equipment,
   };
+  return isNewClass(build.classId) ? deriveNewClass(build, result) : result;
 }

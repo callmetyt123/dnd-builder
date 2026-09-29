@@ -1,3 +1,5 @@
+import { isNewClass } from "../../data/newClasses";
+import { NewClassSheets } from "./NewClassSheets";
 import { PrimalSubclassSheet } from "./PrimalSubclassSheet";
 import { SummonedBeastSheet } from "./SummonedBeastSheet";
 import { SubclassSheet } from "./SubclassSheet";
@@ -48,6 +50,7 @@ export function CharacterSheets(props: Props) {
   return <><ClassSheets {...props} play={play} /><PrimalSubclassSheet build={props.build} c={props.character} /><SummonedBeastSheet build={props.build} c={props.character} /><OriginDetailSheet build={props.build} c={props.character} play={play} /><OriginSpellSheet build={props.build} c={props.character} play={play} /><FamiliarSheet build={props.build} c={props.character} /></>;
 }
 function ClassSheets({ build, character: c, play, mode }: Props & { play: PlayState }) {
+  if (isNewClass(build.classId)) return <NewClassSheets build={build} c={c} play={play} />;
   if (build.classId === "rogue") return <RogueSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "ranger") return <RangerSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "warlock") return <WarlockSheets build={build} c={c} play={play} mode={mode} />;

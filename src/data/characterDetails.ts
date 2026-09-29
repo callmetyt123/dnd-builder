@@ -1,3 +1,4 @@
+import { NEW_CLASS_FEATURES } from "./newClassFeatures";
 import { PRIMAL_FEATURES } from "./primalSubclasses";
 import { EXPANDED_FEATURES } from "./expandedSubclasses";
 import { ROGUE_FEATURES } from "./rogueFeatures";
@@ -5,7 +6,7 @@ import { ROGUE_FEATURES } from "./rogueFeatures";
 export const GAMING_SETS: Record<string, string> = {
   "dice-set": "骰子套组", "dragonchess-set": "龙棋套组", "playing-card-set": "纸牌套组", "three-dragon-ante-set": "三龙牌套组",
 };
-export const itemNames: Record<string, string> = {
+export const itemNames: Record<string, string> = { greataxe: "巨斧", longsword: "长剑", "chain-shirt": "链甲衫", "arcane-crystal": "奥术水晶", "priests-pack": "祭司套组", "entertainers-pack": "艺人套组", unarmed: "徒手打击",
   "star-map": "星图（德鲁伊法器）", "burglars-pack": "窃贼套组", club: "短棒", handaxe: "手斧", mace: "硬头锤", rapier: "刺剑", whip: "鞭", "hand-crossbow": "手弩", greatclub: "巨棒", "light-hammer": "轻锤", dart: "飞镖", sling: "投石索",
   "disguise-kit": "易容工具", "poisoners-kit": "制毒工具",
 "alchemists-supplies": "炼金工具",
@@ -61,7 +62,7 @@ export const itemNames: Record<string, string> = {
 };
 export const damageNames: Record<string, string> = { slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击" };
 export const features: Record<string, { name: string; timing: string; text: string }> = {
-  ...ROGUE_FEATURES, ...EXPANDED_FEATURES, ...PRIMAL_FEATURES,
+  ...ROGUE_FEATURES, ...EXPANDED_FEATURES, ...PRIMAL_FEATURES, ...NEW_CLASS_FEATURES,
   "star-guiding-bolt": { name: "星图 · 免费光导箭", timing: "持握星图", text: "按一环施展，长休恢复。" },
   "dreadful-strike": { name: "恐惧打击", timing: "武器命中时", text: "每回合至多一次额外 2d6 心灵伤害；长休恢复次数。" },
 "celestial-resistance": {"name": "天界抗性", "timing": "被动", "text": "光耀与暗蚀伤害抗性。"},
@@ -135,7 +136,7 @@ export const features: Record<string, { name: string; timing: string; text: stri
   stonecunning: { name: "石中精妙", timing: "附赠动作 · 矮人", text: "获得 60 尺震颤感知，持续 10 分钟；必须站在或接触石质表面才能使用该感知。长休恢复全部次数。" },
   "savage-attacker": { name: "凶蛮打手", timing: "每回合一次 · 起源专长", text: "武器命中时，将武器伤害骰掷两组，选择其中一组使用。" },
 };
-export const masteryDescriptions: Record<string, string> = { push: "命中大型或更小生物时，可将它沿远离你的直线推开至多 10 尺。",
+export const masteryDescriptions: Record<string, string> = { cleave: "近战命中后，可用同武器攻击原目标 5 尺内且在触及内的另一生物；额外攻击命中不加属性伤害（负数仍加）。每回合一次。", push: "命中大型或更小生物时，可将它沿远离你的直线推开至多 10 尺。",
   nick: "轻型属性的额外攻击可纳入攻击动作，不再耗附赠动作，每回合仅一次；用另一把轻型武器，不加正属性伤害调整值。",
   graze: "未命中生物时，仍可造成等于攻击属性调整值的同类型伤害；只有提高该调整值才能增加此伤害。",
   sap: "命中后，目标下回合开始前的下一次攻击检定具有劣势。",

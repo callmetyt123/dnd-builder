@@ -1,9 +1,12 @@
+import { isNewClass } from "../data/newClasses";
+import { newDefaults } from "./newClasses";
 import { defaultFighterChoices } from "../data/expandedSubclasses";
 import { defaultSpeciesChoices } from "./species";
 import { defaultOriginChoices } from "./origins";
 import type { CharacterBuild, ClassId } from "./types";
 
 export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
+  if (isNewClass(classId)) return newDefaults(defaultBuild(), classId);
   if (classId === "rogue") {
     const base = defaultBuild();
     return { ...base, classId, subclassId: "thief", profileId: "rogue", backgroundId: "criminal",

@@ -1,3 +1,5 @@
+import { isNewClass } from "../data/newClasses";
+import { NewClassConfigurationPage } from "./NewClassConfigurationPage";
 import { FighterSubclassChoices } from "./FighterSubclassChoices";
 import { hasSpellStep } from "../data/rogue";
 import { RogueConfigurationPage } from "./RogueConfigurationPage";
@@ -28,6 +30,7 @@ export function ConfigurationPage() {
     const next = current.includes(id) ? current.filter((v) => v !== id) : current.length >= 3 ? [current[1], current[2], id] : [...current, id];
     dispatch({ type: "weapon-masteries", ids: next });
   };
+  if (isNewClass(state.build.classId)) return <NewClassConfigurationPage />;
   if (state.build.classId === "rogue") return <RogueConfigurationPage />;
   if (state.build.classId === "ranger") return <RangerConfigurationPage />;
   if (state.build.classId === "warlock") return <WarlockConfigurationPage />;

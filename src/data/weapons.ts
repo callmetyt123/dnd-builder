@@ -3,7 +3,7 @@ export interface WeaponDefinition {
   damageDice: string;
   damageType: "slashing" | "bludgeoning" | "piercing";
   category: "martial-melee" | "martial-ranged" | "simple-melee" | "simple-ranged";
-  mastery: "graze" | "sap" | "slow" | "nick" | "vex" | "topple" | "push";
+  mastery: "cleave" | "graze" | "sap" | "slow" | "nick" | "vex" | "topple" | "push";
   ability: "strength" | "dexterity";
   range?: [number, number];
   properties?: string;
@@ -13,6 +13,8 @@ export interface WeaponDefinition {
 }
 
 export const WEAPONS: Record<string, WeaponDefinition> = {
+  greataxe: { id:"greataxe", damageDice:"1d12", damageType:"slashing", category:"martial-melee", mastery:"cleave", ability:"strength", heavy:true, properties:"重型、双手" },
+  longsword: { id:"longsword", damageDice:"1d8", damageType:"slashing", category:"martial-melee", mastery:"sap", ability:"strength", versatileDice:"1d10", properties:"两用（双手近战 1d10；持盾时不能双手）" },
   club: { id: "club", damageDice: "1d4", damageType: "bludgeoning", category: "simple-melee", mastery: "slow", ability: "strength", properties: "轻型" },
   greatclub: { id: "greatclub", damageDice: "1d8", damageType: "bludgeoning", category: "simple-melee", mastery: "push", ability: "strength", properties: "双手" },
   handaxe: { id: "handaxe", damageDice: "1d6", damageType: "slashing", category: "simple-melee", mastery: "vex", ability: "strength", range: [20, 60], properties: "轻型、投掷" },

@@ -33,7 +33,7 @@ export function parseDraft(raw: string | null): DraftRestore {
     // 允许未完成的合法结构继续编辑，但不能从损坏草稿绕过生成人物卡的门禁。
     const checkedStep = step === "character" && !validateBuild(value.build).canGenerate ? "review" : step;
     const profiles: BuilderState["profiles"] = {};
-    if (isRecord(value.profiles)) for (const id of ["fighter", "wizard", "druid", "warlock", "ranger", "rogue"] as const) {
+    if (isRecord(value.profiles)) for (const id of ["fighter", "wizard", "druid", "warlock", "ranger", "rogue", "barbarian", "bard", "cleric", "monk", "paladin", "sorcerer"] as const) {
       const saved = value.profiles[id];
       if (isRecord(saved)) saved.build = migrateBuild(saved.build);
       if (isRecord(saved) && hasBuildShape(saved.build) && isSupportedBuild(saved.build) && saved.build.classId === id) {

@@ -1,3 +1,5 @@
+import { NEW_CLASSES, isNewClass } from "../../data/newClasses";
+import { newChoices, newCantripIds, newCantripCount } from "../newClasses";
 import { primalSubclass } from "../../data/primalSubclasses";
 import { subclassDefaults, defaultFighterChoices } from "../expandedSubclasses";
 import type { CharacterBuild, ClassId, ValidationMessage } from "../types";
@@ -25,6 +27,7 @@ const route: Record<ClassId, { tags: string[]; complexity: number; reason: strin
   ranger: { tags: ["ranged", "nature", "hybrid"], complexity: 2, reason: "用武器与自然法术追猎探索，也可选择动物伙伴路线。", effort: "适中：管理猎人印记与少量法术；推荐猎人，驯兽师另需管理伙伴。" },
   druid: { tags: ["support", "nature", "hybrid"], complexity: 2, reason: "兼顾治疗、控制与野兽变形，能帮助同伴并探索环境。", effort: "较多：需要查询法术和兽形，分别理解原形与兽形的能力。" },
   wizard: { tags: ["magic", "support"], complexity: 2, reason: "法术选择丰富，适合用奥术伤害和控制应对不同局面。", effort: "较多：理解准备法术、法术位和专注；法师不以治疗为长项。" },
+  ...NEW_CLASSES,
 };
 // 偏好匹配优先于复杂度；复杂度只排序接近的路线，不把治疗偏好推成战士。
 export function recommendClasses(preference: CharacterBuild["playstyle"]) {
@@ -52,6 +55,11 @@ export function applyRecommendation(build: CharacterBuild, step: RecommendationS
   const choices = { ...build.choices };
   if (step === "configuration") {
     choices.weaponMasteries = defaults.choices.weaponMasteries;
+    if (isNewClass(build.classId)) {
+      const old = newChoices(build)!, fresh = newChoices(defaults)!;
+      choices[build.classId] = { ...fresh, cantrips: old.cantrips, prepared: old.prepared, order: old.order, style: old.style };
+      return recommendSkills({ ...build, choices });
+    }
     if (build.classId === "fighter") { choices.fighterSkills = defaults.choices.fighterSkills; choices.fightingStyle = "defense"; choices.fighter = { ...(choices.fighter ?? defaultFighterChoices()), maneuvers: defaults.choices.fighter!.maneuvers, studentSkill: defaults.choices.fighter!.studentSkill, artisanTool: defaults.choices.fighter!.artisanTool, bondedWeapons: defaults.choices.fighter!.bondedWeapons }; }
     if (build.classId === "wizard" && choices.wizard) choices.wizard = { ...choices.wizard, skills: defaults.choices.wizard!.skills, scholar: defaults.choices.wizard!.scholar };
     if (build.classId === "druid" && choices.druid) choices.druid = { ...choices.druid, skills: defaults.choices.druid!.skills, knownForms: defaults.choices.druid!.knownForms };
@@ -59,6 +67,10 @@ export function applyRecommendation(build: CharacterBuild, step: RecommendationS
     if (build.classId === "ranger" && choices.ranger) choices.ranger = { ...choices.ranger, skills: defaults.choices.ranger!.skills, expertise: "perception", style: "archery", primal: defaults.choices.ranger!.primal, extraLanguages: STANDARD_LANGUAGE_IDS.filter((id) => id !== "common" && !choices.languages.includes(id)).slice(0, 2) };
     if (build.classId === "rogue" && choices.rogue) choices.rogue = { ...choices.rogue, skills: defaults.choices.rogue!.skills, expertise: defaults.choices.rogue!.expertise, extraLanguage: ROGUE_LANGUAGES.find((id) => !["common", "thieves-cant", ...choices.languages].includes(id))! };
     return recommendSkills({ ...build, choices });
+  }
+  if (isNewClass(build.classId)) {
+    const fresh = newChoices(defaults)!, old = newChoices(build)!;
+    choices[build.classId] = { ...old, prepared: fresh.prepared, cantrips: [...new Set([...fresh.cantrips, "sacred-flame", "guidance", ...newCantripIds(build)])].filter((id) => newCantripIds(build).includes(id)).slice(0, newCantripCount(build)) };
   }
   if (build.classId === "fighter" && build.subclassId === "eldritch-knight") choices.fighter = { ...(choices.fighter ?? defaultFighterChoices()), cantrips: defaults.choices.fighter!.cantrips, prepared: defaults.choices.fighter!.prepared };
   if (build.classId === "wizard" && choices.wizard) choices.wizard = { ...defaults.choices.wizard!, skills: choices.wizard.skills, scholar: choices.wizard.scholar };
@@ -68,16 +80,16 @@ export function applyRecommendation(build: CharacterBuild, step: RecommendationS
   if (build.classId === "rogue" && choices.rogue) choices.rogue = { ...choices.rogue, cantrips: defaults.choices.rogue!.cantrips, prepared: defaults.choices.rogue!.prepared };
   return { ...build, choices };
 }
-const configurationWhy: Record<ClassId, string> = {
+const configurationWhy: Partial<Record<ClassId, string>> = {
   fighter: "防御风格少一项主动操作；巨剑、连枷和标枪精通都对应起始装备。", rogue: "用技能发现线索、处理机关；匕首与短弓精通对应起始装备。", wizard: "用技能调查线索、理解魔法；学者专精从已有熟练中选取。", druid: "棕熊、恐狼用于作战，猫与獾辅助探索；保留你选的原初职能。", warlock: "以魔能爆作常用攻击，搭配苦痛魔爆、斥力魔爆和魔能意志。", ranger: "箭术配合长弓，陆地伙伴辅助战斗；语言会避开已掌握的种类。",
 };
-const spellWhy: Record<ClassId, string> = { fighter: "以武器攻击为主；护盾术防护、魔法飞弹提供稳定伤害，跳跃术辅助跨越障碍。", rogue: "心灵之楔与次级幻象辅助队伍，易容术等法术辅助社交和潜行。", wizard: "火焰箭用于日常攻击；魔法飞弹提供稳定伤害，护盾术防护，蛛网术限制敌人。", druid: "荆棘之鞭用于攻击，治愈真言帮助受伤同伴，纠缠术限制移动。", warlock: "魔能爆是常用攻击；脆弱诅咒配合攻击检定，黯冰狱铠防护，迷踪步脱离危险。", ranger: "疗伤术与神莓术支持队伍，捕获打击限制敌人，与动物交谈辅助探索。" };
+const spellWhy: Partial<Record<ClassId, string>> = { fighter: "以武器攻击为主；护盾术防护、魔法飞弹提供稳定伤害，跳跃术辅助跨越障碍。", rogue: "心灵之楔与次级幻象辅助队伍，易容术等法术辅助社交和潜行。", wizard: "火焰箭用于日常攻击；魔法飞弹提供稳定伤害，护盾术防护，蛛网术限制敌人。", druid: "荆棘之鞭用于攻击，治愈真言帮助受伤同伴，纠缠术限制移动。", warlock: "魔能爆是常用攻击；脆弱诅咒配合攻击检定，黯冰狱铠防护，迷踪步脱离危险。", ranger: "疗伤术与神莓术支持队伍，捕获打击限制敌人，与动物交谈辅助探索。" };
 export function recommendationInfo(build: CharacterBuild, step: RecommendationStep) {
   const next = applyRecommendation(build, step);
   if (step === "species") return { title: `入门备选：${SPECIES[next.speciesId].name}`, why: build.classId === "rogue" ? "半身人的灵巧形象适合潜行，幸运可重掷掷出 1 的 d20 检定。其他种族同样可选。" : "矮人提供额外生命值和黑暗视觉，适合先熟悉职业能力。其他种族同样可选。", scope: "只更换种族及其专属选项；额外语言仍按你的选择。", preview: "种族不限制职业；属性提升在背景步骤选择。", label: `选择${SPECIES[next.speciesId].name}` };
   if (step === "background") return { title: `推荐背景：${BACKGROUNDS[next.backgroundId].name}`, why: BACKGROUND_REASON[build.classId], scope: "更换背景、背景装备及背景加值；相关专长选项按原有切换规则更新。", preview: `获得${BACKGROUNDS[next.backgroundId].skills.map((id) => skillNames[id]).join("、")}熟练。`, label: "采用推荐背景" };
   if (step === "abilities") return { title: "先采用推荐属性", why: build.classId === "fighter" && ["eldritch-knight", "psi-warrior"].includes(build.subclassId) ? "推荐力量 15、智力 14、体质 13 作为基础值：兼顾武器、子职能力与生存。切换子职会保留旧属性，点击此处才采用这一组。" : `优先${abilityNames[ABILITY_PRIORITY[build.classId][0]]}，支持这个职业的常用攻击或施法，再兼顾生存能力。`, scope: "替换六项基础属性及背景加值，仍遵守你当前背景允许提升的属性。", preview: Object.entries(next.abilities.baseAssignment).map(([id, score]) => `${abilityNames[id as keyof typeof abilityNames]} ${score}`).join(" · "), label: "采用推荐属性" };
-  if (step === "configuration") return { title: "这一套配置可以直接开始", why: primalSubclass(build) ? `${primalSubclass(build)!.reason} ${build.classId === "druid" ? "已知兽形按当前结社上限选择。" : build.classId === "ranger" ? "箭术配合长弓；保留你选的子职选项。" : "推荐魔能爆、苦痛魔爆、斥力魔爆与魔能意志。"}` : configurationWhy[build.classId], scope: `替换职业技能、专精与本页推荐项；${build.classId === "warlock" ? "祈唤及绑定的两道戏法一起替换。" : build.classId === "ranger" ? build.subclassId === "beast-master" ? "包括风格、精通、额外语言和伙伴外形。" : "包括风格、精通、额外语言与额外技能，保留子职。" : build.classId === "rogue" ? "包括精通和额外语言，保留所选子职。" : build.classId === "druid" ? "包括已知兽形，保留原初职能与法术。" : build.classId === "fighter" ? "包括战技、战争学者熟练或联结武器；保留起源、属性与法术。" : "保留起源、属性与法术。"}`, preview: `推荐职业技能：${classSkills(next).map((id) => skillNames[id]).join("、")}。避开起源已提供的熟练；没有空余选项时才保留重复。`, label: "采用推荐职业配置" };
+  if (step === "configuration") return { title: "这一套配置可以直接开始", why: primalSubclass(build) ? `${primalSubclass(build)!.reason} ${build.classId === "druid" ? "已知兽形按当前结社上限选择。" : build.classId === "ranger" ? "箭术配合长弓；保留你选的子职选项。" : "推荐魔能爆、苦痛魔爆、斥力魔爆与魔能意志。"}` : isNewClass(build.classId) ? NEW_CLASSES[build.classId].reason : configurationWhy[build.classId] ?? "采用本职业的入门配置。", scope: `替换职业技能、专精与本页推荐项；${build.classId === "warlock" ? "祈唤及绑定的两道戏法一起替换。" : build.classId === "ranger" ? build.subclassId === "beast-master" ? "包括风格、精通、额外语言和伙伴外形。" : "包括风格、精通、额外语言与额外技能，保留子职。" : build.classId === "rogue" ? "包括精通和额外语言，保留所选子职。" : build.classId === "druid" ? "包括已知兽形，保留原初职能与法术。" : build.classId === "fighter" ? "包括战技、战争学者熟练或联结武器；保留起源、属性与法术。" : "保留起源、属性与法术。"}`, preview: `推荐职业技能：${classSkills(next).map((id) => skillNames[id]).join("、")}。避开起源已提供的熟练；没有空余选项时才保留重复。`, label: "采用推荐职业配置" };
   const magic = next.choices[next.classId];
-  return { title: "先用这组法术熟悉角色", why: build.classId === "druid" && build.choices.druid?.order === "warden" ? "优先选择两道可用戏法；治愈真言帮助同伴，纠缠术限制敌人。结社额外法术独立保留。" : spellWhy[build.classId], scope: `替换职业戏法与准备法术${build.classId === "wizard" ? "及法术书" : ""}；起源法术保留。${build.classId === "warlock" ? "保留祈唤；若绑定失效，检查清单会引导你修正。" : ""}`, preview: `准备：${magic?.prepared.map((id) => spell(id)?.name ?? id).join("、") ?? ""}。`, label: "采用推荐法术" };
+  return { title: "先用这组法术熟悉角色", why: build.classId === "druid" && build.choices.druid?.order === "warden" ? "优先选择两道可用戏法；治愈真言帮助同伴，纠缠术限制敌人。结社额外法术独立保留。" : isNewClass(build.classId) ? "优先选择能反复使用的戏法，以及治疗、防护或控制法术；自动法术单独保留。" : spellWhy[build.classId] ?? "当前职业无需选择职业法术。", scope: `替换职业戏法与准备法术${build.classId === "wizard" ? "及法术书" : ""}；起源法术保留。${build.classId === "warlock" ? "保留祈唤；若绑定失效，检查清单会引导你修正。" : ""}`, preview: `准备：${magic?.prepared.map((id) => spell(id)?.name ?? id).join("、") ?? ""}。`, label: "采用推荐法术" };
 }

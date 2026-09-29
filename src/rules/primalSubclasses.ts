@@ -1,3 +1,4 @@
+import { isNewClass, NEW_CLASSES } from "../data/newClasses";
 import type { CharacterBuild, PrimalSubclassId } from "./types";
 import { automaticMagic, primalSubclass, DRUID_SUBCLASSES, WARLOCK_SUBCLASSES, RANGER_SUBCLASSES } from "../data/primalSubclasses";
 import { DRUID_CANTRIPS, DRUID_PREPARABLE } from "../data/druidSpells";
@@ -42,6 +43,11 @@ export function isPrimalBuild(build: CharacterBuild) { return !!primalSubclass(b
 export function primalSpell(build: CharacterBuild, id: string): Spell | undefined {
   const raw = spell(id); if (!raw) return undefined;
   const s = { ...raw, text: raw.text.replace(/感知调整值/g, "施法属性调整值").split("若通过邪魔活力祈唤")[0] };
+  if (isNewClass(build.classId)) {
+    // 共享法术摘要不应残留旧职业的施法属性或生命骰。
+    const ability = build.classId === "cleric" ? "感知" : "魅力";
+    s.text = s.text.replace(/施法属性调整值/g, `${ability}调整值`).replace("这里使用法师 d6 生命骰", `这里使用${NEW_CLASSES[build.classId].name} d${NEW_CLASSES[build.classId].hitDie} 生命骰`).replace("强力戏法不适用于此法术。", "").replace("此法术不用攻击检定，不能触发斥力魔爆或脆弱诅咒的命中伤害。", "此法术不用攻击检定。");
+  }
   if (build.subclassId === "great-old-one") {
     if (["惑控", "幻术"].includes(s.school)) s.components = s.components.replace(/^[VS](?:[、，,]\s*[VS])*(?:[、，,]\s*)?/, "") || "无";
     if (build.choices.warlock?.psychicDamage === "psychic" && /伤害/.test(s.text)) s.text += " 本构筑选择将此魔契师法术造成的伤害改为心灵；施法时仍可使用原类型。";

@@ -64,7 +64,11 @@ export interface SpeciesChoices {
 }
 export interface InnateMagic { source: string; ability: "intelligence" | "wisdom" | "charisma"; cantrips: string[]; spells: string[]; resource?: string; freeUses: number; attack: number; dc: number }
 
-export type ClassId = "fighter" | "wizard" | "druid" | "warlock" | "ranger" | "rogue";
+export type NewClassId = "barbarian" | "bard" | "cleric" | "monk" | "paladin" | "sorcerer";
+export type NewSubclassId = "berserker" | "lore" | "life" | "open-hand" | "devotion" | "draconic";
+// 六个入门职业共用表单结构，规则与名额由职业定义约束。
+export interface NewClassChoices { skills: SkillId[]; expertise: SkillId[]; tools: string[]; instrument: string; order: string; style: string; metamagic: string[]; cantrips: string[]; prepared: string[] }
+export type ClassId = NewClassId | "fighter" | "wizard" | "druid" | "warlock" | "ranger" | "rogue";
 export type FighterSubclass = "champion" | "battle-master" | "eldritch-knight" | "psi-warrior";
 export type WizardSubclass = "evoker" | "abjurer" | "diviner" | "illusionist";
 export interface FighterChoices { maneuvers: string[]; studentSkill: SkillId; artisanTool: string; cantrips: string[]; prepared: string[]; bondedWeapons: string[] }
@@ -93,10 +97,10 @@ export interface CharacterBuild {
   schemaVersion: 1;
   level: 3;
   classId: ClassId;
-  subclassId: RogueSubclass | FighterSubclass | WizardSubclass | DruidSubclass | WarlockSubclass | RangerSubclass;
+  subclassId: NewSubclassId | RogueSubclass | FighterSubclass | WizardSubclass | DruidSubclass | WarlockSubclass | RangerSubclass;
   speciesId: SpeciesId;
   backgroundId: BackgroundId;
-  profileId: "rogue" | "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
+  profileId: NewClassId | "rogue" | "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
   playstyle: {
     tags: string[];
     complexity: "simple" | "balanced" | "deep";
@@ -106,6 +110,12 @@ export interface CharacterBuild {
     backgroundBoosts: Partial<Record<AbilityId, number>>;
   };
   choices: {
+    barbarian?: NewClassChoices;
+    bard?: NewClassChoices;
+    cleric?: NewClassChoices;
+    monk?: NewClassChoices;
+    paladin?: NewClassChoices;
+    sorcerer?: NewClassChoices;
     fighter?: FighterChoices;
     rogue?: RogueChoices;
     ranger?: RangerChoices;
@@ -120,7 +130,7 @@ export interface CharacterBuild {
     weaponMasteries: string[];
   };
   equipment: {
-    classPackage: "rogue-a" | "fighter-a" | "wizard-a" | "druid-a" | "warlock-a" | "ranger-a";
+    classPackage: `${NewClassId}-a` | "rogue-a" | "fighter-a" | "wizard-a" | "druid-a" | "warlock-a" | "ranger-a";
     backgroundPackage: `${BackgroundId}-a`;
   };
   identity: Identity;
