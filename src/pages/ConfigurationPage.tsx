@@ -1,3 +1,4 @@
+import { proficientSkills } from "../rules/origins";
 import { BACKGROUNDS } from "../data/backgrounds";
 import { RangerConfigurationPage } from "./RangerConfigurationPage";
 import { WarlockConfigurationPage } from "./WarlockConfigurationPage";
@@ -29,7 +30,7 @@ export function ConfigurationPage() {
   if (state.build.classId === "druid") return <DruidConfigurationPage />;
   if (state.build.classId === "wizard") {
     const w = state.build.choices.wizard!;
-    const proficient = [...BACKGROUNDS[state.build.backgroundId].skills, ...w.skills];
+    const proficient = proficientSkills(state.build);
     return <BuilderShell previous="abilities" next="spells"><section className="page-head"><h1>完善法师配置</h1><p>背景技能已自动计入；再选择 2 项职业技能和 1 项学者专精。</p></section>
       <section className="section"><h2>职业技能 · {w.skills.length}/2</h2><div className="choice-pills">{PROFILES.wizard.skills.map((skill) => <button key={skill} aria-pressed={w.skills.includes(skill)} disabled={(!w.skills.includes(skill) && w.skills.length >= 2)} onClick={() => dispatch({ type: "wizard", patch: { skills: w.skills.includes(skill) ? w.skills.filter((id) => id !== skill) : [...w.skills, skill] } })}>{skillNames[skill]}{BACKGROUNDS[state.build.backgroundId].skills.includes(skill) ? "（背景）" : ""}</button>)}</div></section>
       <section className="section"><h2>学者专精</h2><p>所选技能熟练加值翻倍。推荐奥秘，适合研究魔法。</p><label>专精技能<select value={w.scholar} onChange={(e) => dispatch({ type: "wizard", patch: { scholar: e.target.value as SkillId } })}>{SCHOLAR_SKILLS.map((id) => <option value={id} key={id} disabled={!proficient.includes(id)}>{skillNames[id]}{!proficient.includes(id) ? "（尚未熟练）" : ""}</option>)}</select></label></section>

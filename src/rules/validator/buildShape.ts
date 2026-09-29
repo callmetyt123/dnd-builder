@@ -1,3 +1,4 @@
+import { SPECIES } from "../../data/species";
 import { BACKGROUNDS } from "../../data/backgrounds";
 import { ABILITIES } from "../../data/core";
 import type { CharacterBuild } from "../types";
@@ -11,6 +12,12 @@ export function strings(value: unknown): value is string[] {
 const finite = (value: unknown) => typeof value === "number" && Number.isFinite(value);
 
 // 存储数据先经过结构边界；不把 JSON 类型断言当作运行时校验。
+function magicShape(value: unknown): boolean {
+  return isRecord(value) && strings(value.cantrips) && typeof value.spell === "string" && ["intelligence", "wisdom", "charisma"].includes(String(value.ability));
+}
+function featShape(value: unknown): boolean {
+  return isRecord(value) && strings(value.skilled) && strings(value.crafter) && strings(value.musician) && ["cleric", "druid", "wizard"].includes(String(value.magicList)) && magicShape(value.magicInitiate);
+}
 export function hasBuildShape(value: unknown): value is CharacterBuild {
   if (!isRecord(value)) return false;
   const { abilities: a, choices: c, equipment: e, identity: i, playstyle: p } = value;
@@ -26,7 +33,9 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   const w = c.wizard;
   if (value.classId === "wizard" && (!isRecord(w) || !["skills", "cantrips", "earlyBook", "level3Book", "evocationBook", "prepared"].every((k) => strings(w[k])) || typeof w.scholar !== "string")) return false;
   const origin = c.origin;
-  if (!isRecord(origin) || typeof origin.gamingSet !== "string" || !isRecord(origin.magicInitiate) || !strings(origin.magicInitiate.cantrips) || typeof origin.magicInitiate.spell !== "string" || !["intelligence", "wisdom", "charisma"].includes(String(origin.magicInitiate.ability))) return false;
+  if (!isRecord(origin) || !["gamingSet", "artisanTool", "instrument"].every((k) => typeof origin[k] === "string") || !featShape(origin)) return false;
+  const species = c.species;
+  if (!isRecord(species) || !["lineage", "skill", "cantrip", "humanFeat"].every((k) => typeof species[k] === "string") || !["small", "medium"].includes(String(species.size)) || !["intelligence", "wisdom", "charisma"].includes(String(species.ability)) || !featShape(species.feat)) return false;
   return ABILITIES.every((id) => finite(base[id])) && Object.keys(base).length === 6
     && Object.values(a.backgroundBoosts).every(finite)
     && strings(c.languages) && strings(c.fighterSkills) && strings(c.weaponMasteries)
@@ -39,7 +48,7 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
 
 export function isSupportedBuild(build: CharacterBuild): boolean {
   if (!Object.prototype.hasOwnProperty.call(BACKGROUNDS, build.backgroundId) || build.equipment.backgroundPackage !== `${build.backgroundId}-a`) return false;
-  if (build.schemaVersion !== 1 || build.level !== 3 || build.speciesId !== "dwarf") return false;
+  if (build.schemaVersion !== 1 || build.level !== 3 || !Object.prototype.hasOwnProperty.call(SPECIES, build.speciesId)) return false;
   if (build.classId === "ranger") return build.subclassId === "beast-master" && build.profileId === "ranger-beast-master" && build.equipment.classPackage === "ranger-a";
   if (build.classId === "warlock") return build.subclassId === "fiend" && build.profileId === "warlock-fiend" && build.equipment.classPackage === "warlock-a";
   if (build.classId === "druid") return build.subclassId === "moon" && build.profileId === "druid-moon" && build.equipment.classPackage === "druid-a";

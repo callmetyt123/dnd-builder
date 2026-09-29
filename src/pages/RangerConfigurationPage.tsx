@@ -1,3 +1,4 @@
+import { proficientSkills } from "../rules/origins";
 import { BACKGROUNDS } from "../data/backgrounds";
 import { BuilderShell } from "../components/builder/BuilderShell";
 import { PROFILES } from "../data/profiles";
@@ -13,7 +14,7 @@ import { masteryName, skillNames, zhCN } from "../translations/zh-CN";
 export function RangerConfigurationPage() {
   const { state, dispatch } = useBuilder(); const r = state.build.choices.ranger!;
   const patch = (value: Partial<RangerChoices>) => dispatch({ type: "ranger", patch: value });
-  const proficient = [...BACKGROUNDS[state.build.backgroundId].skills, ...r.skills];
+  const proficient = proficientSkills(state.build);
   const form = primalForm(r.primal.form);
   // 初始伙伴选择属于构筑；已开始冒险的伙伴只能通过长休替换，不能借编辑回满血。
   return <BuilderShell previous="abilities" next="spells"><section className="page-head"><h1>配置游侠与原初行侣</h1><p>以长弓配合伙伴作战；箭术提高自身远程武器命中，伙伴攻击仍使用感知。</p></section>

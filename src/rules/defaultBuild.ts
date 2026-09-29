@@ -1,3 +1,4 @@
+import { defaultSpeciesChoices } from "./species";
 import { defaultOriginChoices } from "./origins";
 import type { CharacterBuild, ClassId } from "./types";
 
@@ -56,6 +57,7 @@ export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
     choices: {
       languages: ["dwarvish", "giant"],
       origin: defaultOriginChoices("fighter"),
+      species: defaultSpeciesChoices(),
       fighterSkills: ["perception", "survival"],
       fightingStyle: "defense",
       weaponMasteries: ["greatsword", "flail", "javelin"],

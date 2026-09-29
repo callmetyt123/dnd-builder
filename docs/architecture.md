@@ -77,3 +77,13 @@ CharacterBuild ───┤
 `data/profiles.ts` 仅提供职业数据，`data/backgrounds.ts` 提供背景数据；规则引擎按 `backgroundId` 合并装备、熟练、专长与资源。`rules/origins.ts` 封装合法推荐加值、显式技能调整与工具熟练。
 
 `choices.origin` 保存背景赌具和魔法学徒选择，`DerivedCharacter.originMagic` 与职业施法分别输出。所有职业的卡片通过共同出口追加背景附页。`store/migrateBuild.ts` 在结构校验之前迁移 v0.6 字段；已存在但格式错误的 origin 不会被默认值覆盖。
+
+## v0.8 角色起源
+
+`choices.species` 保存谱系、体型、施法属性、技能及人类专长；`choices.origin` 保存背景工具与专长配置。`FeatChoices` 共享技能／工匠／音乐家／魔法学徒选择结构。推荐从其他来源尚未提供的熟练中选择，重复熟练保留合法性提示，不变成专精。
+
+`origins.ts` 与 `species.ts` 按来源派生能力、技能、工具和资源。`innateMagic` 分别记录背景、人类专长及种族施法属性、DC、免费次数与资源 ID；同名法术不会合并不同来源的免费次数。旧 `originMagic` 仅保留背景兼容视图。`validateOrigins.ts` 验证各列表与重复专长限制。
+
+`OriginSheets` 为五职业统一追加起源能力／资源和各施法来源附页；职业主卡不重复展开这些条目。`FamiliarSheet` 提供起源寻获魔宠说明、猫的数据和空白记录。荒野变形按兽形显示速度、感官和抗性，不把原形种族法术当作兽形可用能力。
+
+迁移先补齐旧草稿缺失字段，再做结构与规则检查；已经存在但无效的字段保留在恢复流程中，避免静默覆盖用户选择。共享法术字典加入起源条目，职业可选目录保持各自范围。

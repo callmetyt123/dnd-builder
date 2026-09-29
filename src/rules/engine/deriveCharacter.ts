@@ -3,12 +3,13 @@ import { DRUID_ALWAYS, MOON_SPELLS } from "../../data/druidSpells";
 import { legalMoonForm } from "../../data/beasts";
 import { ARMOR } from "../../data/armor";
 import { BACKGROUNDS } from "../../data/backgrounds";
-import { toolProficiencies } from "../origins";
+import { toolProficiencies, originFeats, extraSkills, featSources, backgroundTool } from "../origins";
 import { FIGHTER } from "../../data/classes/fighter";
 import { PROFILES } from "../../data/profiles";
 import { spell } from "../../data/spells";
 import { ABILITIES, SKILLS } from "../../data/core";
-import { DWARF } from "../../data/species/dwarf";
+import { SPECIES } from "../../data/species";
+import { speciesMagic, speciesFeatures, speciesResistances } from "../species";
 import { CHAMPION } from "../../data/subclasses/champion";
 import { WEAPONS } from "../../data/weapons";
 import type {
@@ -34,6 +35,9 @@ function makeRoll(modifier: number, proficiency: ProficiencyRank, advantageSourc
 export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const profile = PROFILES[build.classId];
   const background = BACKGROUNDS[build.backgroundId];
+  const species = SPECIES[build.speciesId];
+  const feats = originFeats(build);
+  const lineage = build.choices.species.lineage;
   const initiate = background.feat === "magic-initiate" ? build.choices.origin.magicInitiate : undefined;
   const wizard = build.classId === "wizard" ? build.choices.wizard : undefined;
   const druid = build.classId === "druid" ? build.choices.druid : undefined;
@@ -49,6 +53,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const skillProficiencies = new Set<SkillId>([
     ...background.skills,
+    ...extraSkills(build),
     ...(ranger?.skills ?? warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
@@ -77,29 +82,30 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       makeRoll(
         abilities[ability].modifier + (savingThrowProficiencies.has(ability) ? pb : 0),
         savingThrowProficiencies.has(ability) ? "proficient" : "none",
+        build.speciesId === "gnome" && ["intelligence", "wisdom", "charisma"].includes(ability) ? ["gnomish-cunning"] : [],
       ),
     ]),
   ) as Record<AbilityId, DerivedRoll>;
 
   const classHp = profile.hitDie + abilities.constitution.modifier
     + (build.level - 1) * (profile.fixedHp + abilities.constitution.modifier);
-  const maxHp = classHp + DWARF.hpBonusPerLevel * build.level;
+  const maxHp = classHp + (build.speciesId === "dwarf" ? build.level : 0) + (feats.includes("tough") ? 2 * build.level : 0);
 
   const chainMail = ARMOR["chain-mail"];
   const defenseBonus = build.choices.fightingStyle === "defense" ? 1 : 0;
   const armorClass = ranger ? 12 + abilities.dexterity.modifier + (ranger.style === "defense" ? 1 : 0) : fighter ? chainMail.armorClass + defenseBonus : (druid ? 13 : warlock ? 11 : 10) + abilities.dexterity.modifier;
 
-  let speed = DWARF.speed;
+  let speed = build.speciesId === "elf" && lineage === "wood" ? 35 : species.speed;
   if (fighter && abilities.strength.score < chainMail.strengthRequirement) speed -= 10;
 
   const initiativeAdvantages = fighter && CHAMPION.initiativeAdvantage ? ["remarkable-athlete"] : [];
-  const initiative = makeRoll(abilities.dexterity.modifier, "none", initiativeAdvantages);
+  const initiative = makeRoll(abilities.dexterity.modifier + (feats.includes("alert") ? pb : 0), "none", initiativeAdvantages);
 
   const masterySet = new Set(build.choices.weaponMasteries);
   // 合并两个来源的装备，避免背景武器和重复金币在人物卡中丢失。
   const inventory = new Map<string, number>();
   for (const item of [...profile.equipment, ...background.equipment]) {
-    const id = item.id === "gaming-set" ? build.choices.origin.gamingSet : item.id;
+    const id = item.id === "gaming-set" ? build.choices.origin.gamingSet : ["artisan-tool", "instrument"].includes(item.id) ? backgroundTool(build) : item.id;
     inventory.set(id, (inventory.get(id) ?? 0) + item.quantity);
   }
   const equipment = [...inventory].map(([id, quantity]) => ({ id, quantity }));
@@ -111,7 +117,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     return {
       weaponId,
       disadvantage: weapon.heavy && abilities[weapon.category === "martial-ranged" ? "dexterity" : "strength"].score < 13 ? "重型武器属性不足 13，攻击具有劣势（近战看力量，远程看敏捷）" : undefined,
-      attackBonus: mod + pb + (ranger?.style === "archery" && weapon.category.endsWith("ranged") ? 2 : 0),
+      attackBonus: mod + (weapon.category.startsWith("simple") || fighter || ranger || druid?.order === "warden" ? pb : 0) + (ranger?.style === "archery" && weapon.category.endsWith("ranged") ? 2 : 0),
       damageDice: weapon.damageDice,
       damageModifier: mod,
       damageType: weapon.damageType,
@@ -123,17 +129,28 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     };
   });
 
+  const innateMagic = [...speciesMagic(build, abilities, pb), ...featSources(build).filter((f) => f.id === "magic-initiate").map((f) => ({ source: f.source + " · 魔法学徒", ability: f.choices.magicInitiate.ability, cantrips: f.choices.magicInitiate.cantrips, spells: [f.choices.magicInitiate.spell], freeUses: 1, resource: f.resource, attack: pb + abilities[f.choices.magicInitiate.ability].modifier, dc: 8 + pb + abilities[f.choices.magicInitiate.ability].modifier }))];
+  // 每个来源保有独立资源；相同法术不会错误合并免费次数或施法属性。
+  const speciesResources = build.speciesId === "dwarf" ? [{ id: "stonecunning", max: pb, recovery: "长休恢复全部" }]
+    : build.speciesId === "aasimar" ? [{ id: "healing-hands", max: 1, recovery: "长休恢复" }, { id: "celestial-revelation", max: 1, recovery: "长休恢复；启动时选择变身效果" }]
+    : build.speciesId === "dragonborn" ? [{ id: "breath-weapon", max: pb, recovery: "长休恢复全部" }]
+    : build.speciesId === "goliath" ? [{ id: "giant-ancestry", max: pb, recovery: "长休恢复全部" }]
+    : build.speciesId === "orc" ? [{ id: "adrenaline-rush", max: pb, recovery: "短休或长休恢复全部", shortRestRestore: pb }, { id: "relentless-endurance", max: 1, recovery: "长休恢复" }] : [];
+
 
   return {
     level: 3,
     hitDie: profile.hitDie,
     tools: toolProficiencies(build),
+    innateMagic,
+    size: build.choices.species.size,
+    speciesFeatures: speciesFeatures(build),
     originMagic: initiate ? { ...initiate, attack: abilities[initiate.ability].modifier + pb, dc: 8 + pb + abilities[initiate.ability].modifier } : undefined,
     primalCompanion: ranger?.primal,
     spellcasting: ranger ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [], prepared: [...ranger.prepared, "hunters-mark"], ritualSpells: ranger.prepared.filter((id) => spell(id)?.ritual) } : wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, ritualSpells: [] } : undefined,
     pactMagic: warlock ? { slotLevel: 2, invocations: warlock.invocations, atWill: warlock.invocations.flatMap((v) => invocation(v.id)?.spell ? [invocation(v.id)!.spell!] : []), darkBlessing: Math.max(1, abilities.charisma.modifier + build.level), concentrationAdvantage: warlock.invocations.some((v) => v.id === "eldritch-mind"), devilsSight: warlock.invocations.some((v) => v.id === "devils-sight") } : undefined,
     wildShape: druid ? { knownForms: druid.knownForms.filter(legalMoonForm), temporaryHp: build.level * 3 } : undefined,
-    armorNote: ranger ? `镶钉皮甲 · 12 + 敏捷${ranger.style === "defense" ? " + 防御" : ""}` : druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : wizard ? `无甲 · 10 + 敏捷${wizard.prepared.includes("mage-armor") || initiate?.spell === "mage-armor" ? `；法师护甲生效时 ${13 + abilities.dexterity.modifier}` : ""}` : undefined,
+    armorNote: ranger ? `镶钉皮甲 · 12 + 敏捷${ranger.style === "defense" ? " + 防御" : ""}` : druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : wizard ? `无甲 · 10 + 敏捷${wizard.prepared.includes("mage-armor") || innateMagic.some((m) => m.spells.includes("mage-armor")) ? `；法师护甲生效时 ${13 + abilities.dexterity.modifier}` : ""}` : undefined,
     proficiencyBonus: pb,
     abilities,
     maxHp,
@@ -160,14 +177,14 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
         { id: "spell-slot-2", max: 2, recovery: "长休恢复；短休可使用奥术回想" },
         { id: "arcane-recovery", max: 1, recovery: "长休恢复；短休时可恢复总环阶至多 2 的法术位" },
       ]),
-      ...(background.feat === "lucky" ? [{ id: "lucky", max: pb, recovery: "长休恢复全部；不随短休恢复" }] : []),
-      ...(initiate ? [{ id: "magic-initiate", max: 1, recovery: "长休恢复；免费施展所选一环法术" }] : []),
-      { id: "stonecunning", max: pb, recovery: "长休恢复全部" },
+      ...(feats.includes("lucky") ? [{ id: "lucky", max: pb, recovery: "长休恢复全部；不随短休恢复" }] : []),
+      ...innateMagic.filter((m) => m.resource).map((m) => ({ id: m.resource!, max: m.freeUses, recovery: "长休恢复；免费施展该来源法术" })),
+      ...speciesResources,
     ],
     criticalThreshold: fighter ? CHAMPION.criticalThreshold : 20,
     languages: ["common", ...build.choices.languages, ...(ranger?.extraLanguages ?? []), ...(druid ? ["druidic"] : [])],
-    senses: { darkvision: DWARF.darkvision },
-    resistances: [...DWARF.resistances],
+    senses: { darkvision: build.speciesId === "elf" && lineage === "drow" ? 120 : species.darkvision },
+    resistances: speciesResistances(build),
     features: [
       ...(ranger ? ["ranger-spellcasting", "favored-enemy", "deft-explorer", "ranger-mastery", ranger.style === "defense" ? "fighting-style-defense" : "archery", "primal-companion"] : fighter ? [
       "fighting-style-defense",
@@ -177,8 +194,8 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       "tactical-mind",
       ...CHAMPION.features,
       ] : warlock ? ["pact-magic", "magical-cunning", "fiend-spells", "dark-ones-blessing"] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip"]),
-      background.feat,
-      ...DWARF.features,
+      ...feats,
+      ...speciesFeatures(build),
     ],
     equipment,
   };

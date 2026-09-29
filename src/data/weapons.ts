@@ -13,6 +13,7 @@ export interface WeaponDefinition {
 }
 
 export const WEAPONS: Record<string, WeaponDefinition> = {
+  "light-crossbow": { id: "light-crossbow", damageDice: "1d8", damageType: "piercing", category: "simple-ranged", mastery: "slow", ability: "dexterity", range: [80, 320], properties: "弹药（弩矢）、装填、双手" },
   longbow: { id: "longbow", damageDice: "1d8", damageType: "piercing", category: "martial-ranged", mastery: "slow", ability: "dexterity", range: [150, 600], heavy: true, properties: "弹药（箭）、重型、双手" },
   shortsword: { id: "shortsword", damageDice: "1d6", damageType: "piercing", category: "martial-melee", mastery: "vex", ability: "dexterity", finesse: true, properties: "轻型、灵巧" },
   scimitar: { id: "scimitar", damageDice: "1d6", damageType: "slashing", category: "martial-melee", mastery: "nick", ability: "dexterity", finesse: true, properties: "轻型、灵巧" },

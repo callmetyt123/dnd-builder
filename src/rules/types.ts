@@ -51,9 +51,18 @@ export interface Identity {
   description?: string;
 }
 
-export type BackgroundId = "soldier" | "sage" | "hermit" | "wayfarer";
+export type BackgroundId = "soldier" | "sage" | "hermit" | "wayfarer" | "acolyte" | "artisan" | "charlatan" | "criminal" | "entertainer" | "farmer" | "guard" | "guide" | "merchant" | "noble" | "sailor" | "scribe";
 export interface MagicInitiateChoices { cantrips: string[]; spell: string; ability: "intelligence" | "wisdom" | "charisma" }
-export interface OriginChoices { gamingSet: string; magicInitiate: MagicInitiateChoices }
+export type MagicList = "cleric" | "druid" | "wizard";
+export type OriginFeat = "alert" | "crafter" | "healer" | "lucky" | "magic-initiate" | "musician" | "savage-attacker" | "skilled" | "tavern-brawler" | "tough";
+export interface FeatChoices { skilled: string[]; crafter: string[]; musician: string[]; magicInitiate: MagicInitiateChoices; magicList: MagicList }
+export interface OriginChoices extends FeatChoices { gamingSet: string; artisanTool: string; instrument: string }
+export type SpeciesId = "aasimar" | "dragonborn" | "dwarf" | "elf" | "gnome" | "goliath" | "halfling" | "human" | "orc" | "tiefling";
+export interface SpeciesChoices {
+  lineage: string; size: "small" | "medium"; ability: "intelligence" | "wisdom" | "charisma";
+  skill: SkillId; cantrip: string; humanFeat: OriginFeat; feat: FeatChoices;
+}
+export interface InnateMagic { source: string; ability: "intelligence" | "wisdom" | "charisma"; cantrips: string[]; spells: string[]; resource?: string; freeUses: number; attack: number; dc: number }
 
 export type ClassId = "fighter" | "wizard" | "druid" | "warlock" | "ranger";
 export interface RangerChoices { skills: SkillId[]; expertise: SkillId; extraLanguages: string[]; style: "archery" | "defense"; prepared: string[]; primal: PrimalChoice }
@@ -75,7 +84,7 @@ export interface CharacterBuild {
   level: 3;
   classId: ClassId;
   subclassId: "champion" | "evoker" | "moon" | "fiend" | "beast-master";
-  speciesId: "dwarf";
+  speciesId: SpeciesId;
   backgroundId: BackgroundId;
   profileId: "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
   playstyle: {
@@ -93,13 +102,14 @@ export interface CharacterBuild {
     warlock?: WarlockChoices;
     languages: string[];
     origin: OriginChoices;
+    species: SpeciesChoices;
     fighterSkills: SkillId[];
     fightingStyle: "defense";
     weaponMasteries: string[];
   };
   equipment: {
     classPackage: "fighter-a" | "wizard-a" | "druid-a" | "warlock-a" | "ranger-a";
-    backgroundPackage: "soldier-a" | "sage-a" | "hermit-a" | "wayfarer-a";
+    backgroundPackage: `${BackgroundId}-a`;
   };
   identity: Identity;
 }
@@ -138,6 +148,9 @@ export interface DerivedCharacter {
   hitDie: number;
   spellcasting?: { attack: number; dc: number; book: string[]; prepared: string[]; cantrips: string[]; ritualSpells: string[] };
   originMagic?: MagicInitiateChoices & { attack: number; dc: number };
+  innateMagic: InnateMagic[];
+  speciesFeatures: string[];
+  size: "small" | "medium";
   tools: string[];
   primalCompanion?: PrimalChoice;
   pactMagic?: { slotLevel: 2; invocations: InvocationChoice[]; atWill: string[]; darkBlessing: number; concentrationAdvantage: boolean; devilsSight: boolean };

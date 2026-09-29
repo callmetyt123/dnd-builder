@@ -6,13 +6,13 @@ import { defaultBuild } from "../src/rules/defaultBuild";
 import { deriveCharacter } from "../src/rules/engine/deriveCharacter";
 import { normalizePlayState } from "../src/rules/engine/playState";
 import { changeBackground, classSkills, recommendSkills, recommendedBoosts } from "../src/rules/origins";
-import type { BackgroundId, CharacterBuild, ClassId } from "../src/rules/types";
+import type { CharacterBuild, ClassId } from "../src/rules/types";
 import { validateBuild } from "../src/rules/validator/validateBuild";
 import { parseDraft } from "../src/store/draft";
 
 export function originChecks(assert: (condition: unknown, message: string) => void) {
   const classes: ClassId[] = ["fighter", "wizard", "druid", "warlock", "ranger"];
-  const backgrounds: BackgroundId[] = ["soldier", "sage", "hermit", "wayfarer"];
+  const backgrounds = ["soldier", "sage", "hermit", "wayfarer"] as const;
   const classGold = { fighter: 4, wizard: 5, druid: 9, warlock: 15, ranger: 7 };
   const backgroundGold = { soldier: 14, sage: 8, hermit: 16, wayfarer: 16 };
   // 交叉组合检验数据来源与实际输出；不只验证五个推荐套餐。
@@ -24,7 +24,7 @@ export function originChecks(assert: (condition: unknown, message: string) => vo
     const c = deriveCharacter(build);
     const play = normalizePlayState(undefined, c);
     const label = `${classId}/${backgroundId}`;
-    assert(changed.choices === original.choices && changed.identity === original.identity, `${label}: switching background preserves choices and identity`);
+    assert(JSON.stringify(classSkills(changed)) === JSON.stringify(classSkills(original)) && changed.identity === original.identity, `${label}: switching background preserves choices and identity`);
     assert(validateBuild(build).canGenerate, `${label}: legal after explicit skill repair`);
     assert(c.equipment.find((i) => i.id === "gp")?.quantity === classGold[classId] + backgroundGold[backgroundId], `${label}: only selected equipment packages add gold`);
     assert(c.features.includes(BACKGROUNDS[backgroundId].feat) && c.features.filter((id) => ["lucky", "healer", "savage-attacker", "magic-initiate"].includes(id)).length === 1, `${label}: no old feat leakage`);

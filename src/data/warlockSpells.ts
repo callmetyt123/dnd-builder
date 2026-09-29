@@ -13,7 +13,7 @@ export const WARLOCK_SPELLS: Spell[] = [
   { id: "invisibility", name: "隐形术", level: 2, school: "幻术", time: "动作", range: "触碰", components: "V、S、M（包裹在阿拉伯胶中的睫毛）", duration: "至多 1 小时", concentration: true, text: "触碰的生物隐形，直到法术结束。目标进行攻击检定、造成伤害或施展法术时提前结束。" },
   { id: "hold-person", name: "定身类人", level: 2, school: "惑控", time: "动作", range: "60 尺", components: "V、S、M（直的小铁片）", duration: "至多 1 分钟", concentration: true, text: "可见类人生物作感知豁免，失败则麻痹。目标每回合结束可再豁免，成功结束效果。" },
   { id: "suggestion", name: "暗示术", level: 2, school: "惑控", time: "动作", range: "30 尺", components: "V、M（蜂蜜）", duration: "至多 8 小时", concentration: true, text: "向能听到并理解你的可见生物提出至多 25 个词的可行行动，不得明显伤害它或盟友。目标感知豁免失败则被魅惑并尽力执行；完成行动、法术结束，或你／盟友伤害它时结束。" },
-  { id: "false-life", name: "虚假生命", level: 1, school: "死灵", time: "动作", range: "自身", components: "V、S、M（酒精）", duration: "立即", text: "获得 2d4+4 临时 HP。通过邪魔活力施展时取最大值 12，不耗法术位，也不随二环契约法术位升环。" },
+  { id: "false-life", name: "虚假生命", level: 1, school: "死灵", time: "动作", range: "自身", components: "V、S、M（酒精）", duration: "立即", text: "获得 2d4+4 临时 HP，二环额外 +5。临时 HP 不叠加。若通过邪魔活力祈唤施展，另按该祈唤取最大值 12，不耗位。" },
 ];
 export const PACT_EFFECTS: Record<string, string> = {
   "burning-hands": "二环契约施法：15 尺锥形内生物敏捷豁免，失败受 4d6 火焰伤害，成功半伤；点燃未被携带或着装的易燃物。会伤及盟友。",

@@ -1,8 +1,10 @@
+import { changeSpecies } from "../rules/species";
+import type { SpeciesId, SpeciesChoices } from "../rules/types";
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import type { AbilityId, CharacterBuild, ClassId, SkillId, DruidChoices, WizardChoices, WarlockChoices, RangerChoices, BackgroundId, OriginChoices } from "../rules/types";
 
 import { BACKGROUNDS } from "../data/backgrounds";
-import { changeBackground, defaultOriginChoices, recommendSkills, recommendedBoosts } from "../rules/origins";
+import { changeBackground, defaultMagic, recommendSkills, recommendedBoosts } from "../rules/origins";
 import { defaultBuild } from "../rules/defaultBuild";
 import { deriveCharacter } from "../rules/engine/deriveCharacter";
 import { normalizePlayState, updatePlayState, type PlayAction } from "../rules/engine/playState";
@@ -16,6 +18,8 @@ type Action =
   | { type: "druid"; patch: Partial<DruidChoices> }
   | { type: "wizard"; patch: Partial<WizardChoices> }
   | { type: "play"; action: PlayAction }
+  | { type: "species"; id: SpeciesId }
+  | { type: "species-choices"; patch: Partial<SpeciesChoices> }
   | { type: "background"; id: BackgroundId }
   | { type: "origin"; patch: Partial<OriginChoices> }
   | { type: "origin-magic-default" }
@@ -33,6 +37,8 @@ type Action =
   | { type: "identity"; patch: Partial<CharacterBuild["identity"]> };
 
 function reducer(state: BuilderState, action: Action): BuilderState {
+  if (action.type === "species") return { ...state, build: changeSpecies(state.build, action.id) };
+  if (action.type === "species-choices") return { ...state, build: { ...state.build, choices: { ...state.build.choices, species: { ...state.build.choices.species, ...action.patch } } } };
   if (action.type === "class") return switchClass(state, action.id);
   if (action.type === "ranger" && state.build.choices.ranger) return { ...state, build: { ...state.build, choices: { ...state.build.choices, ranger: { ...state.build.choices.ranger, ...action.patch } } } };
   if (action.type === "warlock" && state.build.choices.warlock) return { ...state, build: { ...state.build, choices: { ...state.build.choices, warlock: { ...state.build.choices.warlock, ...action.patch } } } };
@@ -45,7 +51,7 @@ function reducer(state: BuilderState, action: Action): BuilderState {
   if (action.type === "background") return { ...state, build: changeBackground(state.build, action.id) };
   if (action.type === "skills-recommend") return { ...state, build: recommendSkills(state.build) };
   if (action.type === "origin") return { ...state, build: { ...state.build, choices: { ...state.build.choices, origin: { ...state.build.choices.origin, ...action.patch } } } };
-  if (action.type === "origin-magic-default") return { ...state, build: { ...state.build, choices: { ...state.build.choices, origin: { ...state.build.choices.origin, magicInitiate: defaultOriginChoices(state.build.classId).magicInitiate } } } };
+  if (action.type === "origin-magic-default") return { ...state, build: { ...state.build, choices: { ...state.build.choices, origin: { ...state.build.choices.origin, magicInitiate: defaultMagic(BACKGROUNDS[state.build.backgroundId].magicList ?? "wizard", state.build.classId) } } } };
   if (action.type === "abilities-default") return { ...state, build: { ...state.build, abilities: { baseAssignment: defaultBuild(state.build.classId).abilities.baseAssignment, backgroundBoosts: recommendedBoosts(state.build.classId, state.build.backgroundId) } } };
   if (action.type === "boosts-equal") return { ...state, build: { ...state.build, abilities: { ...state.build.abilities, backgroundBoosts: Object.fromEntries(BACKGROUNDS[state.build.backgroundId].abilities.map((id) => [id, 1])) } } };
   if (action.type === "step") return { ...state, step: action.step };

@@ -11,7 +11,8 @@ export const zhCN = {
     dwarf: "矮人",
   },
   background: {
-    soldier: "士兵", sage: "贤者", hermit: "隐士", wayfarer: "流浪者",
+    soldier: "士兵", sage: "智者", hermit: "隐士", wayfarer: "流浪者",
+acolyte: "侍僧", artisan: "工匠", charlatan: "骗子", criminal: "罪犯", entertainer: "艺人", farmer: "农民", guard: "警卫", guide: "向导", merchant: "商人", noble: "贵族", sailor: "水手", scribe: "抄写员",
   },
   fightingStyle: {
     defense: "防御",

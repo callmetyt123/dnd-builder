@@ -23,8 +23,9 @@ export function deriveWildShape(base: DerivedCharacter, formId?: string): Derive
   })) as DerivedCharacter["skills"];
   return { ...base, abilities, savingThrows: saves, skills, passivePerception: 10 + skills.perception.modifier,
     armorClass: Math.max(form.armorClass, 13 + abilities.wisdom.modifier), armorNote: "野兽 AC 与 13 + 感知，取高值",
-    speed: form.speed, initiative: roll({ ...base.initiative, proficiency: "none" }, abilities.dexterity.modifier),
+    speed: form.speed, initiative: roll({ ...base.initiative, proficiency: "none" }, abilities.dexterity.modifier + (base.features.includes("alert") ? base.proficiencyBonus : 0)),
     attacks: [], senses: { darkvision: form.darkvision }, resistances: form.resistances ?? [],
-    features: base.features.filter((id) => !["darkvision", "dwarven-resilience", "dwarven-toughness", "stonecunning"].includes(id)),
+    features: base.features.filter((id) => !base.speciesFeatures.includes(id)),
+    innateMagic: base.innateMagic.filter((m) => m.source !== "种族法术"),
   };
 }
