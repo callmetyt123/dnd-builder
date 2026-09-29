@@ -35,6 +35,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const wizard = build.classId === "wizard" ? build.choices.wizard : undefined;
   const druid = build.classId === "druid" ? build.choices.druid : undefined;
   const warlock = build.classId === "warlock" ? build.choices.warlock : undefined;
+  const ranger = build.classId === "ranger" ? build.choices.ranger : undefined;
   const fighter = build.classId === "fighter";
   const book = wizard ? [...wizard.earlyBook, ...wizard.level3Book, ...wizard.evocationBook] : [];
   const pb = proficiencyBonus(build.level);
@@ -45,14 +46,14 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const skillProficiencies = new Set<SkillId>([
     ...profile.backgroundSkills,
-    ...(warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
+    ...(ranger?.skills ?? warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
   const skills = Object.fromEntries(
     (Object.keys(SKILLS) as SkillId[]).map((skillId) => {
       const ability = SKILLS[skillId].defaultAbility;
       const proficient = skillProficiencies.has(skillId);
-      const expertise = proficient && wizard?.scholar === skillId;
+      const expertise = proficient && (wizard?.scholar === skillId || ranger?.expertise === skillId);
       const advantageSources = fighter && skillId === "athletics" && CHAMPION.athleticsAdvantage ? ["remarkable-athlete"] : [];
       return [
         skillId,
@@ -83,7 +84,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const chainMail = ARMOR["chain-mail"];
   const defenseBonus = build.choices.fightingStyle === "defense" ? 1 : 0;
-  const armorClass = fighter ? chainMail.armorClass + defenseBonus : (druid ? 13 : warlock ? 11 : 10) + abilities.dexterity.modifier;
+  const armorClass = ranger ? 12 + abilities.dexterity.modifier + (ranger.style === "defense" ? 1 : 0) : fighter ? chainMail.armorClass + defenseBonus : (druid ? 13 : warlock ? 11 : 10) + abilities.dexterity.modifier;
 
   let speed = DWARF.speed;
   if (fighter && abilities.strength.score < chainMail.strengthRequirement) speed -= 10;
@@ -95,7 +96,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   // 合并两个来源的装备，避免背景武器和重复金币在人物卡中丢失。
   const inventory = new Map<string, number>();
   for (const item of profile.equipment) {
-    const id = item.id === "gaming-set" ? warlock?.gamingSet ?? build.choices.soldierGamingSet ?? "gaming-set" : item.id;
+    const id = item.id === "gaming-set" ? ranger?.gamingSet ?? warlock?.gamingSet ?? build.choices.soldierGamingSet ?? "gaming-set" : item.id;
     inventory.set(id, (inventory.get(id) ?? 0) + item.quantity);
   }
   const equipment = [...inventory].map(([id, quantity]) => ({ id, quantity }));
@@ -106,14 +107,14 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     const mod = weapon.finesse ? Math.max(abilities.strength.modifier, abilities.dexterity.modifier) : abilities[weapon.ability].modifier;
     return {
       weaponId,
-      disadvantage: weapon.heavy && abilities.strength.score < 13 ? "力量低于 13，重型近战武器攻击具有劣势" : undefined,
-      attackBonus: mod + pb,
+      disadvantage: weapon.heavy && abilities[weapon.category === "martial-ranged" ? "dexterity" : "strength"].score < 13 ? "重型武器属性不足 13，攻击具有劣势（近战看力量，远程看敏捷）" : undefined,
+      attackBonus: mod + pb + (ranger?.style === "archery" && weapon.category.endsWith("ranged") ? 2 : 0),
       damageDice: weapon.damageDice,
       damageModifier: mod,
       damageType: weapon.damageType,
       mastery: {
         id: weapon.mastery,
-        unlocked: fighter && masterySet.has(weaponId),
+        unlocked: (fighter || !!ranger) && masterySet.has(weaponId),
       },
       range: weapon.range,
     };
@@ -123,10 +124,11 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   return {
     level: 3,
     hitDie: profile.hitDie,
-    spellcasting: wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], initiateSpell: "", initiateCantrips: [], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, initiateAttack: 0, initiateDc: 0, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, initiateSpell: "", initiateCantrips: [], ritualSpells: [] } : undefined,
+    primalCompanion: ranger?.primal,
+    spellcasting: ranger ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [], prepared: [...ranger.prepared, "hunters-mark"], initiateSpell: "", initiateCantrips: [], ritualSpells: ranger.prepared.filter((id) => spell(id)?.ritual) } : wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], initiateSpell: "", initiateCantrips: [], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, initiateAttack: 0, initiateDc: 0, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, initiateSpell: "", initiateCantrips: [], ritualSpells: [] } : undefined,
     pactMagic: warlock ? { slotLevel: 2, invocations: warlock.invocations, atWill: warlock.invocations.flatMap((v) => invocation(v.id)?.spell ? [invocation(v.id)!.spell!] : []), darkBlessing: Math.max(1, abilities.charisma.modifier + build.level), concentrationAdvantage: warlock.invocations.some((v) => v.id === "eldritch-mind"), devilsSight: warlock.invocations.some((v) => v.id === "devils-sight") } : undefined,
     wildShape: druid ? { knownForms: druid.knownForms.filter(legalMoonForm), temporaryHp: build.level * 3 } : undefined,
-    armorNote: druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : undefined,
+    armorNote: ranger ? `镶钉皮甲 · 12 + 敏捷${ranger.style === "defense" ? " + 防御" : ""}` : druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : undefined,
     proficiencyBonus: pb,
     abilities,
     maxHp,
@@ -138,7 +140,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     passivePerception: 10 + skills.perception.modifier,
     attacks,
     resources: [
-      ...(fighter ? [
+      ...(ranger ? [{ id: "spell-slot-1", max: 3, recovery: "长休恢复全部；短休不恢复" }, { id: "favored-enemy", max: 2, recovery: "长休恢复；免费施展猎人印记，仍需专注" }, { id: "lucky", max: pb, recovery: "长休恢复全部" }] : fighter ? [
       { id: "second-wind", max: FIGHTER.secondWindUsesAtLevel3, recovery: "短休恢复1次，长休恢复全部", shortRestRestore: 1 },
       { id: "action-surge", max: FIGHTER.actionSurgeUsesAtLevel3, recovery: "短休或长休恢复", shortRestRestore: 1 },
       ] : warlock ? [
@@ -158,11 +160,11 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       { id: "stonecunning", max: pb, recovery: "长休恢复全部" },
     ],
     criticalThreshold: fighter ? CHAMPION.criticalThreshold : 20,
-    languages: ["common", ...build.choices.languages, ...(druid ? ["druidic"] : [])],
+    languages: ["common", ...build.choices.languages, ...(ranger?.extraLanguages ?? []), ...(druid ? ["druidic"] : [])],
     senses: { darkvision: DWARF.darkvision },
     resistances: [...DWARF.resistances],
     features: [
-      ...(fighter ? [
+      ...(ranger ? ["ranger-spellcasting", "favored-enemy", "deft-explorer", "ranger-mastery", ranger.style === "defense" ? "fighting-style-defense" : "archery", "primal-companion", "lucky"] : fighter ? [
       "fighting-style-defense",
       "second-wind",
       "weapon-mastery",

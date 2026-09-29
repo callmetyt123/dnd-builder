@@ -1,3 +1,4 @@
+import { RangerSpellsPage } from "../pages/RangerSpellsPage";
 import { WarlockSpellsPage } from "../pages/WarlockSpellsPage";
 import { DruidSpellsPage } from "../pages/DruidSpellsPage";
 import { HomePage } from "../pages/HomePage";
@@ -22,7 +23,7 @@ function CurrentPage() {
     case "background": return <BackgroundPage />;
     case "abilities": return <AbilitiesPage />;
     case "configuration": return <ConfigurationPage />;
-    case "spells": return state.build.classId === "warlock" ? <WarlockSpellsPage /> : state.build.classId === "druid" ? <DruidSpellsPage /> : <SpellsPage />;
+    case "spells": return state.build.classId === "ranger" ? <RangerSpellsPage /> : state.build.classId === "warlock" ? <WarlockSpellsPage /> : state.build.classId === "druid" ? <DruidSpellsPage /> : <SpellsPage />;
     case "identity": return <IdentityPage />;
     case "review": return <ReviewPage />;
     case "character": return <CharacterPage />;

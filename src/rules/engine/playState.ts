@@ -1,7 +1,12 @@
+import { applyRangerAction, normalizePrimal, type PrimalState } from "./rangerPlay";
+import type { PrimalChoice } from "../../data/ranger";
+import { primalForm } from "../../data/ranger";
 import type { DerivedCharacter } from "../types";
 import { isRecord } from "../validator/buildShape";
 
 export interface PlayState {
+  primal?: PrimalState;
+  rangerConcentration?: string;
   warlockArmor?: "leather" | "unarmored" | "mage-armor";
   agathys?: boolean;
   formId?: string;
@@ -13,6 +18,13 @@ export interface PlayState {
   remaining: Record<string, number>;
 }
 export type PlayAction =
+  | { type: "ranger-cast"; spellId: string; free?: boolean }
+  | { type: "end-ranger-concentration" }
+  | { type: "primal-hp" | "primal-temp" | "primal-hit-dice"; value: number }
+  | { type: "primal-damage"; amount: number }
+  | { type: "primal-dead" | "ranger-dead" | "primal-revive-complete" }
+  | { type: "primal-revive"; withinHour: boolean }
+  | { type: "primal-replace"; choice: PrimalChoice }
   | { type: "cast-pact"; spellId: string }
   | { type: "magical-cunning" }
   | { type: "dark-blessing" }
@@ -39,6 +51,8 @@ export function normalizePlayState(value: unknown, character: DerivedCharacter):
   const hp = clamp(raw.hp, character.maxHp, character.maxHp);
   const incapacitated = raw.incapacitated === true;
   return {
+    primal: normalizePrimal(raw.primal, character),
+    rangerConcentration: character.primalCompanion && hp > 0 && !incapacitated && typeof raw.rangerConcentration === "string" && ["hunters-mark", "ensnaring-strike", "entangle", "detect-magic"].includes(raw.rangerConcentration) && character.spellcasting?.prepared.includes(raw.rangerConcentration) ? raw.rangerConcentration : undefined,
     warlockArmor: character.pactMagic ? raw.warlockArmor === "mage-armor" ? character.pactMagic.atWill.includes("mage-armor") ? "mage-armor" : "unarmored" : raw.warlockArmor === "unarmored" ? "unarmored" : "leather" : undefined,
     agathys: !!character.pactMagic && raw.agathys === true && clamp(raw.temporaryHp, 999, 0) > 0,
     // 读档时也执行终止条件，篡改或过期形态不能绕过已知形态边界。
@@ -52,7 +66,7 @@ export function normalizePlayState(value: unknown, character: DerivedCharacter):
 }
 
 export function updatePlayState(state: PlayState, action: PlayAction, c: DerivedCharacter): PlayState {
-  let next = { ...state, remaining: { ...state.remaining } };
+  let next = applyRangerAction({ ...state, remaining: { ...state.remaining } }, action, c);
   const canAct = !!c.pactMagic && next.hp > 0 && !next.incapacitated;
   // 施法与扣位原子执行；祈唤随意施法不进入契约法术位通道。
   if (action.type === "cast-pact" && canAct && c.spellcasting?.prepared.includes(action.spellId) && next.remaining["pact-slot"] > 0) {
@@ -95,6 +109,8 @@ export function updatePlayState(state: PlayState, action: PlayAction, c: Derived
     // 手动标记的失能可能来自持续效果；长休不擅自解除其来源。
     if (action.kind === "long") next = { ...normalizePlayState(undefined, c), incapacitated: state.incapacitated, warlockArmor: c.pactMagic ? state.warlockArmor === "leather" ? "leather" : "unarmored" : undefined };
     else {
+      // 三级游侠的专注法术至多一小时，休息完成时已到期。
+      next.rangerConcentration = undefined;
       // 三级形态上限为一小时，完成至少一小时短休后已结束。
       next.formId = undefined;
       // 黯冰狱铠持续一小时；换用其他来源临时 HP 本身不会终止它。
@@ -111,6 +127,11 @@ export function updatePlayState(state: PlayState, action: PlayAction, c: Derived
         }
       }
     }
+  }
+  if (action.type === "rest" && action.kind === "long" && c.primalCompanion && state.primal) {
+    const beast = normalizePrimal(state.primal, c)!;
+    const livingRest = beast.status === "alive" && beast.hp > 0;
+    next.primal = { ...beast, canReplace: true, hp: livingRest ? primalForm(beast.choice.form)!.hp : beast.hp, hitDice: livingRest ? 3 : beast.hitDice, temporaryHp: livingRest ? 0 : beast.temporaryHp };
   }
   return normalizePlayState(next, c);
 }

@@ -1,10 +1,10 @@
 import type { AbilityId, AlignmentId, SkillId } from "../rules/types";
 
 export const zhCN = {
-  class: {
+  class: { ranger: "游侠",
     fighter: "战士", wizard: "法师", druid: "德鲁伊", warlock: "魔契师",
   },
-  subclass: {
+  subclass: { "beast-master": "驯兽师", ranger: "游侠",
     champion: "勇士", evoker: "塑能师", moon: "月亮结社", fiend: "邪魔宗主",
   },
   species: {
@@ -22,7 +22,7 @@ export const zhCN = {
     slow: "缓速",
     vex: "侵扰",
   },
-  weapon: {
+  weapon: { longbow: "长弓", shortsword: "短剑", scimitar: "弯刀",
     sickle: "镰刀", greatsword: "巨剑", dagger: "匕首", quarterstaff: "长棍",
     flail: "连枷",
     javelin: "标枪",

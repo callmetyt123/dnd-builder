@@ -1,3 +1,4 @@
+import { RANGER_SPELLS } from "./ranger";
 import { WARLOCK_SPELLS } from "./warlockSpells";
 import { DRUID_SPELLS } from "./druidSpells";
 export interface Spell {
@@ -28,7 +29,7 @@ const entries: Spell[] = [
   { id: "scorching-ray", name: "灼热射线", level: 2, school: "塑能", time: "动作", range: "120 尺", components: "V、S", duration: "立即", text: "发射 3 条射线，可分配给不同目标。每条各作一次远程法术攻击，命中造成 2d6 火焰伤害。强力戏法不适用于此法术。" },
   { id: "shatter", name: "粉碎音波", level: 2, school: "塑能", time: "动作", range: "60 尺（10 尺半径球）", components: "V、S、M（云母片）", duration: "立即", text: "区域内生物体质豁免：失败受 3d8 雷鸣伤害，成功半伤；构装生物豁免有劣势。未被携带或着装的非魔法物件同样受伤害。会伤及范围内盟友。" },
 ];
-export const SPELLS: Record<string, Spell> = Object.fromEntries([...entries, ...DRUID_SPELLS, ...WARLOCK_SPELLS].map((s) => [s.id, s]));
+export const SPELLS: Record<string, Spell> = Object.fromEntries([...entries, ...DRUID_SPELLS, ...WARLOCK_SPELLS, ...RANGER_SPELLS].map((s) => [s.id, s]));
 export const SPELL_LIST = entries;
 export const spell = (id: string): Spell | undefined => Object.prototype.hasOwnProperty.call(SPELLS, id) ? SPELLS[id] : undefined;
 export const spellSource = (level: number) => `https://5echm.kagangtuya.top/topics/玩家手册2024/法术详述/${level}环.htm`;

@@ -1,3 +1,4 @@
+import { rangerChecks } from "./rangerSelftest";
 import { warlockChecks } from "./warlockSelftest";
 import { druidChecks } from "./druidSelftest";
 import { wizardChecks } from "./wizardSelftest";
@@ -119,4 +120,5 @@ assert(parseDraft(JSON.stringify({ step: "character", build, play })).state?.pla
 wizardChecks(assert);
 druidChecks(assert);
 warlockChecks(assert);
+rangerChecks(assert);
 console.log(`rules selftest: OK (${checks} checks)`);

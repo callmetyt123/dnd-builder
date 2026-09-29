@@ -11,8 +11,8 @@ export function AbilitiesPage() {
   const { state, dispatch } = useBuilder();
   const wizard = state.build.classId === "wizard";
   const boostOptions = PROFILES[state.build.classId].boostOptions;
-  const secondaryAbility = boostOptions.includes("constitution") ? "constitution" : "dexterity";
-  const mainAbility = state.build.classId === "warlock" ? "charisma" : wizard ? "intelligence" : state.build.classId === "druid" ? "wisdom" : "strength";
+  const secondaryAbility = state.build.classId === "ranger" ? "wisdom" : boostOptions.includes("constitution") ? "constitution" : "dexterity";
+  const mainAbility = state.build.classId === "ranger" ? "dexterity" : state.build.classId === "warlock" ? "charisma" : wizard ? "intelligence" : state.build.classId === "druid" ? "wisdom" : "strength";
   const boosts = state.build.abilities.backgroundBoosts;
   const plusTwo = (Object.keys(boosts) as AbilityId[]).find((id) => boosts[id] === 2) ?? mainAbility;
   const plusOne = (Object.keys(boosts) as AbilityId[]).find((id) => boosts[id] === 1) ?? secondaryAbility;

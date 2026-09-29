@@ -1,3 +1,4 @@
+import { RangerSheets } from "./RangerSheets";
 import { WarlockSheets } from "./WarlockSheets";
 import { DruidSheets } from "./DruidSheets";
 import type { CharacterBuild, DerivedCharacter, DerivedRoll } from "../../rules/types";
@@ -31,6 +32,7 @@ function Masteries({ c }: { c: DerivedCharacter }) {
   return <section><h3>已解锁精通速查</h3><div className="sheet-masteries">{active.map((id) => <p key={id}><b>{masteryName(id)}</b>　{masteryDescriptions[id]}</p>)}</div></section>;
 }
 export function CharacterSheets({ build, character: c, play, mode }: Props) {
+  if (build.classId === "ranger") return <RangerSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "warlock") return <WarlockSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "druid") return <DruidSheets build={build} c={c} play={play} mode={mode} />;
   if (mode === "quick" && c.spellcasting) return <WizardQuickSheet build={build} c={c} play={play} />;

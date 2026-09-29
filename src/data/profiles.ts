@@ -10,6 +10,9 @@ export interface Profile {
 }
 export const SCHOLAR_SKILLS: SkillId[] = ["arcana", "history", "investigation", "medicine", "nature", "religion"];
 export const PROFILES: Record<ClassId, Profile> = {
+  ranger: { name: "游侠", subclass: "驯兽师", background: "流浪者", hitDie: 10, fixedHp: 6,
+    saves: ["strength", "dexterity"], skills: ["animal-handling", "athletics", "insight", "investigation", "nature", "perception", "stealth", "survival"], backgroundSkills: ["insight", "stealth"], boostOptions: ["dexterity", "wisdom", "charisma"],
+    equipment: [{ id: "studded-leather", quantity: 1 }, { id: "scimitar", quantity: 1 }, { id: "shortsword", quantity: 1 }, { id: "longbow", quantity: 1 }, { id: "arrow", quantity: 20 }, { id: "quiver", quantity: 1 }, { id: "mistletoe", quantity: 1 }, { id: "explorers-pack", quantity: 1 }, { id: "dagger", quantity: 2 }, { id: "thieves-tools", quantity: 1 }, { id: "gaming-set", quantity: 1 }, { id: "bedroll", quantity: 1 }, { id: "pouch", quantity: 2 }, { id: "travelers-clothes", quantity: 1 }, { id: "gp", quantity: 23 }] },
   warlock: { name: "魔契师", subclass: "邪魔宗主", background: "流浪者", hitDie: 8, fixedHp: 5,
     saves: ["wisdom", "charisma"], skills: ["arcana", "deception", "history", "intimidation", "investigation", "nature", "religion"],
     backgroundSkills: ["insight", "stealth"], boostOptions: ["dexterity", "wisdom", "charisma"],

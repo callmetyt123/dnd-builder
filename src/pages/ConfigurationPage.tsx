@@ -1,3 +1,4 @@
+import { RangerConfigurationPage } from "./RangerConfigurationPage";
 import { WarlockConfigurationPage } from "./WarlockConfigurationPage";
 import { DruidConfigurationPage } from "./DruidConfigurationPage";
 import { BuilderShell } from "../components/builder/BuilderShell";
@@ -22,6 +23,7 @@ export function ConfigurationPage() {
     const next = current.includes(id) ? current.filter((v) => v !== id) : current.length >= 3 ? [current[1], current[2], id] : [...current, id];
     dispatch({ type: "weapon-masteries", ids: next });
   };
+  if (state.build.classId === "ranger") return <RangerConfigurationPage />;
   if (state.build.classId === "warlock") return <WarlockConfigurationPage />;
   if (state.build.classId === "druid") return <DruidConfigurationPage />;
   if (state.build.classId === "wizard") {

@@ -3,6 +3,7 @@ export const GAMING_SETS: Record<string, string> = {
   "dice-set": "骰子套组", "dragonchess-set": "龙棋套组", "playing-card-set": "纸牌套组", "three-dragon-ante-set": "三龙牌套组",
 };
 export const itemNames: Record<string, string> = {
+  "studded-leather": "镶钉皮甲", mistletoe: "德鲁伊法器（槲寄生枝条）", longbow: "长弓", shortsword: "短剑", scimitar: "弯刀",
   "arcane-orb": "奥术法器（宝珠）", "occult-book": "神秘学书籍", "thieves-tools": "盗贼工具", pouch: "小包",
   "leather-armor": "皮甲", shield: "盾牌", sickle: "镰刀", "explorers-pack": "探索者套组", "herbalism-kit": "草药工具", bedroll: "铺盖", "philosophy-book": "哲学书", lamp: "油灯", oil: "油（瓶）",
   dagger: "匕首", quarterstaff: "长棍（其中一根为奥术法器）", robe: "长袍", spellbook: "法术书", "scholars-pack": "学者套组", "calligraphers-supplies": "书法工具", "history-book": "历史书", parchment: "羊皮纸",
@@ -11,6 +12,12 @@ export const itemNames: Record<string, string> = {
 };
 export const damageNames: Record<string, string> = { slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击" };
 export const features: Record<string, { name: string; timing: string; text: string }> = {
+  "ranger-spellcasting": { name: "游侠施法", timing: "感知", text: "准备 4 道一环法术，另始终准备猎人印记。三级有 3 个一环位，长休全恢复。每次长休只能替换一道准备法术。" },
+  "favored-enemy": { name: "宿敌", timing: "附赠动作 · 每长休两次", text: "不消耗法术位施展猎人印记；仍需专注，也可消耗一环位施展。伙伴三级不能获得其加伤。" },
+  "deft-explorer": { name: "熟练探险家", timing: "被动", text: "一项已熟练技能获得专精，另学两门语言；已计入人物卡。" },
+  "ranger-mastery": { name: "武器精通", timing: "游侠", text: "选择两种已熟练武器的精通，长休后可更换。三级攻击动作通常只有一次攻击。" },
+  archery: { name: "箭术", timing: "战斗风格", text: "远程武器攻击检定 +2；已计入长弓，不适用于投掷近战武器或伙伴攻击。" },
+  "primal-companion": { name: "原初行侣", timing: "驯兽师", text: "伙伴在你的回合行动，自主移动和反应；未受指挥时只执行回避。附赠动作可指挥其他动作；也可牺牲攻击动作中的一次攻击令其野兽打击。你失能时伙伴自主行动；你死亡时消失。" },
   "pact-magic": { name: "契约魔法", timing: "魅力施法", text: "两个法术位均为二环，短休或长休全部恢复。职业准备法术只能升级时按规则更换，不能长休任意重选。一回合只能消耗一个法术位施法。" },
   "pact-slot": { name: "契约法术位（二环）", timing: "施法", text: "每次消耗一个二环法术位；一环法术也以二环施展。" },
   "magical-cunning": { name: "秘法回流", timing: "一分钟仪式 · 每长休一次", text: "三级恢复一个已消耗的契约法术位，无需完成短休。" },
@@ -48,6 +55,7 @@ export const features: Record<string, { name: string; timing: string; text: stri
   "savage-attacker": { name: "凶蛮打手", timing: "每回合一次 · 起源专长", text: "武器命中时，将武器伤害骰掷两组，选择其中一组使用。" },
 };
 export const masteryDescriptions: Record<string, string> = {
+  nick: "轻型属性的额外攻击可纳入攻击动作，不再耗附赠动作，每回合仅一次；用另一把轻型武器，不加正属性伤害调整值。",
   graze: "未命中生物时，仍可造成等于攻击属性调整值的同类型伤害；只有提高该调整值才能增加此伤害。",
   sap: "命中后，目标下回合开始前的下一次攻击检定具有劣势。",
   slow: "命中并造成伤害后，目标速度降低 10 尺，至你的下回合开始；同种精通不叠加。",

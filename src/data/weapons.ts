@@ -13,6 +13,9 @@ export interface WeaponDefinition {
 }
 
 export const WEAPONS: Record<string, WeaponDefinition> = {
+  longbow: { id: "longbow", damageDice: "1d8", damageType: "piercing", category: "martial-ranged", mastery: "slow", ability: "dexterity", range: [150, 600], heavy: true, properties: "弹药（箭）、重型、双手" },
+  shortsword: { id: "shortsword", damageDice: "1d6", damageType: "piercing", category: "martial-melee", mastery: "vex", ability: "dexterity", finesse: true, properties: "轻型、灵巧" },
+  scimitar: { id: "scimitar", damageDice: "1d6", damageType: "slashing", category: "martial-melee", mastery: "nick", ability: "dexterity", finesse: true, properties: "轻型、灵巧" },
   sickle: { id: "sickle", damageDice: "1d4", damageType: "slashing", category: "simple-melee", mastery: "nick", ability: "strength", properties: "轻型" },
   dagger: { id: "dagger", damageDice: "1d4", damageType: "piercing", category: "simple-melee", mastery: "nick", ability: "dexterity", finesse: true, range: [20, 60], properties: "轻型、灵巧、投掷" },
   quarterstaff: { id: "quarterstaff", damageDice: "1d6", damageType: "bludgeoning", category: "simple-melee", mastery: "topple", ability: "strength", versatileDice: "1d8", properties: "两用（双手近战 1d8）" },

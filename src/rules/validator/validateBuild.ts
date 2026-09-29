@@ -1,3 +1,4 @@
+import { validateRanger } from "./validateRanger";
 import { validateWarlock } from "./validateWarlock";
 import { validateDruid } from "./validateDruid";
 import { PROFILES } from "../../data/profiles";
@@ -19,7 +20,7 @@ function multiset(values: number[]) {
 export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
   if (!hasBuildShape(build) || !isSupportedBuild(build)) {
-    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级矮人：战士／勇士／士兵，法师／塑能师／贤者，德鲁伊／月亮结社／隐士，或魔契师／邪魔宗主／流浪者。" }] };
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级矮人：战士／勇士／士兵，法师／塑能师／贤者，德鲁伊／月亮结社／隐士，或魔契师／邪魔宗主／流浪者，或游侠／驯兽师／流浪者。" }] };
   }
   const fighter = build.classId === "fighter";
   const profile = PROFILES[build.classId];
@@ -78,7 +79,8 @@ export function validateBuild(build: unknown): ValidationResult {
     messages.push({ id: "weapon-mastery-known", domain: "rules", severity: "blocker", message: "当前开发切片中存在尚未录入规则数据的武器精通选择。", targetStep: "configuration" });
   }
 
-  } else if (build.classId === "warlock") messages.push(...validateWarlock(build.choices.warlock!));
+  } else if (build.classId === "ranger") messages.push(...validateRanger(build));
+  else if (build.classId === "warlock") messages.push(...validateWarlock(build.choices.warlock!));
   else if (build.classId === "druid") messages.push(...validateDruid(build.choices.druid!));
   else messages.push(...validateWizard(build.choices.wizard!));
 

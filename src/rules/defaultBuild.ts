@@ -1,6 +1,13 @@
 import type { CharacterBuild, ClassId } from "./types";
 
 export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
+  if (classId === "ranger") {
+    const base = defaultBuild();
+    return { ...base, classId, subclassId: "beast-master", backgroundId: "wayfarer", profileId: "ranger-beast-master",
+      abilities: { baseAssignment: { strength: 10, dexterity: 15, constitution: 13, intelligence: 12, wisdom: 14, charisma: 8 }, backgroundBoosts: { dexterity: 2, wisdom: 1 } },
+      choices: { ...base.choices, fighterSkills: [], weaponMasteries: ["longbow", "shortsword"], ranger: { skills: ["perception", "survival", "animal-handling"], expertise: "perception", extraLanguages: ["elvish", "orc"], style: "archery", prepared: ["cure-wounds", "ensnaring-strike", "goodberry", "speak-with-animals"], gamingSet: "dice-set", primal: { form: "land", damage: "piercing", appearance: "狼" } } },
+      equipment: { classPackage: "ranger-a", backgroundPackage: "wayfarer-a" } };
+  }
   if (classId === "warlock") {
     const base = defaultBuild();
     return { ...base, classId, subclassId: "fiend", backgroundId: "wayfarer", profileId: "warlock-fiend",
