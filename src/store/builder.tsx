@@ -1,3 +1,4 @@
+import { applyRecommendation, type RecommendationStep } from "../rules/guides/onboarding";
 import { changeRogueSubclass } from "../rules/rogue";
 import type { RogueChoices, RogueSubclass } from "../rules/types";
 import { changeSpecies } from "../rules/species";
@@ -14,6 +15,7 @@ import { switchClass, parseDraft, STORAGE_KEY, type BuilderState, type BuilderSt
 export type { BuilderState, BuilderStep } from "./draft";
 
 type Action =
+  | { type: "recommend-step"; step: RecommendationStep }
   | { type: "rogue"; patch: Partial<RogueChoices> }
   | { type: "rogue-subclass"; id: RogueSubclass }
   | { type: "class"; id: ClassId }
@@ -41,6 +43,7 @@ type Action =
   | { type: "identity"; patch: Partial<CharacterBuild["identity"]> };
 
 function reducer(state: BuilderState, action: Action): BuilderState {
+  if (action.type === "recommend-step") return { ...state, build: applyRecommendation(state.build, action.step) };
   if (action.type === "rogue" && state.build.classId === "rogue") return { ...state, build: { ...state.build, choices: { ...state.build.choices, rogue: { ...state.build.choices.rogue!, ...action.patch } } } };
   if (action.type === "rogue-subclass") return changeRogueSubclass(state, action.id);
   if (action.type === "species") return { ...state, build: changeSpecies(state.build, action.id) };

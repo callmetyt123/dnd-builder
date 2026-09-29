@@ -49,7 +49,7 @@ export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
     speciesId: "dwarf",
     backgroundId: "soldier",
     profileId: "fighter-heavy",
-    playstyle: { tags: ["melee", "durability"], complexity: "simple" },
+    playstyle: { tags: ["melee"], complexity: "simple" },
     abilities: {
       baseAssignment: {
         strength: 15,

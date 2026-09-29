@@ -37,6 +37,5 @@ export function SpeciesPage() {
       <details><summary>查看当前种族能力</summary>{c.speciesFeatures.map((id) => <p key={id}><strong>{features[id].name}：</strong>{features[id].text}</p>)}<p>感官：{c.senses.darkvision ? `黑暗视觉 ${c.senses.darkvision} 尺` : "普通视觉"}。种族法术的成分、使用次数和 DC 将写入人物卡附页。</p></details>
     </section>
     <section className="section"><h2>语言</h2><p className="hint">自动掌握通用语，再选两种不同的标准语言。选择语言不受种族限制。</p><div className="form-grid">{[0, 1].map((i) => <label key={i}>额外语言 {i + 1}<select value={build.choices.languages[i]} onChange={(e) => { const languages = [...build.choices.languages]; languages[i] = e.target.value; dispatch({ type: "languages", languages }); }}>{options.map((id) => <option key={id} value={id}>{zhCN.language[id as keyof typeof zhCN.language]}</option>)}</select></label>)}</div></section>
-    {errors.map((m) => <p role="status" className="validation blocker" key={m.id}>{m.message}</p>)}
   </BuilderShell>;
 }

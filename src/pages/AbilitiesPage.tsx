@@ -19,9 +19,8 @@ export function AbilitiesPage() {
   const final = addAbilityBoosts(state.build.abilities.baseAssignment, boosts);
   return (
     <BuilderShell previous="background" next="configuration">
-      <section className="page-head"><h1>配置属性</h1><p>推荐配置已按所选职业优化。你可以修改，但标准数组中的每个数值只能使用一次。</p></section>
-      <div className="warning-panel"><strong>如果你不理解这些数值的含义及其效果，建议不要修改。</strong><span>背景只能提升列出的三项属性，未必包含职业的主要属性。</span></div>
-      <button className="button secondary" onClick={() => dispatch({ type: "abilities-default" })}>恢复推荐属性</button>
+      <section className="page-head"><h1>配置属性</h1><p>属性决定角色擅长什么。初始配置已有推荐；如果自行调整，选取一个数值会与原来持有该数值的属性交换。</p></section>
+      <div className="warning-panel"><strong>怎么看这一行？基础值 + 背景提升 = 最终属性。</strong><span>括号内是掷骰时常用的加值。例如 +3 表示掷 d20 后加 3；背景只能提升列出的三项属性。</span></div>
       <div className="ability-table">
         {ABILITIES.map((ability) => {
           const base = state.build.abilities.baseAssignment[ability];

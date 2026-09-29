@@ -56,7 +56,7 @@ export function wizardChecks(assert: (condition: unknown, message: string) => vo
   assert(rested.remaining["spell-slot-1"] === 4 && rested.remaining["spell-slot-2"] === 2 && rested.remaining["arcane-recovery"] === 1 && rested.remaining["magic-initiate"] === 1, "long rest restores all spell resources");
   const fighter = switchClass({ step: "character", build: b, play: twoFirst }, "fighter");
   const back = switchClass(fighter, "wizard");
-  assert(back.build === b && back.play?.remaining["spell-slot-1"] === 3, "class switching preserves spell choices and spent resources");
+  assert(JSON.stringify(back.build) === JSON.stringify(b) && back.play?.remaining["spell-slot-1"] === 3, "class switching preserves spell choices and spent resources");
   const restored = parseDraft(JSON.stringify(fighter)).state!;
   assert(switchClass(restored, "wizard").play?.remaining["arcane-recovery"] === 0, "inactive character survives refresh");
   assert(!parseDraft(JSON.stringify({ ...fighter, profiles: { wizard: { build: null } } })).state?.profiles?.wizard, "malformed inactive profile must be discarded safely");

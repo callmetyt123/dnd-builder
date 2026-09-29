@@ -1,6 +1,5 @@
 import { BuilderShell } from "../components/builder/BuilderShell";
 import { SPELL_LIST, spell, spellSource } from "../data/spells";
-import { defaultBuild } from "../rules/defaultBuild";
 import type { WizardChoices } from "../rules/types";
 import { validateWizard } from "../rules/validator/validateWizard";
 import { useBuilder } from "../store/builder";
@@ -31,8 +30,7 @@ export function SpellsPage() {
   return <BuilderShell previous="configuration" next="identity" nextDisabled={errors.length > 0}>
     <section className="page-head"><h1>整理你的法术书</h1><p>推荐已配好：职业戏法 3 道、法术书 12 道、职业准备 6 道。背景获得的法术在背景页单独配置。</p></section>
     <div className="muted-panel">当前收录 {SPELL_LIST.length} 道经过核对的 2024 法师法术。先取消旧选择，再勾选替代法术；法术书中未准备的仪式仍可阅读法术书施展。</div>
-    <button className="button secondary" onClick={() => { const defaults = defaultBuild("wizard").choices.wizard!; patch({ ...defaults, skills: w.skills, scholar: w.scholar }); }}>恢复推荐法术</button>
-    {errors.length > 0 && <div className="message-list" role="status">{errors.map((m) => <p className="validation blocker" key={m.id}>{m.message}</p>)}</div>}
+
     {choices("cantrips", "法师戏法", 3, cantrips, "无需法术位，可以重复施展。")}
     {choices("earlyBook", "一至二级 · 法术书基础", 8, first, "一级学习 6 道，二级新增 2 道；这些都必须是一环法术。")}
     {choices("level3Book", "三级升级 · 新增法术", 2, leveled, "从一环或二环法术中学习 2 道。")}

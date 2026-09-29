@@ -1,5 +1,5 @@
 import { BuilderShell } from "../components/builder/BuilderShell";
-import { BACKGROUNDS, BACKGROUND_REASON, RECOMMENDED_BACKGROUND } from "../data/backgrounds";
+import { BACKGROUNDS, RECOMMENDED_BACKGROUND } from "../data/backgrounds";
 import { GAMING_SETS, features, itemNames } from "../data/characterDetails";
 import { FeatChoices } from "../components/origin/FeatChoices";
 import { ARTISAN_TOOLS, INSTRUMENTS } from "../data/originOptions";
@@ -19,7 +19,6 @@ export function BackgroundPage() {
   const errors = validateBuild(build).messages.filter((m) => m.severity === "blocker" && (m.targetStep === "background" || m.id === "scholar" || m.id === "ranger-expertise"));
   return <BuilderShell previous="species" next="abilities" nextDisabled={errors.some((m) => m.targetStep === "background")}>
     <section className="page-head"><h1>你的角色以前过着怎样的生活？</h1><p>背景描述过去的经历，也提供属性提升、两项技能、工具和起源专长。所有已开放背景都可用于当前职业。</p></section>
-    <div className="muted-panel"><strong>不确定怎么选？</strong><p>{BACKGROUND_REASON[build.classId]}你也可以按角色故事选择其他背景。</p></div>
     <div className="background-grid">{(Object.keys(BACKGROUNDS) as BackgroundId[]).sort((a, b) => Number(b === recommended) - Number(a === recommended)).map((id) => {
       const option = BACKGROUNDS[id];
       return <button type="button" className={`card clickable ${build.backgroundId === id ? "selected" : ""}`} key={id} aria-pressed={build.backgroundId === id} onClick={() => dispatch({ type: "background", id })}>
@@ -37,7 +36,6 @@ export function BackgroundPage() {
     {(duplicate.length > 0 || errors.some((m) => m.targetStep === "configuration")) && <section className="warning-panel" role="status"><strong>有技能选择需要留意</strong>{duplicate.length > 0 && <p>{duplicate.map((id) => skillNames[id]).join("、")}由职业与背景重复提供，熟练不叠加。可保留，或把重复的职业技能换为本职业其他技能。</p>}{errors.filter((m) => m.targetStep === "configuration").map((m) => <p key={m.id}>{m.message}</p>)}<button className="button secondary" onClick={() => dispatch({ type: "skills-recommend" })}>调整重复技能与失效专精</button></section>}
     {(["artisan-tool", "instrument"].includes(background.tool)) && <label>背景工具<select value={background.tool === "artisan-tool" ? origin.artisanTool : origin.instrument} onChange={(e) => dispatch({ type: "origin", patch: background.tool === "artisan-tool" ? { artisanTool: e.target.value } : { instrument: e.target.value } })}>{Object.entries(background.tool === "artisan-tool" ? ARTISAN_TOOLS : INSTRUMENTS).map(([id, name]) => <option value={id} key={id}>{name}</option>)}</select></label>}
     <FeatChoices feat={background.feat as OriginFeat} value={origin} recommended={recommendedFeatChoices(build, "background")} fixedList={background.magicList} classId={build.classId} onChange={(patch) => dispatch({ type: "origin", patch })} />
-    {errors.filter((m) => m.targetStep === "background").map((m) => <p className="validation blocker" role="status" key={m.id}>{m.message}</p>)}
     <p className="hint">已开放全部 16 个 2024 背景与 10 种起源专长；起始装备使用各背景包 A。</p>
   </BuilderShell>;
 }

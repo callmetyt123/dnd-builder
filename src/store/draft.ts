@@ -11,11 +11,11 @@ export const STEPS = ["home", "playstyle", "class", "species", "background", "ab
 export type BuilderStep = typeof STEPS[number];
 type SavedCharacter = { build: CharacterBuild; play?: PlayState };
 export interface BuilderState extends SavedCharacter { step: BuilderStep; profiles?: Partial<Record<ClassId, SavedCharacter>> }
-// Preserve the other character, including spent resources, while switching class routes.
+// 保留各职业的构筑与历史状态；本轮玩法偏好跨职业沿用，推荐不会因切换而丢失。
 export function switchClass(state: BuilderState, classId: ClassId): BuilderState {
   if (state.build.classId === classId) return state;
   const saved = state.profiles?.[classId];
-  return { step: "class", build: saved?.build ?? { ...defaultBuild(classId), identity: state.build.identity }, play: saved?.play,
+  return { step: "class", build: { ...(saved?.build ?? { ...defaultBuild(classId), identity: state.build.identity }), playstyle: state.build.playstyle }, play: saved?.play,
     profiles: { ...state.profiles, [state.build.classId]: { build: state.build, play: state.play } } };
 }
 export const STORAGE_KEY = "dnd5r-builder-draft-v1";
