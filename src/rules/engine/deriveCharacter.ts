@@ -1,3 +1,4 @@
+import { FIEND_SPELLS, invocation } from "../../data/warlock";
 import { DRUID_ALWAYS, MOON_SPELLS } from "../../data/druidSpells";
 import { legalMoonForm } from "../../data/beasts";
 import { ARMOR } from "../../data/armor";
@@ -33,6 +34,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const profile = PROFILES[build.classId];
   const wizard = build.classId === "wizard" ? build.choices.wizard : undefined;
   const druid = build.classId === "druid" ? build.choices.druid : undefined;
+  const warlock = build.classId === "warlock" ? build.choices.warlock : undefined;
   const fighter = build.classId === "fighter";
   const book = wizard ? [...wizard.earlyBook, ...wizard.level3Book, ...wizard.evocationBook] : [];
   const pb = proficiencyBonus(build.level);
@@ -43,7 +45,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const skillProficiencies = new Set<SkillId>([
     ...profile.backgroundSkills,
-    ...(druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
+    ...(warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
   const skills = Object.fromEntries(
@@ -81,7 +83,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
 
   const chainMail = ARMOR["chain-mail"];
   const defenseBonus = build.choices.fightingStyle === "defense" ? 1 : 0;
-  const armorClass = fighter ? chainMail.armorClass + defenseBonus : (druid ? 13 : 10) + abilities.dexterity.modifier;
+  const armorClass = fighter ? chainMail.armorClass + defenseBonus : (druid ? 13 : warlock ? 11 : 10) + abilities.dexterity.modifier;
 
   let speed = DWARF.speed;
   if (fighter && abilities.strength.score < chainMail.strengthRequirement) speed -= 10;
@@ -93,7 +95,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   // 合并两个来源的装备，避免背景武器和重复金币在人物卡中丢失。
   const inventory = new Map<string, number>();
   for (const item of profile.equipment) {
-    const id = item.id === "gaming-set" ? build.choices.soldierGamingSet ?? "gaming-set" : item.id;
+    const id = item.id === "gaming-set" ? warlock?.gamingSet ?? build.choices.soldierGamingSet ?? "gaming-set" : item.id;
     inventory.set(id, (inventory.get(id) ?? 0) + item.quantity);
   }
   const equipment = [...inventory].map(([id, quantity]) => ({ id, quantity }));
@@ -121,9 +123,10 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   return {
     level: 3,
     hitDie: profile.hitDie,
-    spellcasting: wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], initiateSpell: "", initiateCantrips: [], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : undefined,
+    spellcasting: wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], initiateSpell: "", initiateCantrips: [], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, initiateAttack: 0, initiateDc: 0, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, initiateSpell: "", initiateCantrips: [], ritualSpells: [] } : undefined,
+    pactMagic: warlock ? { slotLevel: 2, invocations: warlock.invocations, atWill: warlock.invocations.flatMap((v) => invocation(v.id)?.spell ? [invocation(v.id)!.spell!] : []), darkBlessing: Math.max(1, abilities.charisma.modifier + build.level), concentrationAdvantage: warlock.invocations.some((v) => v.id === "eldritch-mind"), devilsSight: warlock.invocations.some((v) => v.id === "devils-sight") } : undefined,
     wildShape: druid ? { knownForms: druid.knownForms.filter(legalMoonForm), temporaryHp: build.level * 3 } : undefined,
-    armorNote: druid ? "皮甲 + 敏捷 + 盾牌" : undefined,
+    armorNote: druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : undefined,
     proficiencyBonus: pb,
     abilities,
     maxHp,
@@ -138,6 +141,10 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       ...(fighter ? [
       { id: "second-wind", max: FIGHTER.secondWindUsesAtLevel3, recovery: "短休恢复1次，长休恢复全部", shortRestRestore: 1 },
       { id: "action-surge", max: FIGHTER.actionSurgeUsesAtLevel3, recovery: "短休或长休恢复", shortRestRestore: 1 },
+      ] : warlock ? [
+        { id: "pact-slot", max: 2, recovery: "均为二环；短休或长休恢复全部", shortRestRestore: 2 },
+        { id: "magical-cunning", max: 1, recovery: "长休恢复；一分钟仪式恢复 1 个已消耗的契约法术位" },
+        { id: "lucky", max: pb, recovery: "长休恢复全部；不随短休恢复" },
       ] : druid ? [
         { id: "wild-shape", max: 2, recovery: "短休恢复 1 次；长休恢复全部", shortRestRestore: 1 },
         { id: "spell-slot-1", max: 4, recovery: "长休恢复全部" },
@@ -163,7 +170,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       "tactical-mind",
       ...CHAMPION.features,
       SOLDIER.originFeatId,
-      ] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion", "healer"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip", "magic-initiate"]),
+      ] : warlock ? ["pact-magic", "magical-cunning", "fiend-spells", "dark-ones-blessing", "lucky"] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion", "healer"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip", "magic-initiate"]),
       ...DWARF.features,
     ],
     equipment,

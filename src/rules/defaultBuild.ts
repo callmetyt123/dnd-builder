@@ -1,6 +1,14 @@
 import type { CharacterBuild, ClassId } from "./types";
 
 export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
+  if (classId === "warlock") {
+    const base = defaultBuild();
+    return { ...base, classId, subclassId: "fiend", backgroundId: "wayfarer", profileId: "warlock-fiend",
+      abilities: { baseAssignment: { strength: 8, dexterity: 13, constitution: 14, intelligence: 10, wisdom: 12, charisma: 15 }, backgroundBoosts: { charisma: 2, dexterity: 1 } },
+      choices: { ...base.choices, fighterSkills: [], weaponMasteries: [], warlock: { skills: ["arcana", "intimidation"], cantrips: ["eldritch-blast", "prestidigitation"], prepared: ["hex", "armor-of-agathys", "misty-step", "invisibility"], invocations: [{ id: "agonizing-blast", target: "eldritch-blast" }, { id: "repelling-blast", target: "eldritch-blast" }, { id: "eldritch-mind" }], gamingSet: "dice-set" } },
+      equipment: { classPackage: "warlock-a", backgroundPackage: "wayfarer-a" },
+    };
+  }
   if (classId === "druid") {
     const base = defaultBuild();
     return { ...base, classId, subclassId: "moon", backgroundId: "hermit", profileId: "druid-moon",

@@ -2,16 +2,16 @@ import type { AbilityId, AlignmentId, SkillId } from "../rules/types";
 
 export const zhCN = {
   class: {
-    fighter: "战士", wizard: "法师", druid: "德鲁伊",
+    fighter: "战士", wizard: "法师", druid: "德鲁伊", warlock: "魔契师",
   },
   subclass: {
-    champion: "勇士", evoker: "塑能师", moon: "月亮结社",
+    champion: "勇士", evoker: "塑能师", moon: "月亮结社", fiend: "邪魔宗主",
   },
   species: {
     dwarf: "矮人",
   },
   background: {
-    soldier: "士兵", sage: "贤者", hermit: "隐士",
+    soldier: "士兵", sage: "贤者", hermit: "隐士", wayfarer: "流浪者",
   },
   fightingStyle: {
     defense: "防御",

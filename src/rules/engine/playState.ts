@@ -2,6 +2,8 @@ import type { DerivedCharacter } from "../types";
 import { isRecord } from "../validator/buildShape";
 
 export interface PlayState {
+  warlockArmor?: "leather" | "unarmored" | "mage-armor";
+  agathys?: boolean;
   formId?: string;
   incapacitated?: boolean;
   companion?: boolean;
@@ -11,6 +13,12 @@ export interface PlayState {
   remaining: Record<string, number>;
 }
 export type PlayAction =
+  | { type: "cast-pact"; spellId: string }
+  | { type: "magical-cunning" }
+  | { type: "dark-blessing" }
+  | { type: "fiendish-vigor" }
+  | { type: "warlock-armor"; value: "leather" | "unarmored" | "mage-armor" }
+  | { type: "end-agathys" }
   | { type: "transform"; formId: string }
   | { type: "revert" }
   | { type: "incapacitated"; value: boolean }
@@ -31,6 +39,8 @@ export function normalizePlayState(value: unknown, character: DerivedCharacter):
   const hp = clamp(raw.hp, character.maxHp, character.maxHp);
   const incapacitated = raw.incapacitated === true;
   return {
+    warlockArmor: character.pactMagic ? raw.warlockArmor === "mage-armor" ? character.pactMagic.atWill.includes("mage-armor") ? "mage-armor" : "unarmored" : raw.warlockArmor === "unarmored" ? "unarmored" : "leather" : undefined,
+    agathys: !!character.pactMagic && raw.agathys === true && clamp(raw.temporaryHp, 999, 0) > 0,
     // 读档时也执行终止条件，篡改或过期形态不能绕过已知形态边界。
     formId: hp > 0 && !incapacitated && typeof raw.formId === "string" && character.wildShape?.knownForms.includes(raw.formId) ? raw.formId : undefined,
     incapacitated, companion: !!character.wildShape && raw.companion === true,
@@ -43,6 +53,19 @@ export function normalizePlayState(value: unknown, character: DerivedCharacter):
 
 export function updatePlayState(state: PlayState, action: PlayAction, c: DerivedCharacter): PlayState {
   let next = { ...state, remaining: { ...state.remaining } };
+  const canAct = !!c.pactMagic && next.hp > 0 && !next.incapacitated;
+  // 施法与扣位原子执行；祈唤随意施法不进入契约法术位通道。
+  if (action.type === "cast-pact" && canAct && c.spellcasting?.prepared.includes(action.spellId) && next.remaining["pact-slot"] > 0) {
+    next.remaining["pact-slot"] -= 1;
+    if (action.spellId === "armor-of-agathys") { next.temporaryHp = Math.max(next.temporaryHp, 10); next.agathys = true; }
+  }
+  if (action.type === "magical-cunning" && canAct && next.remaining["magical-cunning"] > 0 && next.remaining["pact-slot"] < 2) {
+    next.remaining["magical-cunning"] -= 1; next.remaining["pact-slot"] += 1;
+  }
+  if (action.type === "dark-blessing" && c.pactMagic) next.temporaryHp = Math.max(next.temporaryHp, c.pactMagic.darkBlessing);
+  if (action.type === "fiendish-vigor" && canAct && c.pactMagic?.atWill.includes("false-life")) next.temporaryHp = Math.max(next.temporaryHp, 12);
+  if (action.type === "warlock-armor" && canAct && (action.value !== "mage-armor" || c.pactMagic?.atWill.includes("mage-armor"))) next.warlockArmor = action.value;
+  if (action.type === "end-agathys") next.agathys = false;
   if (action.type === "transform" && c.wildShape?.knownForms.includes(action.formId) && next.hp > 0 && !next.incapacitated && next.remaining["wild-shape"] > 0) {
     next.formId = action.formId;
     next.remaining["wild-shape"] -= 1;
@@ -70,10 +93,12 @@ export function updatePlayState(state: PlayState, action: PlayAction, c: Derived
     if (action.kind === "long" && next.hp === 0) return normalizePlayState(next, c);
     // 短休不会自动治疗；生命骰的实际治疗量由玩家掷骰后记录。
     // 手动标记的失能可能来自持续效果；长休不擅自解除其来源。
-    if (action.kind === "long") next = { ...normalizePlayState(undefined, c), incapacitated: state.incapacitated };
+    if (action.kind === "long") next = { ...normalizePlayState(undefined, c), incapacitated: state.incapacitated, warlockArmor: c.pactMagic ? state.warlockArmor === "leather" ? "leather" : "unarmored" : undefined };
     else {
       // 三级形态上限为一小时，完成至少一小时短休后已结束。
       next.formId = undefined;
+      // 黯冰狱铠持续一小时；换用其他来源临时 HP 本身不会终止它。
+      next.agathys = false;
       for (const resource of c.resources) next.remaining[resource.id] += resource.shortRestRestore ?? 0;
       // Recovery is atomic: insufficient expended slots never consume the daily use.
       if (c.spellcasting && next.remaining["arcane-recovery"] > 0 && action.recover) {

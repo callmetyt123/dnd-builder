@@ -69,3 +69,13 @@ V1 只考虑 5R 三宝书内容：
 - MM 2025 附录 A：[棕熊](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/棕熊.htm)、[恐狼](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/恐狼.htm)、[狼](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/狼.htm)、[猫](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/猫.htm)、[獾](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/獾.htm)、[豹](https://github.com/DND5eChm/5echm_web/blob/pages/topics/怪物图鉴2025/附录A/豹.htm)。不混用 2014 棕熊爪击、狼倒地豁免或豹的猛扑。
 
 持续时间按“德鲁伊等级一半的小时数”结合一般向下取整规则，在三级显示 1 小时；不使用墙钟自动计时。法器全部融入时无法用于月华之光的材料成分，界面提示玩家安排外部材料或与主持人确认。
+
+## v0.5 邪魔魔契师核对（2026-09-28 至 29）
+
+- [D&D Beyond 2024 职业规则](https://www.dndbeyond.com/sources/dnd/br-2024/character-classes)：三级魔契师 d8、魅力施法、感知／魅力豁免；两道戏法、四道准备、三项祈唤、两个二环契约位；短休全部恢复。秘法回流按法术位上限一半向上取整，三级恢复一个。
+- 同页邪魔宗主：三级始终准备燃烧之手、命令术、灼热射线、暗示术；黑暗赐福包括别人使你 10 尺内敌人降至 0 HP 的触发。未授予六级能力。
+- 中文：[魔契师](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/魔契师/魔契师.htm)、[魔能祈唤选项](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/魔契师/魔能祈唤选项.htm)、[邪魔宗主](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色职业/魔契师/邪魔宗主.htm)。收录苦痛魔爆、斥力魔爆、魔能长枪、魔能意志、魔鬼视界、邪魔活力、幽影护甲。
+- [流浪者](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/角色起源/背景/流浪者.htm)、[起源专长](https://github.com/DND5eChm/5echm_web/blob/pages/topics/玩家手册2024/专长/起源专长.htm)：敏捷／感知／魅力，洞悉与隐匿、盗贼工具熟练、幸运。赌具只有实物，不授予熟练。职业与背景共四把匕首、31 GP。
+- 法术继续对照上述 CHM 戏法／一环／二环页：2024 黯冰狱铠为附赠动作，二环获得 10 临时 HP、反伤 10；任意正值临时 HP 均能维持效果。脆弱诅咒二环可专注四小时。邪魔活力是一环虚假生命，2d4+4 取最大值 12。
+
+三级四道职业准备中至多两道二环，是按成长路径推导：三级新增一道，并可替换一道旧法术。祈唤和法术为明确标注的精选子集；没有刃／链／书契约、升级器或任意背景组合。法术摘要由本项目重新编写。

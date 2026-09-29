@@ -1,3 +1,4 @@
+import { warlockChecks } from "./warlockSelftest";
 import { druidChecks } from "./druidSelftest";
 import { wizardChecks } from "./wizardSelftest";
 import { parseDraft } from "../src/store/draft";
@@ -117,4 +118,5 @@ assert(clamped.hp === 31 && clamped.temporaryHp === 0 && clamped.hitDice === 3 &
 assert(parseDraft(JSON.stringify({ step: "character", build, play })).state?.play?.hp === 8, "play state must survive draft serialization");
 wizardChecks(assert);
 druidChecks(assert);
+warlockChecks(assert);
 console.log(`rules selftest: OK (${checks} checks)`);

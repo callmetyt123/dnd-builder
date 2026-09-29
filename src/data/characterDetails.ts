@@ -3,6 +3,7 @@ export const GAMING_SETS: Record<string, string> = {
   "dice-set": "骰子套组", "dragonchess-set": "龙棋套组", "playing-card-set": "纸牌套组", "three-dragon-ante-set": "三龙牌套组",
 };
 export const itemNames: Record<string, string> = {
+  "arcane-orb": "奥术法器（宝珠）", "occult-book": "神秘学书籍", "thieves-tools": "盗贼工具", pouch: "小包",
   "leather-armor": "皮甲", shield: "盾牌", sickle: "镰刀", "explorers-pack": "探索者套组", "herbalism-kit": "草药工具", bedroll: "铺盖", "philosophy-book": "哲学书", lamp: "油灯", oil: "油（瓶）",
   dagger: "匕首", quarterstaff: "长棍（其中一根为奥术法器）", robe: "长袍", spellbook: "法术书", "scholars-pack": "学者套组", "calligraphers-supplies": "书法工具", "history-book": "历史书", parchment: "羊皮纸",
   "chain-mail": "链甲", greatsword: "巨剑", flail: "连枷", javelin: "标枪", spear: "矛", shortbow: "短弓",
@@ -10,6 +11,12 @@ export const itemNames: Record<string, string> = {
 };
 export const damageNames: Record<string, string> = { slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击" };
 export const features: Record<string, { name: string; timing: string; text: string }> = {
+  "pact-magic": { name: "契约魔法", timing: "魅力施法", text: "两个法术位均为二环，短休或长休全部恢复。职业准备法术只能升级时按规则更换，不能长休任意重选。一回合只能消耗一个法术位施法。" },
+  "pact-slot": { name: "契约法术位（二环）", timing: "施法", text: "每次消耗一个二环法术位；一环法术也以二环施展。" },
+  "magical-cunning": { name: "秘法回流", timing: "一分钟仪式 · 每长休一次", text: "三级恢复一个已消耗的契约法术位，无需完成短休。" },
+  "fiend-spells": { name: "邪魔法术", timing: "始终准备", text: "燃烧之手、命令术、灼热射线、暗示术额外准备，不占四道职业准备名额；施展仍消耗契约法术位。" },
+  "dark-ones-blessing": { name: "黑暗赐福", timing: "触发时", text: "你使敌人降至 0 HP，或别人使你 10 尺内的敌人降至 0 HP 时，获得魅力调整值 + 魔契师等级（最低 1）的临时 HP，不叠加。" },
+  lucky: { name: "幸运", timing: "起源专长 · 每长休恢复", text: "幸运点等于熟练加值。作 D20 检定时可花 1 点获得优势；生物对你作攻击检定时可花 1 点使该次攻击具有劣势。" },
   "druid-spellcasting": { name: "德鲁伊施法", timing: "感知", text: "准备 6 道法术，长休可更换；始终准备法术不占名额。仅能以仪式施展已准备的仪式法术。一回合只能消耗一个法术位施法。" },
   druidic: { name: "德鲁伊语", timing: "语言与法术", text: "掌握德鲁伊语；动物交谈始终准备。可用该语言留下隐秘信息，懂此语言者自动发现。" },
   magician: { name: "原初职能：术师", timing: "被动", text: "额外学习 1 道德鲁伊戏法；智力（奥秘、自然）检定加感知调整值，最低 +1，已计入。" },

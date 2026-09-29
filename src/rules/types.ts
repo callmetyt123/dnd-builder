@@ -50,7 +50,11 @@ export interface Identity {
   description?: string;
 }
 
-export type ClassId = "fighter" | "wizard" | "druid";
+export type ClassId = "fighter" | "wizard" | "druid" | "warlock";
+export interface InvocationChoice { id: string; target?: string }
+export interface WarlockChoices {
+  skills: SkillId[]; cantrips: string[]; prepared: string[]; invocations: InvocationChoice[]; gamingSet: string;
+}
 export interface DruidChoices {
   skills: SkillId[]; order: "magician" | "warden"; cantrips: string[]; prepared: string[]; knownForms: string[];
 }
@@ -65,10 +69,10 @@ export interface CharacterBuild {
   schemaVersion: 1;
   level: 3;
   classId: ClassId;
-  subclassId: "champion" | "evoker" | "moon";
+  subclassId: "champion" | "evoker" | "moon" | "fiend";
   speciesId: "dwarf";
-  backgroundId: "soldier" | "sage" | "hermit";
-  profileId: "fighter-heavy" | "wizard-evoker" | "druid-moon";
+  backgroundId: "soldier" | "sage" | "hermit" | "wayfarer";
+  profileId: "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend";
   playstyle: {
     tags: string[];
     complexity: "simple" | "balanced" | "deep";
@@ -80,6 +84,7 @@ export interface CharacterBuild {
   choices: {
     wizard?: WizardChoices;
     druid?: DruidChoices;
+    warlock?: WarlockChoices;
     languages: string[];
     soldierGamingSet?: string;
     fighterSkills: SkillId[];
@@ -87,8 +92,8 @@ export interface CharacterBuild {
     weaponMasteries: string[];
   };
   equipment: {
-    classPackage: "fighter-a" | "wizard-a" | "druid-a";
-    backgroundPackage: "soldier-a" | "sage-a" | "hermit-a";
+    classPackage: "fighter-a" | "wizard-a" | "druid-a" | "warlock-a";
+    backgroundPackage: "soldier-a" | "sage-a" | "hermit-a" | "wayfarer-a";
   };
   identity: Identity;
 }
@@ -126,6 +131,7 @@ export interface DerivedCharacter {
   level: 3;
   hitDie: number;
   spellcasting?: { attack: number; dc: number; initiateAttack: number; initiateDc: number; book: string[]; prepared: string[]; cantrips: string[]; initiateSpell: string; initiateCantrips: string[]; ritualSpells: string[] };
+  pactMagic?: { slotLevel: 2; invocations: InvocationChoice[]; atWill: string[]; darkBlessing: number; concentrationAdvantage: boolean; devilsSight: boolean };
   wildShape?: { knownForms: string[]; temporaryHp: number };
   armorNote?: string;
   proficiencyBonus: number;

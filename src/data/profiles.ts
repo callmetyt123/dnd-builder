@@ -10,6 +10,10 @@ export interface Profile {
 }
 export const SCHOLAR_SKILLS: SkillId[] = ["arcana", "history", "investigation", "medicine", "nature", "religion"];
 export const PROFILES: Record<ClassId, Profile> = {
+  warlock: { name: "魔契师", subclass: "邪魔宗主", background: "流浪者", hitDie: 8, fixedHp: 5,
+    saves: ["wisdom", "charisma"], skills: ["arcana", "deception", "history", "intimidation", "investigation", "nature", "religion"],
+    backgroundSkills: ["insight", "stealth"], boostOptions: ["dexterity", "wisdom", "charisma"],
+    equipment: [{ id: "leather-armor", quantity: 1 }, { id: "sickle", quantity: 1 }, { id: "dagger", quantity: 4 }, { id: "arcane-orb", quantity: 1 }, { id: "occult-book", quantity: 1 }, { id: "scholars-pack", quantity: 1 }, { id: "thieves-tools", quantity: 1 }, { id: "gaming-set", quantity: 1 }, { id: "bedroll", quantity: 1 }, { id: "pouch", quantity: 2 }, { id: "travelers-clothes", quantity: 1 }, { id: "gp", quantity: 31 }] },
   druid: { name: "德鲁伊", subclass: "月亮结社", background: "隐士", hitDie: 8, fixedHp: 5,
     saves: ["intelligence", "wisdom"], skills: ["arcana", "animal-handling", "insight", "medicine", "nature", "perception", "religion", "survival"],
     backgroundSkills: ["medicine", "religion"], boostOptions: ["constitution", "wisdom", "charisma"],

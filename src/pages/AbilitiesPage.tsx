@@ -11,10 +11,11 @@ export function AbilitiesPage() {
   const { state, dispatch } = useBuilder();
   const wizard = state.build.classId === "wizard";
   const boostOptions = PROFILES[state.build.classId].boostOptions;
-  const mainAbility = wizard ? "intelligence" : state.build.classId === "druid" ? "wisdom" : "strength";
+  const secondaryAbility = boostOptions.includes("constitution") ? "constitution" : "dexterity";
+  const mainAbility = state.build.classId === "warlock" ? "charisma" : wizard ? "intelligence" : state.build.classId === "druid" ? "wisdom" : "strength";
   const boosts = state.build.abilities.backgroundBoosts;
   const plusTwo = (Object.keys(boosts) as AbilityId[]).find((id) => boosts[id] === 2) ?? mainAbility;
-  const plusOne = (Object.keys(boosts) as AbilityId[]).find((id) => boosts[id] === 1) ?? "constitution";
+  const plusOne = (Object.keys(boosts) as AbilityId[]).find((id) => boosts[id] === 1) ?? secondaryAbility;
   const final = addAbilityBoosts(state.build.abilities.baseAssignment, boosts);
   return (
     <BuilderShell previous="background" next="configuration">
@@ -28,7 +29,7 @@ export function AbilitiesPage() {
           return <div className="ability-row" key={ability}><div><strong>{abilityNames[ability]}</strong>{ability === mainAbility && <span className="tag">主要属性</span>}</div><select aria-label={`${abilityNames[ability]}基础值`} value={base} onChange={(e) => dispatch({ type: "ability-swap", ability, value: Number(e.target.value) })}>{STANDARD_ARRAY.map((value) => <option value={value} key={value}>{value}</option>)}</select><span className="boost">{boost ? `+${boost}` : "—"}</span><strong className="final-score">{final[ability]} <small>({abilityModifier(final[ability]) >= 0 ? "+" : ""}{abilityModifier(final[ability])})</small></strong></div>;
         })}
       </div>
-      <section className="section"><h2>背景属性提升</h2><div className="choice-pills"><button aria-pressed={Object.values(boosts).includes(2)} onClick={() => dispatch({ type: "boosts", plusTwo: mainAbility, plusOne: "constitution" })}>两项 +2 / +1</button><button aria-pressed={!Object.values(boosts).includes(2)} onClick={() => dispatch({ type: "boosts-equal" })}>{boostOptions.map((id) => abilityNames[id]).join("、")}各 +1</button></div>{Object.values(boosts).includes(2) && <div className="form-grid"><label>+2<select value={plusTwo} onChange={(e) => dispatch({ type: "boosts", plusTwo: e.target.value as AbilityId, plusOne: plusOne === e.target.value ? boostOptions.find((id) => id !== e.target.value)! : plusOne })}>{boostOptions.map((id) => <option key={id} value={id}>{abilityNames[id]}</option>)}</select></label><label>+1<select value={plusOne} onChange={(e) => dispatch({ type: "boosts", plusTwo: plusTwo === e.target.value ? boostOptions.find((id) => id !== e.target.value)! : plusTwo, plusOne: e.target.value as AbilityId })}>{boostOptions.map((id) => <option key={id} value={id}>{abilityNames[id]}</option>)}</select></label></div>}</section>
+      <section className="section"><h2>背景属性提升</h2><div className="choice-pills"><button aria-pressed={Object.values(boosts).includes(2)} onClick={() => dispatch({ type: "boosts", plusTwo: mainAbility, plusOne: secondaryAbility })}>两项 +2 / +1</button><button aria-pressed={!Object.values(boosts).includes(2)} onClick={() => dispatch({ type: "boosts-equal" })}>{boostOptions.map((id) => abilityNames[id]).join("、")}各 +1</button></div>{Object.values(boosts).includes(2) && <div className="form-grid"><label>+2<select value={plusTwo} onChange={(e) => dispatch({ type: "boosts", plusTwo: e.target.value as AbilityId, plusOne: plusOne === e.target.value ? boostOptions.find((id) => id !== e.target.value)! : plusOne })}>{boostOptions.map((id) => <option key={id} value={id}>{abilityNames[id]}</option>)}</select></label><label>+1<select value={plusOne} onChange={(e) => dispatch({ type: "boosts", plusTwo: plusTwo === e.target.value ? boostOptions.find((id) => id !== e.target.value)! : plusTwo, plusOne: e.target.value as AbilityId })}>{boostOptions.map((id) => <option key={id} value={id}>{abilityNames[id]}</option>)}</select></label></div>}</section>
     </BuilderShell>
   );
 }
