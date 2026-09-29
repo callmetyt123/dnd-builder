@@ -1,3 +1,4 @@
+import { FIGHTER_SUBCLASSES, WIZARD_SUBCLASSES } from "../../data/expandedSubclasses";
 import { ROGUE_SUBCLASSES } from "../../data/rogue";
 import { SPECIES } from "../../data/species";
 import { BACKGROUNDS } from "../../data/backgrounds";
@@ -25,6 +26,8 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   if (!isRecord(a) || !isRecord(c) || !isRecord(e) || !isRecord(i) || !isRecord(p)) return false;
   if (!isRecord(a.baseAssignment) || !isRecord(a.backgroundBoosts)) return false;
   const base = a.baseAssignment;
+  const f = c.fighter;
+  if (f !== undefined && (!isRecord(f) || !["maneuvers", "cantrips", "prepared", "bondedWeapons"].every((k) => strings(f[k])) || typeof f.studentSkill !== "string" || typeof f.artisanTool !== "string")) return false;
   const rogue = c.rogue;
   if (value.classId === "rogue" && (!isRecord(rogue) || !["skills", "expertise", "cantrips", "prepared"].every((k) => strings(rogue[k])) || typeof rogue.extraLanguage !== "string")) return false;
   const ranger = c.ranger;
@@ -34,7 +37,7 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   const d = c.druid;
   if (value.classId === "druid" && (!isRecord(d) || !["skills", "cantrips", "prepared", "knownForms"].every((k) => strings(d[k])) || typeof d.order !== "string")) return false;
   const w = c.wizard;
-  if (value.classId === "wizard" && (!isRecord(w) || !["skills", "cantrips", "earlyBook", "level3Book", "evocationBook", "prepared"].every((k) => strings(w[k])) || typeof w.scholar !== "string")) return false;
+  if (value.classId === "wizard" && (!isRecord(w) || !["skills", "cantrips", "earlyBook", "level3Book", "evocationBook", "prepared"].every((k) => strings(w[k])) || typeof w.scholar !== "string" || (w.illusionCantrip !== undefined && typeof w.illusionCantrip !== "string"))) return false;
   const origin = c.origin;
   if (!isRecord(origin) || !["gamingSet", "artisanTool", "instrument"].every((k) => typeof origin[k] === "string") || !featShape(origin)) return false;
   const species = c.species;
@@ -56,8 +59,8 @@ export function isSupportedBuild(build: CharacterBuild): boolean {
   if (build.classId === "ranger") return build.subclassId === "beast-master" && build.profileId === "ranger-beast-master" && build.equipment.classPackage === "ranger-a";
   if (build.classId === "warlock") return build.subclassId === "fiend" && build.profileId === "warlock-fiend" && build.equipment.classPackage === "warlock-a";
   if (build.classId === "druid") return build.subclassId === "moon" && build.profileId === "druid-moon" && build.equipment.classPackage === "druid-a";
-  if (build.classId === "wizard") return build.subclassId === "evoker" && build.profileId === "wizard-evoker" && build.equipment.classPackage === "wizard-a";
-  return build.classId === "fighter" && build.subclassId === "champion"
+  if (build.classId === "wizard") return Object.prototype.hasOwnProperty.call(WIZARD_SUBCLASSES, build.subclassId) && build.profileId === "wizard-evoker" && build.equipment.classPackage === "wizard-a";
+  return build.classId === "fighter" && Object.prototype.hasOwnProperty.call(FIGHTER_SUBCLASSES, build.subclassId)
     && build.profileId === "fighter-heavy" && build.choices.fightingStyle === "defense"
     && build.equipment.classPackage === "fighter-a";
 }

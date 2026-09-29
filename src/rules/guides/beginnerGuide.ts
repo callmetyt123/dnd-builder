@@ -1,3 +1,4 @@
+import { MANEUVERS } from "../../data/expandedSubclasses";
 import type { CharacterBuild, DerivedCharacter, DerivedAttack, SkillId } from "../types";
 import { spell } from "../../data/spells";
 import { WEAPONS } from "../../data/weapons";
@@ -84,10 +85,24 @@ export function beginnerGuide(build: CharacterBuild, c: DerivedCharacter): Begin
   const spells = selected.slice(0, 2).map((id) => spellAction(c, id));
   let role = "", approach = "", actions: GuideAction[] = [], reminders: string[] = [];
   if (build.classId === "fighter") {
-    role = "你是依靠武器和护甲作战的勇士。可以靠近敌人，为同伴争取行动空间。";
+    role = "你依靠武器和护甲作战。可以靠近敌人，为同伴争取行动空间。";
     approach = "先选能接近的敌人，用武器攻击；受伤时考虑回气，关键时刻再用动作如潮。";
     actions = [weaponAction(c), { id: "second-wind", title: "受伤时：回气", when: "自己的 HP 降低时", how: "恢复 1d10+3 HP，不超过上限；每长休有 2 次，短休恢复 1 次。", cost: "附赠动作 · 消耗 1 次回气" }, { id: "action-surge", title: "关键时刻：动作如潮", when: "需要再攻击一次或做另一件事时", how: "本回合再获得一个动作，可以再攻击；不能用这额外动作执行魔法动作。每短休或长休恢复 1 次。", cost: "不占动作 · 每回合至多一次 · 消耗 1 次动作如潮" }];
-    reminders = ["武器或徒手攻击 d20 掷出 19–20 时重击：伤害骰翻倍，固定加值不翻倍。", "链甲让隐匿检定有劣势；侦察时可以让更擅长潜行的同伴先走。"];
+    reminders = [`武器或徒手攻击 d20 掷出 ${c.criticalThreshold === 19 ? "19–20" : "20"} 时重击：伤害骰翻倍，固定加值不翻倍。`, "链甲让隐匿检定有劣势；侦察时可以让更擅长潜行的同伴先走。"];
+    if (build.subclassId === "battle-master") {
+      const id = build.choices.fighter!.maneuvers[0], m = MANEUVERS[id];
+      actions[2] = { id: "combat-superiority", title: `战技：${m.name}`, when: m.timing, how: m.text + ` 若需豁免，DC ${10 + Math.max(c.abilities.strength.modifier, c.abilities.dexterity.modifier)}；其余两项见完整卡。`, cost: "消耗 1 枚卓越骰 · 共 4 枚 d8，短休或长休全恢复" };
+      approach = "先用武器攻击；需要战技时查看触发条件，受伤时考虑回气。";
+      reminders[1] = "每次攻击只能用一种战技。动作如潮可再获得一个非魔法动作；用后短休或长休恢复。";
+    } else if (build.subclassId === "eldritch-knight") {
+      actions[2] = spellAction(c, c.spellcasting!.prepared.includes("shield") ? "shield" : c.spellcasting!.prepared[0]);
+      approach = "以武器为主；需要魔法效果时再花法术位，受伤时用回气。";
+      reminders[1] = "只有两个一环位，长休恢复；材料和空手要求见完整卡。三级不能用一次攻击替换戏法，动作如潮不能执行魔法动作。";
+    } else if (build.subclassId === "psi-warrior") {
+      actions[2] = { id: "protective-field", title: "同伴受伤：庇护力场", when: "你或 30 尺内可见生物受到伤害时", how: `减少 1d6${signed(c.abilities.intelligence.modifier)} 伤害，减伤至少 1；先告诉主持人你要用反应保护谁。`, cost: "反应 · 消耗 1 枚灵能骰；共 4 枚 d6，短休恢复 1 枚" };
+      approach = "先用武器攻击；留意同伴受伤，及时声明庇护力场。";
+      reminders[1] = `自己的回合武器命中并伤害 30 尺内目标后，可花一枚灵能骰追加 1d6${signed(c.abilities.intelligence.modifier)} 力场伤害，每个自己的回合一次；灵能骰长休全恢复。`;
+    }
   } else if (build.classId === "rogue") {
     role = "你擅长利用时机打出偷袭，也能用熟练技能处理探索中的难题。";
     approach = "先看能否触发偷袭，再选位置攻击；需要退开时，用附赠动作撤离。";
@@ -121,6 +136,15 @@ export function beginnerGuide(build: CharacterBuild, c: DerivedCharacter): Begin
     approach = "先找安全位置；没有特别需求时用常用攻击，遇到危险或机会再考虑下面的法术。";
     actions = [basicAction(c), ...spells];
     reminders = [build.classId === "wizard" ? "三级塑能师还没有保护盟友免受范围法术影响的法术塑形；放范围法术前先确认同伴位置。" : "契约法术位只有 2 格，均为二环，短休或长休恢复；戏法不耗位。祈唤只增强你实际指定的法术。", "同一时间只专注一个效果；受伤时提醒主持人进行维持专注的体质豁免。一回合最多消耗一个法术位施法。"];
+  }
+  if (build.classId === "wizard" && build.subclassId !== "evoker") {
+    const abilities: Record<string, GuideAction> = {
+      abjurer: { id: "arcane-ward", title: "防护自己：奥术守御", when: "消耗法术位施展防护法术时", how: `可创建上限 ${6 + c.abilities.intelligence.modifier} HP 的结界，优先替你承伤，溢出才扣自身 HP；每长休只能创建一次。记录栏与恢复方式见完整卡。`, cost: "随防护法术建立 · 三级仅保护自己" },
+      diviner: { id: "portent", title: "掷骰前：使用预兆", when: "你或可见生物即将作 D20 检定时", how: "长休后掷两个 d20 并记下。检定前声明用其中一个结果替换，不能等掷完再选；每回合一次，每个结果用后划掉。", cost: "不占动作 · 每长休两个预见骰" },
+      illusionist: { id: "improved-illusions", title: "探索时：次级幻象", when: "想用声音或静止影像误导注意时", how: "90 尺内制造声音与至多 5 尺立方的静止物件影像，可同时创造。先描述想让对方看到或听到什么；幻象没有实体，触摸或调查可能识破。", cost: "附赠动作或动作 · 戏法，不耗位 · 仍需姿势和材料" },
+    };
+    actions[2] = abilities[build.subclassId];
+    reminders[0] = build.subclassId === "illusionist" ? "幻术无需言语；原施法距离至少 10 尺时增加 60 尺，完整卡已显示调整结果。幻象的实际作用需与主持人沟通。" : "有四个一环位和两个二环位，长休恢复；短休时每长休一次可用奥术回想恢复总环阶至多二的法术位。";
   }
   const skills = (Object.keys(c.skills) as SkillId[]).filter((id) => c.skills[id].proficiency !== "none").sort((a, b) => c.skills[b].modifier - c.skills[a].modifier).slice(0, 3).map((id) => ({ id, name: skillNames[id], modifier: c.skills[id].modifier, example: skillExamples[id] }));
   return { role, approach, actions, reminders, skills, originNames: [...c.speciesFeatures.filter((id) => features[id]), ...ORIGIN_FEATS.filter((id) => c.features.includes(id))].map((id) => features[id].name) };

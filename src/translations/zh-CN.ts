@@ -5,7 +5,7 @@ export const zhCN = {
     fighter: "战士", wizard: "法师", druid: "德鲁伊", warlock: "魔契师",
   },
   subclass: { thief: "盗贼", assassin: "刺客", "arcane-trickster": "诡术师", soulknife: "魂刃", "beast-master": "驯兽师", ranger: "游侠",
-    champion: "勇士", evoker: "塑能师", moon: "月亮结社", fiend: "邪魔宗主",
+    champion: "勇士", "battle-master": "战斗大师", "eldritch-knight": "奥法骑士", "psi-warrior": "灵能武士", abjurer: "防护师", diviner: "预言师", illusionist: "幻术师", evoker: "塑能师", moon: "月亮结社", fiend: "邪魔宗主",
   },
   species: {
     dwarf: "矮人",

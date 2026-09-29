@@ -25,14 +25,24 @@ export function speciesResistances(build: CharacterBuild): string[] {
   const tieflingDamage: Record<string, string> = { infernal: "fire", abyssal: "poison", chthonic: "necrotic" };
   return id === "dwarf" ? ["poison"] : id === "aasimar" ? ["radiant", "necrotic"] : id === "dragonborn" ? [DRAGON_DAMAGE[lineage]].filter(Boolean) : id === "tiefling" ? [tieflingDamage[lineage]].filter(Boolean) : [];
 }
+export function speciesCantripIds(build: CharacterBuild): string[] {
+  const { lineage, cantrip } = build.choices.species;
+  switch (build.speciesId) {
+    case "aasimar": return ["light"];
+    case "elf": return [lineage === "drow" ? "dancing-lights" : lineage === "wood" ? "druidcraft" : cantrip];
+    case "gnome": return lineage === "rock" ? ["mending", "prestidigitation"] : ["minor-illusion"];
+    case "tiefling": return ["thaumaturgy", lineage === "abyssal" ? "poison-spray" : lineage === "chthonic" ? "chill-touch" : "fire-bolt"];
+    default: return [];
+  }
+}
 export function speciesMagic(build: CharacterBuild, abilities: DerivedCharacter["abilities"], pb: number): InnateMagic[] {
-  const { lineage, ability, cantrip } = build.choices.species;
+  const { lineage, ability } = build.choices.species;
   const id = build.speciesId;
-  let cantrips: string[] = [], spells: string[] = [], freeUses = 0;
-  if (id === "aasimar") cantrips = ["light"];
-  if (id === "elf") { cantrips = [lineage === "drow" ? "dancing-lights" : lineage === "wood" ? "druidcraft" : cantrip]; spells = [lineage === "drow" ? "faerie-fire" : lineage === "wood" ? "longstrider" : "detect-magic"]; freeUses = 1; }
-  if (id === "gnome") { cantrips = lineage === "rock" ? ["mending", "prestidigitation"] : ["minor-illusion"]; spells = lineage === "forest" ? ["speak-with-animals"] : []; freeUses = spells.length ? pb : 0; }
-  if (id === "tiefling") { cantrips = ["thaumaturgy", lineage === "abyssal" ? "poison-spray" : lineage === "chthonic" ? "chill-touch" : "fire-bolt"]; spells = [lineage === "abyssal" ? "ray-of-sickness" : lineage === "chthonic" ? "false-life" : "hellish-rebuke"]; freeUses = 1; }
+  const cantrips = speciesCantripIds(build);
+  let spells: string[] = [], freeUses = 0;
+  if (id === "elf") { spells = [lineage === "drow" ? "faerie-fire" : lineage === "wood" ? "longstrider" : "detect-magic"]; freeUses = 1; }
+  if (id === "gnome") { spells = lineage === "forest" ? ["speak-with-animals"] : []; freeUses = spells.length ? pb : 0; }
+  if (id === "tiefling") { spells = [lineage === "abyssal" ? "ray-of-sickness" : lineage === "chthonic" ? "false-life" : "hellish-rebuke"]; freeUses = 1; }
   // Celestial Radiance fixes Charisma; the other spellcasting species choose an ability.
   const casting = id === "aasimar" ? "charisma" : ability;
   return cantrips.length || spells.length ? [{ source: "种族法术", ability: casting, cantrips, spells, freeUses, resource: freeUses ? "species-magic" : undefined, attack: pb + abilities[casting].modifier, dc: 8 + pb + abilities[casting].modifier }] : [];

@@ -1,3 +1,4 @@
+import { expansionChecks } from "./expansionSelftest";
 import { onboardingChecks } from "./onboardingSelftest";
 import { handoffChecks } from "./handoffSelftest";
 import { rogueChecks } from "./rogueSelftest";
@@ -130,6 +131,7 @@ speciesChecks(assert);
 rogueChecks(assert);
 handoffChecks(assert);
 onboardingChecks(assert);
+expansionChecks(assert);
 wizardChecks(assert);
 druidChecks(assert);
 warlockChecks(assert);

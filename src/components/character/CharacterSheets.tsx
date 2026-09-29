@@ -1,3 +1,5 @@
+import { SubclassSheet } from "./SubclassSheet";
+import { subclassFeatures } from "../../rules/expandedSubclasses";
 import { BeginnerSheet } from "./BeginnerSheet";
 import { normalizePlayState } from "../../rules/engine/playState";
 import { RogueSheets } from "./RogueSheets";
@@ -48,25 +50,28 @@ function ClassSheets({ build, character: c, play, mode }: Props & { play: PlaySt
   if (build.classId === "ranger") return <RangerSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "warlock") return <WarlockSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "druid") return <DruidSheets build={build} c={c} play={play} mode={mode} />;
-  const total = c.spellcasting ? 3 + Math.ceil(new Set([...c.spellcasting.cantrips, ...c.spellcasting.book]).size / 6) : 3;
+  const wizard = build.classId === "wizard";
+  const extraPage = !["champion", "evoker"].includes(build.subclassId);
+  const total = 3 + Number(extraPage) + (c.spellcasting ? Math.ceil(new Set([...c.spellcasting.cantrips, ...(wizard ? c.spellcasting.book : c.spellcasting.prepared)]).size / 6) : 0);
   return <>
     <article className="sheet-page core-reference" data-sheet-page>
       <Header build={build} title="完整人物卡 · 核心数值" page={`01 / ${total}`} /><Stats c={c} play={play} />
       <div className="sheet-abilities">{ABILITIES.map((id) => <div key={id}><small>{abilityNames[id]}</small><b>{c.abilities[id].score}</b><span>{signed(c.abilities[id].modifier)}</span></div>)}</div>
-      <div className="sheet-columns"><section><h3>豁免检定</h3><div className="sheet-rolls">{ABILITIES.map((id) => <div key={id}><span>{c.savingThrows[id].proficiency !== "none" ? "●" : "○"} {abilityNames[id]}</span><Roll roll={c.savingThrows[id]} /></div>)}</div><p className="sheet-note">◆ 专精　● 熟练　○ 未熟练</p><h3>感官与防护</h3><SpeciesSummary c={c} /><h3>护甲与武器训练</h3><p>{c.spellcasting ? "无护甲受训；简易武器熟练。" : "轻甲、中甲、重甲、盾牌；简易武器、军用武器。"}</p></section><section><h3>全部技能</h3><div className="sheet-rolls">{(Object.keys(SKILLS) as (keyof typeof SKILLS)[]).map((id) => <div key={id}><span>{c.skills[id].proficiency === "expertise" ? "◆" : c.skills[id].proficiency === "proficient" ? "●" : "○"} {skillNames[id]} <small>{abilityNames[SKILLS[id].defaultAbility]}</small></span><Roll roll={c.skills[id]} /></div>)}</div></section></div>
+      <div className="sheet-columns"><section><h3>豁免检定</h3><div className="sheet-rolls">{ABILITIES.map((id) => <div key={id}><span>{c.savingThrows[id].proficiency !== "none" ? "●" : "○"} {abilityNames[id]}</span><Roll roll={c.savingThrows[id]} /></div>)}</div><p className="sheet-note">◆ 专精　● 熟练　○ 未熟练</p><h3>感官与防护</h3><SpeciesSummary c={c} /><h3>护甲与武器训练</h3><p>{wizard ? "无护甲受训；简易武器熟练。" : "轻甲、中甲、重甲、盾牌；简易武器、军用武器。"}</p></section><section><h3>全部技能</h3><div className="sheet-rolls">{(Object.keys(SKILLS) as (keyof typeof SKILLS)[]).map((id) => <div key={id}><span>{c.skills[id].proficiency === "expertise" ? "◆" : c.skills[id].proficiency === "proficient" ? "●" : "○"} {skillNames[id]} <small>{abilityNames[SKILLS[id].defaultAbility]}</small></span><Roll roll={c.skills[id]} /></div>)}</div></section></div>
       <Attacks c={c} /><footer className="sheet-footer">D&D 5R · 固定生命值成长 · 属性、熟练与装备效果已计入</footer>
     </article>
     <article className="sheet-page" data-sheet-page>
       <Header build={build} title="完整人物卡 · 能力与资源" page={`02 / ${total}`} /><Resources c={c} play={play} />
-      <section><h3>职业、种族与专长</h3><div className="sheet-features">{classFeatureIds(c).map((id) => <div key={id}><b>{features[id]?.name ?? id}</b><small>{features[id]?.timing}</small><p>{features[id]?.text}</p></div>)}</div></section>
+      <section><h3>职业、种族与专长</h3><div className="sheet-features">{classFeatureIds(c).filter((id) => !extraPage || !subclassFeatures(build).includes(id)).map((id) => <div key={id}><b>{features[id]?.name ?? id}</b><small>{features[id]?.timing}</small><p>{features[id]?.text}</p></div>)}</div></section>
       <Masteries c={c} /><footer className="sheet-footer">短休至少 1 小时；长休通常 8 小时，精灵出神可用 4 小时。仍须满足其他休息条件。</footer>
     </article>
     <article className="sheet-page" data-sheet-page>
       <Header build={build} title="完整人物卡 · 装备与身份" page={`03 / ${total}`} />
-      <div className="sheet-columns"><section><h3>起始装备</h3><div className="sheet-rolls">{c.equipment.map((item) => <div key={item.id}><span>{item.id === "quarterstaff" && build.classId === "wizard" ? "长棍（其中一根为奥术法器）" : itemNames[item.id] ?? item.id}</span><b>× {item.quantity}</b></div>)}</div><p className="sheet-note">{c.spellcasting ? "未着装护甲；施展法师护甲后才可使用对应 AC。" : "链甲已着装，隐匿检定具有劣势；力量不足 13 时速度 −10 尺（已计入）。"}此处列出起始装备，消耗品数量由玩家另行记录。</p></section><section><h3>语言与工具</h3><p>{c.languages.map((id) => zhCN.language[id as keyof typeof zhCN.language]).join("、")}</p><p>工具熟练：{c.tools.map((id) => itemNames[id] ?? id).join("、")}</p>{c.spellcasting ? <><h3>学者套组</h3><p>背包、书籍、墨水、墨水笔、油灯、10 瓶油、10 张羊皮纸、火绒盒。</p><h3>施法材料</h3><p>奥术法器或法术书替代无标价且不消耗的材料。言语需能出声；姿势需一只自由手。兼有材料和姿势成分时，持法器的手可完成该法术的姿势。</p></> : <><h3>地城探索者套组</h3><p>背包、铁蒺藜、撬棍、2 瓶油、10 日份口粮、绳索、火绒盒、10 支火把、水袋。</p>{c.equipment.some((e) => e.id === "healers-kit") && <><h3>医疗包</h3><p>共 10 次；以利用动作花费 1 次，使一名 0 HP 且昏迷的生物伤势稳定，无需医药检定。</p></>}</>}</section></div>
+      <div className="sheet-columns"><section><h3>起始装备</h3><div className="sheet-rolls">{c.equipment.map((item) => <div key={item.id}><span>{item.id === "quarterstaff" && build.classId === "wizard" ? "长棍（其中一根为奥术法器）" : itemNames[item.id] ?? item.id}</span><b>× {item.quantity}</b></div>)}</div><p className="sheet-note">{wizard ? "未着装护甲；施展法师护甲后才可使用对应 AC。" : "链甲已着装，隐匿检定具有劣势；力量不足 13 时速度 −10 尺（已计入）。"}此处列出起始装备，消耗品数量由玩家另行记录。</p></section><section><h3>语言与工具</h3><p>{c.languages.map((id) => zhCN.language[id as keyof typeof zhCN.language]).join("、")}</p><p>工具熟练：{c.tools.map((id) => itemNames[id] ?? id).join("、")}</p>{wizard ? <><h3>学者套组</h3><p>背包、书籍、墨水、墨水笔、油灯、10 瓶油、10 张羊皮纸、火绒盒。</p><h3>施法材料</h3><p>奥术法器或法术书替代无标价且不消耗的材料。言语需能出声；姿势需一只自由手。兼有材料和姿势成分时，持法器的手可完成该法术的姿势。</p></> : <><h3>地城探索者套组</h3><p>背包、铁蒺藜、撬棍、2 瓶油、10 日份口粮、绳索、火绒盒、10 支火把、水袋。</p>{c.equipment.some((e) => e.id === "healers-kit") && <><h3>医疗包</h3><p>共 10 次；以利用动作花费 1 次，使一名 0 HP 且昏迷的生物伤势稳定，无需医药检定。</p></>}</>}</section></div>
       <section className="sheet-story"><h3>角色身份</h3><p>{build.identity.gender || "性别未填写"} · {build.identity.age === undefined ? "年龄未填写" : `${build.identity.age} 岁`} · {build.identity.personalityTraits?.join("、") || "性格未填写"}</p><h4>外貌</h4><p>{build.identity.appearance || "—"}</p><h4>故事</h4><p>{build.identity.description || "—"}</p></section>
       <footer className="sheet-footer">D&D 5R · 初始构筑记录 · 装备变化请与主持人确认</footer>
     </article>
-    {c.spellcasting && <SpellPages build={build} c={c} full start={4} total={total} />}
+    {extraPage && <SubclassSheet build={build} c={c} total={total} />}
+    {c.spellcasting && <SpellPages build={build} c={c} full start={4 + Number(extraPage)} total={total} />}
   </>;
 }

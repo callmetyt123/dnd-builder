@@ -1,3 +1,4 @@
+import { defaultFighterChoices } from "../data/expandedSubclasses";
 import { defaultSpeciesChoices } from "./species";
 import { defaultOriginChoices } from "./origins";
 import type { CharacterBuild, ClassId } from "./types";
@@ -65,6 +66,7 @@ export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
       languages: ["dwarvish", "giant"],
       origin: defaultOriginChoices("fighter"),
       species: defaultSpeciesChoices(),
+      fighter: defaultFighterChoices(),
       fighterSkills: ["perception", "survival"],
       fightingStyle: "defense",
       weaponMasteries: ["greatsword", "flail", "javelin"],

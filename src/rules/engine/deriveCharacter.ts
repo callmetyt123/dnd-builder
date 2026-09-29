@@ -1,3 +1,4 @@
+import { illusionCantrip, subclassFeatures } from "../expandedSubclasses";
 import { rogueFeatures, rogueWeaponProficient } from "../../data/rogue";
 import type { RogueSubclass } from "../types";
 import { FIEND_SPELLS, invocation } from "../../data/warlock";
@@ -48,6 +49,10 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const rogue = build.classId === "rogue" ? build.choices.rogue : undefined;
   const trickster = !!rogue && build.subclassId === "arcane-trickster";
   const fighter = build.classId === "fighter";
+  const champion = fighter && build.subclassId === "champion";
+  const battleMaster = fighter && build.subclassId === "battle-master";
+  const knight = fighter && build.subclassId === "eldritch-knight" ? build.choices.fighter : undefined;
+  const psi = fighter && build.subclassId === "psi-warrior";
   const book = wizard ? [...wizard.earlyBook, ...wizard.level3Book, ...wizard.evocationBook] : [];
   const pb = proficiencyBonus(build.level);
   const finalScores = addAbilityBoosts(build.abilities.baseAssignment, build.abilities.backgroundBoosts);
@@ -58,6 +63,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const skillProficiencies = new Set<SkillId>([
     ...background.skills,
     ...extraSkills(build),
+    ...(battleMaster && build.choices.fighter ? [build.choices.fighter.studentSkill] : []),
     ...(rogue?.skills ?? ranger?.skills ?? warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
@@ -66,7 +72,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       const ability = SKILLS[skillId].defaultAbility;
       const proficient = skillProficiencies.has(skillId);
       const expertise = proficient && (wizard?.scholar === skillId || ranger?.expertise === skillId || rogue?.expertise.includes(skillId));
-      const advantageSources = fighter && skillId === "athletics" && CHAMPION.athleticsAdvantage ? ["remarkable-athlete"] : [];
+      const advantageSources = champion && skillId === "athletics" && CHAMPION.athleticsAdvantage ? ["remarkable-athlete"] : [];
       return [
         skillId,
         makeRoll(
@@ -102,7 +108,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   let speed = build.speciesId === "elf" && lineage === "wood" ? 35 : species.speed;
   if (fighter && abilities.strength.score < chainMail.strengthRequirement) speed -= 10;
 
-  const initiativeAdvantages = rogue && build.subclassId === "assassin" ? ["assassinate"] : fighter && CHAMPION.initiativeAdvantage ? ["remarkable-athlete"] : [];
+  const initiativeAdvantages = rogue && build.subclassId === "assassin" ? ["assassinate"] : champion && CHAMPION.initiativeAdvantage ? ["remarkable-athlete"] : [];
   const initiative = makeRoll(abilities.dexterity.modifier + (feats.includes("alert") ? pb : 0), "none", initiativeAdvantages);
 
   const masterySet = new Set(build.choices.weaponMasteries);
@@ -153,10 +159,10 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     originMagic: initiate ? { ...initiate, attack: abilities[initiate.ability].modifier + pb, dc: 8 + pb + abilities[initiate.ability].modifier } : undefined,
     rogue: rogue ? { subclass: build.subclassId as RogueSubclass, sneakDice: "2d6", climb: build.subclassId === "thief" ? speed : undefined } : undefined,
     primalCompanion: ranger?.primal,
-    spellcasting: trickster ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, book: [], cantrips: ["mage-hand", ...rogue!.cantrips], prepared: rogue!.prepared, ritualSpells: rogue!.prepared.filter((id) => spell(id)?.ritual) } : ranger ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [], prepared: [...ranger.prepared, "hunters-mark"], ritualSpells: ranger.prepared.filter((id) => spell(id)?.ritual) } : wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, ritualSpells: [] } : undefined,
+    spellcasting: knight ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, book: [], cantrips: knight.cantrips, prepared: knight.prepared, ritualSpells: knight.prepared.filter((id) => spell(id)?.ritual) } : trickster ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, book: [], cantrips: ["mage-hand", ...rogue!.cantrips], prepared: rogue!.prepared, ritualSpells: rogue!.prepared.filter((id) => spell(id)?.ritual) } : ranger ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [], prepared: [...ranger.prepared, "hunters-mark"], ritualSpells: ranger.prepared.filter((id) => spell(id)?.ritual) } : wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, book, cantrips: [...wizard.cantrips, ...(build.subclassId === "illusionist" ? [illusionCantrip(build)] : [])], prepared: wizard.prepared, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, ritualSpells: [] } : undefined,
     pactMagic: warlock ? { slotLevel: 2, invocations: warlock.invocations, atWill: warlock.invocations.flatMap((v) => invocation(v.id)?.spell ? [invocation(v.id)!.spell!] : []), darkBlessing: Math.max(1, abilities.charisma.modifier + build.level), concentrationAdvantage: warlock.invocations.some((v) => v.id === "eldritch-mind"), devilsSight: warlock.invocations.some((v) => v.id === "devils-sight") } : undefined,
     wildShape: druid ? { knownForms: druid.knownForms.filter(legalMoonForm), temporaryHp: build.level * 3 } : undefined,
-    armorNote: rogue ? "皮甲 · 11 + 敏捷" : ranger ? `镶钉皮甲 · 12 + 敏捷${ranger.style === "defense" ? " + 防御" : ""}` : druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : wizard ? `无甲 · 10 + 敏捷${wizard.prepared.includes("mage-armor") || innateMagic.some((m) => m.spells.includes("mage-armor")) ? `；法师护甲生效时 ${13 + abilities.dexterity.modifier}` : ""}` : undefined,
+    armorNote: fighter ? "链甲 + 防御风格" : rogue ? "皮甲 · 11 + 敏捷" : ranger ? `镶钉皮甲 · 12 + 敏捷${ranger.style === "defense" ? " + 防御" : ""}` : druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : wizard ? `无甲 · 10 + 敏捷${wizard.prepared.includes("mage-armor") || innateMagic.some((m) => m.spells.includes("mage-armor")) ? `；法师护甲生效时 ${13 + abilities.dexterity.modifier}` : ""}` : undefined,
     proficiencyBonus: pb,
     abilities,
     maxHp,
@@ -183,11 +189,14 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
         { id: "spell-slot-2", max: 2, recovery: "长休恢复；短休可使用奥术回想" },
         { id: "arcane-recovery", max: 1, recovery: "长休恢复；短休时可恢复总环阶至多 2 的法术位" },
       ]),
+      ...(battleMaster ? [{ id: "combat-superiority", max: 4, recovery: "d8；短休或长休恢复全部", shortRestRestore: 4 }] : []),
+      ...(knight ? [{ id: "spell-slot-1", max: 2, recovery: "长休恢复全部" }] : []),
+      ...(psi ? [{ id: "psi-warrior-energy", max: 4, recovery: "d6；短休恢复 1 枚，长休恢复全部", shortRestRestore: 1 }, { id: "telekinetic-movement", max: 1, recovery: "短休或长休恢复；可消耗 1 枚灵能骰重置", shortRestRestore: 1 }] : []),
       ...(feats.includes("lucky") ? [{ id: "lucky", max: pb, recovery: "长休恢复全部；不随短休恢复" }] : []),
       ...innateMagic.filter((m) => m.resource).map((m) => ({ id: m.resource!, max: m.freeUses, recovery: "长休恢复；免费施展该来源法术" })),
       ...speciesResources,
     ],
-    criticalThreshold: fighter ? CHAMPION.criticalThreshold : 20,
+    criticalThreshold: champion ? CHAMPION.criticalThreshold : 20,
     languages: ["common", ...build.choices.languages, ...(ranger?.extraLanguages ?? []), ...(rogue ? ["thieves-cant", rogue.extraLanguage] : []), ...(druid ? ["druidic"] : [])],
     senses: { darkvision: build.speciesId === "elf" && lineage === "drow" ? 120 : species.darkvision },
     resistances: speciesResistances(build),
@@ -198,8 +207,8 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
       "weapon-mastery",
       "action-surge",
       "tactical-mind",
-      ...CHAMPION.features,
-      ] : warlock ? ["pact-magic", "magical-cunning", "fiend-spells", "dark-ones-blessing"] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip"]),
+      ...subclassFeatures(build),
+      ] : warlock ? ["pact-magic", "magical-cunning", "fiend-spells", "dark-ones-blessing"] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", ...subclassFeatures(build)]),
       ...feats,
       ...speciesFeatures(build),
     ],

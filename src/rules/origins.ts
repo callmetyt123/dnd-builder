@@ -40,7 +40,7 @@ export function extraSkills(build: CharacterBuild): SkillId[] {
 }
 export function magicOptions(list: MagicList) { return ORIGIN_SPELL_IDS[list].map((id) => spell(id)!).filter(Boolean); }
 export function classSkills(build: CharacterBuild): SkillId[] {
-  return build.classId === "fighter" ? build.choices.fighterSkills : build.choices[build.classId]!.skills;
+  return build.classId === "fighter" ? [...build.choices.fighterSkills, ...(build.subclassId === "battle-master" && build.choices.fighter ? [build.choices.fighter.studentSkill] : [])] : build.choices[build.classId]!.skills;
 }
 export function proficientSkills(build: CharacterBuild): SkillId[] {
   return [...new Set([...classSkills(build), ...BACKGROUNDS[build.backgroundId].skills, ...extraSkills(build)])];
@@ -68,7 +68,10 @@ export function recommendSkills(build: CharacterBuild): CharacterBuild {
   const options = PROFILES[build.classId].skills.filter((id) => ![...background.skills, ...extraSkills(build)].includes(id));
   const skills = [...new Set([...classSkills(build).filter((id) => options.includes(id)), ...options, ...PROFILES[build.classId].skills])].slice(0, count);
   const choices = { ...build.choices };
-  if (build.classId === "fighter") choices.fighterSkills = skills;
+  if (build.classId === "fighter") {
+    choices.fighterSkills = skills;
+    if (build.subclassId === "battle-master" && choices.fighter) choices.fighter = { ...choices.fighter, studentSkill: PROFILES.fighter.skills.find((id) => ![...skills, ...background.skills, ...extraSkills(build)].includes(id)) ?? PROFILES.fighter.skills.find((id) => !skills.includes(id))! };
+  }
   else if (build.classId === "rogue") {
     const r = choices.rogue!;
     const available = [...new Set([...skills, ...background.skills, ...extraSkills(build)])];
@@ -92,7 +95,7 @@ export function backgroundTool(build: CharacterBuild): string {
   return tool === "gaming-set" ? build.choices.origin.gamingSet : tool === "artisan-tool" ? build.choices.origin.artisanTool : tool === "instrument" ? build.choices.origin.instrument : tool;
 }
 export function classTools(build: CharacterBuild): string[] {
-  return build.classId === "druid" ? ["herbalism-kit"] : build.classId === "rogue" ? ["thieves-tools", ...(build.subclassId === "assassin" ? ["disguise-kit", "poisoners-kit"] : [])] : [];
+  return build.classId === "fighter" && build.subclassId === "battle-master" && build.choices.fighter ? [build.choices.fighter.artisanTool] : build.classId === "druid" ? ["herbalism-kit"] : build.classId === "rogue" ? ["thieves-tools", ...(build.subclassId === "assassin" ? ["disguise-kit", "poisoners-kit"] : [])] : [];
 }
 export function toolProficiencies(build: CharacterBuild): string[] {
   return [...new Set([backgroundTool(build), ...classTools(build), ...featSources(build).flatMap((f) => f.id === "crafter" ? f.choices.crafter : f.id === "musician" ? f.choices.musician : f.id === "skilled" ? f.choices.skilled.filter((id) => Object.prototype.hasOwnProperty.call(TOOL_OPTIONS, id)) : [])])];

@@ -1,3 +1,5 @@
+import { changeExpandedSubclass, defaultFighterChoices } from "../rules/expandedSubclasses";
+import type { FighterChoices, FighterSubclass, WizardSubclass } from "../rules/types";
 import { applyRecommendation, type RecommendationStep } from "../rules/guides/onboarding";
 import { changeRogueSubclass } from "../rules/rogue";
 import type { RogueChoices, RogueSubclass } from "../rules/types";
@@ -7,7 +9,7 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useState } f
 import type { AbilityId, CharacterBuild, ClassId, SkillId, DruidChoices, WizardChoices, WarlockChoices, RangerChoices, BackgroundId, OriginChoices } from "../rules/types";
 
 import { BACKGROUNDS } from "../data/backgrounds";
-import { changeBackground, defaultMagic, recommendSkills, recommendedBoosts } from "../rules/origins";
+import { changeBackground, defaultMagic, recommendSkills } from "../rules/origins";
 import { defaultBuild } from "../rules/defaultBuild";
 import { deriveCharacter } from "../rules/engine/deriveCharacter";
 import { normalizePlayState, updatePlayState, type PlayAction } from "../rules/engine/playState";
@@ -15,6 +17,8 @@ import { switchClass, parseDraft, STORAGE_KEY, type BuilderState, type BuilderSt
 export type { BuilderState, BuilderStep } from "./draft";
 
 type Action =
+  | { type: "expanded-subclass"; id: FighterSubclass | WizardSubclass }
+  | { type: "fighter"; patch: Partial<FighterChoices> }
   | { type: "recommend-step"; step: RecommendationStep }
   | { type: "rogue"; patch: Partial<RogueChoices> }
   | { type: "rogue-subclass"; id: RogueSubclass }
@@ -43,6 +47,11 @@ type Action =
   | { type: "identity"; patch: Partial<CharacterBuild["identity"]> };
 
 function reducer(state: BuilderState, action: Action): BuilderState {
+  if (action.type === "expanded-subclass") {
+    const build = changeExpandedSubclass(state.build, action.id);
+    return { ...state, build, play: state.play ? normalizePlayState(state.play, deriveCharacter(build)) : undefined };
+  }
+  if (action.type === "fighter" && state.build.classId === "fighter") return { ...state, build: { ...state.build, choices: { ...state.build.choices, fighter: { ...(state.build.choices.fighter ?? defaultFighterChoices()), ...action.patch } } } };
   if (action.type === "recommend-step") return { ...state, build: applyRecommendation(state.build, action.step) };
   if (action.type === "rogue" && state.build.classId === "rogue") return { ...state, build: { ...state.build, choices: { ...state.build.choices, rogue: { ...state.build.choices.rogue!, ...action.patch } } } };
   if (action.type === "rogue-subclass") return changeRogueSubclass(state, action.id);
@@ -61,7 +70,7 @@ function reducer(state: BuilderState, action: Action): BuilderState {
   if (action.type === "skills-recommend") return { ...state, build: recommendSkills(state.build) };
   if (action.type === "origin") return { ...state, build: { ...state.build, choices: { ...state.build.choices, origin: { ...state.build.choices.origin, ...action.patch } } } };
   if (action.type === "origin-magic-default") return { ...state, build: { ...state.build, choices: { ...state.build.choices, origin: { ...state.build.choices.origin, magicInitiate: defaultMagic(BACKGROUNDS[state.build.backgroundId].magicList ?? "wizard", state.build.classId) } } } };
-  if (action.type === "abilities-default") return { ...state, build: { ...state.build, abilities: { baseAssignment: defaultBuild(state.build.classId).abilities.baseAssignment, backgroundBoosts: recommendedBoosts(state.build.classId, state.build.backgroundId) } } };
+  if (action.type === "abilities-default") return { ...state, build: applyRecommendation(state.build, "abilities") };
   if (action.type === "boosts-equal") return { ...state, build: { ...state.build, abilities: { ...state.build.abilities, backgroundBoosts: Object.fromEntries(BACKGROUNDS[state.build.backgroundId].abilities.map((id) => [id, 1])) } } };
   if (action.type === "step") return { ...state, step: action.step };
   if (action.type === "reset") return { step: "home", build: defaultBuild() };

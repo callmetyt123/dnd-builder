@@ -14,7 +14,7 @@ export const ROGUE_LANGUAGES = [...STANDARD_LANGUAGE_IDS, "abyssal", "celestial"
 export const rogueWeaponProficient = (id: string) => !!WEAPONS[id] && (WEAPONS[id].category.startsWith("simple") || !!WEAPONS[id].finesse || !!WEAPONS[id].properties?.includes("轻型"));
 export const ROGUE_MASTERIES = Object.keys(WEAPONS).filter(rogueWeaponProficient);
 export const rogueFeatures = (id: RogueSubclass) => ["rogue-expertise", "sneak-attack", "thieves-cant", "rogue-mastery", "cunning-action", "steady-aim", ...ROGUE_SUBCLASSES[id].features];
-export const hasSpellStep = (build: CharacterBuild) => build.classId !== "fighter" && (build.classId !== "rogue" || build.subclassId === "arcane-trickster");
+export const hasSpellStep = (build: CharacterBuild) => (build.classId !== "fighter" || build.subclassId === "eldritch-knight") && (build.classId !== "rogue" || build.subclassId === "arcane-trickster");
 
 // 同一法术字典由多个职业共享；纸卡只补充当前子职的施法方式。
 export function rogueSpellText(s: Spell): string {

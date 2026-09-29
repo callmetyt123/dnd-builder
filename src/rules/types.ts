@@ -65,6 +65,9 @@ export interface SpeciesChoices {
 export interface InnateMagic { source: string; ability: "intelligence" | "wisdom" | "charisma"; cantrips: string[]; spells: string[]; resource?: string; freeUses: number; attack: number; dc: number }
 
 export type ClassId = "fighter" | "wizard" | "druid" | "warlock" | "ranger" | "rogue";
+export type FighterSubclass = "champion" | "battle-master" | "eldritch-knight" | "psi-warrior";
+export type WizardSubclass = "evoker" | "abjurer" | "diviner" | "illusionist";
+export interface FighterChoices { maneuvers: string[]; studentSkill: SkillId; artisanTool: string; cantrips: string[]; prepared: string[]; bondedWeapons: string[] }
 export type RogueSubclass = "thief" | "assassin" | "arcane-trickster" | "soulknife";
 export interface RogueChoices { skills: SkillId[]; expertise: SkillId[]; extraLanguage: string; cantrips: string[]; prepared: string[] }
 export interface RangerChoices { skills: SkillId[]; expertise: SkillId; extraLanguages: string[]; style: "archery" | "defense"; prepared: string[]; primal: PrimalChoice }
@@ -77,15 +80,16 @@ export interface DruidChoices {
 }
 export interface WizardChoices {
   skills: SkillId[]; scholar: SkillId; cantrips: string[];
-  // 分开记录升级来源，防止一级法术书被二环法术填满。
+  // 分开记录升级来源；evocationBook 为历史存储字段，现统一承载当前学派的两道额外法术。
   earlyBook: string[]; level3Book: string[]; evocationBook: string[]; prepared: string[];
+  illusionCantrip?: string;
 }
 
 export interface CharacterBuild {
   schemaVersion: 1;
   level: 3;
   classId: ClassId;
-  subclassId: RogueSubclass | "champion" | "evoker" | "moon" | "fiend" | "beast-master";
+  subclassId: RogueSubclass | FighterSubclass | WizardSubclass | "moon" | "fiend" | "beast-master";
   speciesId: SpeciesId;
   backgroundId: BackgroundId;
   profileId: "rogue" | "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
@@ -98,6 +102,7 @@ export interface CharacterBuild {
     backgroundBoosts: Partial<Record<AbilityId, number>>;
   };
   choices: {
+    fighter?: FighterChoices;
     rogue?: RogueChoices;
     ranger?: RangerChoices;
     wizard?: WizardChoices;

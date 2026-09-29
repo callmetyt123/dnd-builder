@@ -2,7 +2,7 @@ import { BACKGROUNDS } from "../../data/backgrounds";
 import { features, itemNames } from "../../data/characterDetails";
 import { SPECIES, GIANT_GIFTS, DRAGON_DAMAGE, DAMAGE_NAMES } from "../../data/species";
 import { ORIGIN_FEATS, CRAFTING, TOOL_OPTIONS, INSTRUMENTS } from "../../data/originOptions";
-import { spell } from "../../data/spells";
+import { wizardSpell } from "../../rules/expandedSubclasses";
 import { featSources } from "../../rules/origins";
 import { signed } from "../../rules/engine/format";
 import type { PlayState } from "../../rules/engine/playState";
@@ -50,7 +50,7 @@ export function OriginSpellSheet({ build, c }: { build: CharacterBuild; c: Deriv
     <p className="casting-strip">{magic.source} · {abilityNames[magic.ability]}施法 · 攻击 {signed(magic.attack)} · DC {magic.dc}</p>
     {magic.resource ? <p>一环法术免费施展：{"□ ".repeat(magic.freeUses)} / {magic.freeUses}，长休恢复。也可消耗已有法术位；此来源不额外提供法术位。</p> : <p>戏法不消耗法术位，仍须满足施法时间与成分要求。</p>}
     <div className="spell-card-grid">{[...magic.cantrips, ...magic.spells].map((id) => {
-      const s = spell(id);
+      const s = wizardSpell(build, id);
       if (!s) return null;
       const text = id === "false-life" ? "获得 2d4+4 临时 HP；二环施展额外 +5。临时 HP 不叠加。此来源不享受邪魔活力的最大值。" : s.text.replace(/感知调整值/g, "本页施法属性调整值");
       return <section className="spell-card" key={id}><h3>{s.name} <small>{s.level === 0 ? "戏法" : "一环"} · {s.school}</small></h3><div className="spell-source">{s.level === 0 ? "不耗法术位" : "始终准备 · 免费次数或用法术位"}</div><p><b>{s.time}</b> · {s.range}<br />{s.components}<br />{s.concentration ? "专注 · " : ""}{s.duration}{s.ritual ? " · 可仪式" : ""}</p><p>{text}</p>{c.features.includes("healer") && ["cure-wounds", "healing-word"].includes(id) && <p>医疗师：治疗骰为 1 可重掷，必须使用新结果。</p>}</section>;

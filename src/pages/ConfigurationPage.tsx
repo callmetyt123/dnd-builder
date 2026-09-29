@@ -1,3 +1,5 @@
+import { FighterSubclassChoices } from "./FighterSubclassChoices";
+import { hasSpellStep } from "../data/rogue";
 import { RogueConfigurationPage } from "./RogueConfigurationPage";
 import { proficientSkills } from "../rules/origins";
 import { BACKGROUNDS } from "../data/backgrounds";
@@ -40,11 +42,12 @@ export function ConfigurationPage() {
     </BuilderShell>;
   }
   return (
-    <BuilderShell previous="abilities" next="identity">
+    <BuilderShell previous="abilities" next={hasSpellStep(state.build) ? "spells" : "identity"}>
       <section className="page-head"><h1>完善角色配置</h1><p>新人可以直接保留推荐项；理解规则后也可以修改。</p></section>
       <details open className="choice-section"><summary><span>技能熟练</span><span>{state.build.choices.fighterSkills.length}/2</span></summary><p className="hint">推荐：察觉 + 求生。背景熟练已计入，重复选择不会叠加。</p><div className="choice-pills">{FIGHTER.skillOptions.map((skill) => <button aria-pressed={state.build.choices.fighterSkills.includes(skill)} className={state.build.choices.fighterSkills.includes(skill) ? "selected" : ""} key={skill} onClick={() => toggleSkill(skill)}>{skillNames[skill]}</button>)}</div></details>
       <details open className="choice-section"><summary><span>战斗风格</span><span>已确认</span></summary><div className="selected-option"><strong>防御</strong><p>着装轻甲、中甲或重甲期间，AC +1。</p><span className="badge recommended">推荐 · 无额外资源管理</span></div></details>
       <details open className="choice-section"><summary><span>武器与武器精通</span><span>{state.build.choices.weaponMasteries.length}/3</span></summary><p className="hint">推荐巨剑、连枷和标枪。也可替换为矛或短弓；是否携带取决于所选背景；共选 3 种。</p><div className="weapon-list">{masteryIds.map((id) => { const weapon = WEAPONS[id]; return <button aria-pressed={state.build.choices.weaponMasteries.includes(id)} className={`weapon-row ${state.build.choices.weaponMasteries.includes(id) ? "selected" : ""}`} key={id} onClick={() => toggleMastery(id)}><span><strong>{zhCN.weapon[id as keyof typeof zhCN.weapon]}</strong><small>{weapon.damageDice} · {damageNames[weapon.damageType]}</small></span><span>{masteryName(weapon.mastery)} {state.build.choices.weaponMasteries.includes(id) ? "✓" : ""}</span></button>; })}</div></details>
+      <FighterSubclassChoices />
       <details className="choice-section"><summary><span>起始装备</span><span>包 A</span></summary><p>链甲、巨剑、连枷、8 支标枪、地城探索者套组、4 GP；所选背景另提供其起始装备。V1 暂不支持金币自由购物方案。</p></details>
     </BuilderShell>
   );

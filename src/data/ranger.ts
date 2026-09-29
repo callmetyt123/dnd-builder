@@ -19,6 +19,6 @@ export const RANGER_STYLES = { archery: "箭术", defense: "防御" } as const;
 export const RANGER_SPELLS: Spell[] = [
   { id: "hunters-mark", name: "猎人印记", level: 1, school: "预言", time: "附赠动作", range: "90 尺", components: "V", duration: "至多 1 小时", concentration: true, text: "标记可见生物。你以攻击检定命中它时额外造成 1d6 力场伤害；寻找它的感知（察觉或求生）检定有优势。目标降至 0 HP 后，可用附赠动作转移到范围内另一可见生物，不重新扣位。三级伙伴的攻击不享受此加伤。" },
   { id: "goodberry", name: "神莓术", level: 1, school: "咒法", time: "动作", range: "自身", components: "V、S、M（槲寄生）", duration: "24 小时", text: "创造 10 颗魔法浆果；生物用附赠动作吃一颗，恢复 1 HP 并满足一天营养需求。到期未食用的浆果消失；数量与治疗另行记录。" },
-  { id: "longstrider", name: "大步奔行", level: 1, school: "变化", time: "动作", range: "触碰", components: "V、S、M（一撮泥土）", duration: "1 小时", text: "触碰一名生物，其速度增加 10 尺；可用于角色或伙伴。期限与当前速度由玩家另行记录。" },
+  { id: "longstrider", name: "大步奔行", level: 1, school: "变化", time: "动作", range: "触碰", components: "V、S、M（一撮泥土）", duration: "1 小时", text: "触碰一名生物，其速度增加 10 尺；可用于角色或伙伴。期限与当前速度由玩家另行记录。二环施展时可再指定一名目标。" },
   { id: "ensnaring-strike", name: "捕获打击", level: 1, school: "咒法", time: "附赠动作：用武器命中生物后立即施展", range: "自身", components: "V", duration: "至多 1 分钟", concentration: true, text: "命中的生物作力量豁免，大型或更大生物具有优势。失败则被魔法藤蔓束缚，且每次其回合开始受 1d6 穿刺伤害；成功则藤蔓消失。目标或其触及内生物可用动作作对抗法术 DC 的力量（运动）检定，成功结束效果。会结束你原有的专注。" },
 ];
