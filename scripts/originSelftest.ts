@@ -36,7 +36,7 @@ export function originChecks(assert: (condition: unknown, message: string) => vo
     for (const mode of ["quick", "full"] as const) {
       const html = renderToStaticMarkup(createElement(CharacterSheets, { build, character: c, play, mode }));
       assert(!html.includes("undefined") && !html.includes("NaN"), `${label}/${mode}: no missing values in printed tree`);
-      assert(html.includes("背景法术附页") === (backgroundId === "sage"), `${label}/${mode}: origin spell appendix follows actual source`);
+      assert(html.includes("背景法术附页") === (mode === "full" && backgroundId === "sage"), `${label}/${mode}: origin spell appendix follows actual source`);
       assert(html.includes("凶蛮打手") === (backgroundId === "soldier"), `${label}/${mode}: savage attacker text follows background`);
       assert(html.includes("医疗师") === (backgroundId === "hermit"), `${label}/${mode}: healer text follows background`);
       assert(html.includes("幸运") === (backgroundId === "wayfarer"), `${label}/${mode}: lucky text follows background`);

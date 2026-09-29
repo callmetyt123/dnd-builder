@@ -189,7 +189,7 @@ textarea { min-height: 92px; resize: vertical; }
 .sheet-toolbar { margin-top: 32px; }.sheet-tabs { display: flex; padding: 4px; background: #202022; border-radius: 12px; }
 .sheet-tabs button { border: 0; background: transparent; border-radius: 8px; padding: 10px 15px; cursor: pointer; }.sheet-tabs [aria-pressed="true"] { color: #19140d; background: var(--accent); }
 .export-actions .button { font-size: 13px; padding: 10px 12px; }.export-status { font-size: 13px; margin: 14px 0; }
-.sheet-preview { container-type: inline-size; }
+.sheet-preview { container-type: inline-size; max-width: 794px; margin-inline: auto; }
 .sheet-page { color: #252b31; background: #fff; padding: 32px; margin-bottom: 24px; font: 13px/1.55 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; border-radius: 3px; overflow-wrap: anywhere; }
 .sheet-page p { color: #41484e; line-height: 1.6; margin: 8px 0; }.sheet-page h3 { font-size: 14px; color: #2e4356; border-bottom: 2px solid #c8b07f; padding-bottom: 5px; margin: 18px 0 10px; }.sheet-page h4 { margin: 12px 0 4px; }
 .sheet-header { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid #31475b; padding-bottom: 14px; }.sheet-header h2 { font-size: 28px; line-height: 1.25; margin: 7px 0; color: #1d2e3e; }.sheet-header p { margin: 0; font-size: 12px; }.sheet-kicker { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #78653b; }.sheet-page-number { color: #84909b; white-space: nowrap; font-size: 11px; }
@@ -283,3 +283,26 @@ textarea { min-height: 92px; resize: vertical; }
 .origin-cantrips input { width: auto; margin-top: 5px; }
 .origin-cantrips small { display: block; font-weight: normal; line-height: 1.6; }
 @media (max-width: 640px) { .background-grid { grid-template-columns: 1fr; } }
+
+/* 完成页解释两种输出；上手卡用单列行动、双列提示控制一页的信息量。 */
+.handoff-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.handoff-intro h2 { font-size: 17px; margin-bottom: 8px; }.handoff-intro p { font-size: 14px; margin: 0; }
+.beginner-sheet { padding: 30px 34px; font-size: 13px; }
+.beginner-sheet .sheet-header h2 { font-size: 25px; }
+.beginner-sheet h3 { margin-top: 13px; margin-bottom: 7px; }
+.beginner-role { background: #eef3f4; padding: 2px 14px 6px; margin-top: 14px; border-left: 3px solid #395e64; }
+.beginner-role h3 { border: 0; }.beginner-sheet p { margin: 5px 0; }
+.beginner-actions { display: grid; gap: 9px; }
+.beginner-action { display: flex; gap: 12px; padding: 10px 12px; border: 1px solid #d7dfe3; border-radius: 7px; break-inside: avoid; }
+.beginner-number { flex: 0 0 23px; height: 23px; border-radius: 50%; text-align: center; background: #2e4356; color: #fff; font-weight: 700; line-height: 23px; }
+.beginner-action h4 { margin: 0; font-size: 15px; }.beginner-action .beginner-when { color: #536d72; font-size: 11px; margin: 2px 0; }
+.beginner-action small { display: block; color: #68562e; font-size: 11px; }
+.beginner-bottom { display: grid; grid-template-columns: 1fr 1.25fr; gap: 24px; }.beginner-bottom p { font-size: 12px; }
+.beginner-sheet .sheet-footer { margin-top: 14px; line-height: 1.65; font-size: 10px; }
+@media (max-width: 600px) { .handoff-intro { grid-template-columns: 1fr; gap: 16px; }.sheet-tabs { max-width: 100%; }.sheet-tabs button { font-size: 13px; padding-inline: 10px; } }
+@container (max-width: 600px) { .beginner-sheet { padding: 18px; }.beginner-bottom { grid-template-columns: 1fr; gap: 0; }.beginner-action { gap: 8px; padding: 10px; } }
+/* 完整核心页含全部技能和武器，收紧区块留白，给手写 HP 留出一行。 */
+.core-reference .sheet-stats { margin-top: 12px; }
+.core-reference .sheet-footer { margin-top: 12px; }
+.core-reference .sheet-abilities { margin-top: 10px; }
+.core-reference .sheet-attacks td { padding-block: 4px; }

@@ -31,7 +31,7 @@ export function speciesChecks(assert: (ok: unknown, message: string) => void) {
       for (const mode of ["quick", "full"] as const) {
         const html = renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: c, play: normalizePlayState(undefined, c), mode }));
         assert(!/undefined|NaN/.test(html), `${label}/${mode}: complete printed values`);
-        assert(html.includes("起源能力附页") && html.includes(BACKGROUNDS[bg].name), `${label}/${mode}: origins printable`);
+        assert((mode === "full" ? html.includes("起源能力附页") : (html.match(/data-sheet-page/g) ?? []).length === 1) && html.includes(BACKGROUNDS[bg].name), `${label}/${mode}: origins printable`);
         assert(html.includes("石中精妙") === (species === "dwarf"), `${label}/${mode}: no stale dwarf text`);
       }
     }
@@ -65,7 +65,7 @@ export function speciesChecks(assert: (ok: unknown, message: string) => void) {
   const druid = named(changeSpecies(defaultBuild("druid"), "gnome")); const base = deriveCharacter(druid), beast = deriveWildShape(base, "cat");
   assert(beast.savingThrows.wisdom.state === "normal" && !beast.features.includes("gnomish-cunning") && !beast.innateMagic.some((m) => m.source === "种族法术"), "wild shape removes species benefits");
   const beastHtml = renderToStaticMarkup(createElement(CharacterSheets, { build: druid, character: base, play: { ...normalizePlayState(undefined, base), formId: "cat" }, mode: "quick" }));
-  assert(beastHtml.includes("类人生物（兽形）"), "wild shape retains the original creature type on paper");
+  assert(beastHtml.includes("新人上手卡") && !beastHtml.includes("类人生物（兽形）"), "creation guide ignores old active wild shape");
   for (const list of ["cleric", "druid", "wizard"] as MagicList[]) {
     assert(ORIGIN_SPELL_IDS[list].every((id) => !!spell(id)), `${list}: complete origin catalog`);
     const b = changeBackground(human, list === "cleric" ? "acolyte" : list === "druid" ? "guide" : "sage");
@@ -80,7 +80,7 @@ export function speciesChecks(assert: (ok: unknown, message: string) => void) {
   assert(validateBuild(skilled).canGenerate && proficientSkills(skilled).includes("nature"), "Skilled can repeat with independent choices");
   const familiar = named(changeBackground(defaultBuild(), "sage")); familiar.choices.origin.magicInitiate.spell = "find-familiar";
   const familiarC = deriveCharacter(familiar);
-  const familiarHtml = renderToStaticMarkup(createElement(CharacterSheets, { build: familiar, character: familiarC, play: normalizePlayState(undefined, familiarC), mode: "quick" }));
+  const familiarHtml = renderToStaticMarkup(createElement(CharacterSheets, { build: familiar, character: familiarC, play: normalizePlayState(undefined, familiarC), mode: "full" }));
   assert(familiarHtml.includes("寻获魔宠 · 随行记录") && familiarHtml.includes("魔宠不能攻击"), "Find Familiar adds its offline reference without permitting attacks");
   const gnome = named(changeSpecies(defaultBuild(), "gnome"));
   let gnomeC = deriveCharacter(gnome);

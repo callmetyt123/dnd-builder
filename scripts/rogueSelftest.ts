@@ -82,5 +82,5 @@ export function rogueChecks(assert: (ok: unknown, message: string) => void) {
   const malformed = JSON.parse(JSON.stringify(state)); malformed.build.choices.rogue.expertise = null;
   assert(parseDraft(JSON.stringify(malformed)).preserveOriginal, "malformed rogue choice preserved for recovery");
   const familiar = structuredClone(trickster); familiar.choices.rogue!.prepared[0] = "find-familiar";
-  assert(html(familiar, "quick").includes("寻获魔宠 · 随行记录"), "trickster familiar annex");
+  assert(html(familiar, "full").includes("寻获魔宠 · 随行记录"), "trickster familiar annex");
 }

@@ -1,3 +1,4 @@
+import { handoffChecks } from "./handoffSelftest";
 import { rogueChecks } from "./rogueSelftest";
 import { speciesChecks } from "./speciesSelftest";
 import { defaultSpeciesChoices } from "../src/rules/species";
@@ -126,6 +127,7 @@ assert(parseDraft(JSON.stringify({ step: "character", build, play })).state?.pla
 originChecks(assert);
 speciesChecks(assert);
 rogueChecks(assert);
+handoffChecks(assert);
 wizardChecks(assert);
 druidChecks(assert);
 warlockChecks(assert);

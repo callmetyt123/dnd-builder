@@ -25,7 +25,7 @@ export function OriginDetailSheet({ build, c, play }: { build: CharacterBuild; c
   const names: Record<string, string> = { ...skillNames, ...TOOL_OPTIONS };
   return <article className="sheet-page" data-sheet-page><Header build={build} title="起源能力附页" page="起源 1 / 1" />
     <h3>{species.name}{species.lineages ? ` · ${species.lineages[sc.lineage]}` : ""} · {BACKGROUNDS[build.backgroundId].name}</h3><SpeciesSummary c={c} />
-    <div className="sheet-resources">{c.resources.filter((r) => isOriginResource(c, r.id)).map((r) => <div key={r.id}><b>{features[r.id].name} <span>{play.remaining[r.id]} / {r.max}</span></b><small>{r.recovery}</small></div>)}</div>
+    <div className="sheet-resources">{c.resources.filter((r) => isOriginResource(c, r.id)).map((r) => <div key={r.id}><b>{features[r.id].name} <span>{"□ ".repeat(r.max)} / {r.max}</span></b><small>{r.recovery}</small></div>)}</div>
     {play.formId && <p>当前为兽形：本页列出原形种族能力，兽形不保留这些种族能力。种族资源保留记录，恢复原形后可用。</p>}
     <div className="sheet-features">{c.speciesFeatures.filter((id) => id !== "darkvision" && id !== "versatile").map((id) => <div key={id}><b>{features[id].name}</b><small>{features[id].timing}</small><p>{features[id].text}</p></div>)}</div>
     {build.speciesId === "elf" && <p>敏锐感官所选：{skillNames[sc.skill]}。</p>}
@@ -44,11 +44,11 @@ export function OriginDetailSheet({ build, c, play }: { build: CharacterBuild; c
     <footer className="sheet-footer">工具熟练不等于持有工具 · 黑暗视觉不提供颜色辨识，也不能穿透魔法黑暗 · 条件能力不视为常驻优势</footer>
   </article>;
 }
-export function OriginSpellSheet({ build, c, play }: { build: CharacterBuild; c: DerivedCharacter; play: PlayState }) {
+export function OriginSpellSheet({ build, c }: { build: CharacterBuild; c: DerivedCharacter; play: PlayState }) {
   return <>{c.innateMagic.map((magic, i) => <article className="sheet-page" data-sheet-page key={magic.source}>
     <Header build={build} title={magic.source === "种族法术" ? "种族法术附页" : magic.source.startsWith("人类") ? "人类专长法术附页" : "背景法术附页 · 魔法学徒"} page={`法术附页 ${i + 1} / ${c.innateMagic.length}`} />
     <p className="casting-strip">{magic.source} · {abilityNames[magic.ability]}施法 · 攻击 {signed(magic.attack)} · DC {magic.dc}</p>
-    {magic.resource ? <p>一环法术免费施展：剩余 {play.remaining[magic.resource] ?? magic.freeUses} / {magic.freeUses}，长休恢复。也可消耗已有法术位；此来源不额外提供法术位。</p> : <p>戏法不消耗法术位，仍须满足施法时间与成分要求。</p>}
+    {magic.resource ? <p>一环法术免费施展：{"□ ".repeat(magic.freeUses)} / {magic.freeUses}，长休恢复。也可消耗已有法术位；此来源不额外提供法术位。</p> : <p>戏法不消耗法术位，仍须满足施法时间与成分要求。</p>}
     <div className="spell-card-grid">{[...magic.cantrips, ...magic.spells].map((id) => {
       const s = spell(id);
       if (!s) return null;
