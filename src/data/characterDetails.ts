@@ -6,7 +6,7 @@ export const itemNames: Record<string, string> = {
   "studded-leather": "镶钉皮甲", mistletoe: "德鲁伊法器（槲寄生枝条）", longbow: "长弓", shortsword: "短剑", scimitar: "弯刀",
   "arcane-orb": "奥术法器（宝珠）", "occult-book": "神秘学书籍", "thieves-tools": "盗贼工具", pouch: "小包",
   "leather-armor": "皮甲", shield: "盾牌", sickle: "镰刀", "explorers-pack": "探索者套组", "herbalism-kit": "草药工具", bedroll: "铺盖", "philosophy-book": "哲学书", lamp: "油灯", oil: "油（瓶）",
-  dagger: "匕首", quarterstaff: "长棍（其中一根为奥术法器）", robe: "长袍", spellbook: "法术书", "scholars-pack": "学者套组", "calligraphers-supplies": "书法工具", "history-book": "历史书", parchment: "羊皮纸",
+  dagger: "匕首", quarterstaff: "长棍", robe: "长袍", spellbook: "法术书", "scholars-pack": "学者套组", "calligraphers-supplies": "书法工具", "history-book": "历史书", parchment: "羊皮纸",
   "chain-mail": "链甲", greatsword: "巨剑", flail: "连枷", javelin: "标枪", spear: "矛", shortbow: "短弓",
   "dungeoneers-pack": "地城探索者套组", arrow: "箭", quiver: "箭袋", "healers-kit": "医疗包（10 次）", "travelers-clothes": "旅行者服装", gp: "金币（GP）", ...GAMING_SETS,
 };

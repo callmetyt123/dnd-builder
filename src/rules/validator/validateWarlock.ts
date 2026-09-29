@@ -1,5 +1,4 @@
 import { PROFILES } from "../../data/profiles";
-import { GAMING_SETS } from "../../data/characterDetails";
 import { WARLOCK_CANTRIPS, WARLOCK_PREPARABLE, eligibleTarget, invocation, invocationKey } from "../../data/warlock";
 import { spell } from "../../data/spells";
 import type { ValidationMessage, WarlockChoices } from "../types";
@@ -11,7 +10,6 @@ export function validateWarlock(w: WarlockChoices): ValidationMessage[] {
   };
   const unique = (ids: string[], count: number) => ids.length === count && new Set(ids).size === count;
   check(unique(w.skills, 2) && w.skills.every((s) => PROFILES.warlock.skills.includes(s)), "warlock-skills", "选择 2 项不同的魔契师职业技能。", "configuration");
-  check(Object.prototype.hasOwnProperty.call(GAMING_SETS, w.gamingSet), "wayfarer-game", "请选择流浪者起始装备中的一种赌具；此背景不提供赌具熟练。", "background");
   check(unique(w.cantrips, 2) && w.cantrips.every((id) => WARLOCK_CANTRIPS.includes(id)), "warlock-cantrips", "选择 2 道不同的魔契师戏法。", "spells");
   check(unique(w.prepared, 4) && w.prepared.every((id) => WARLOCK_PREPARABLE.includes(id)), "warlock-prepared", "选择 4 道不同的职业准备法术；邪魔法术额外获得，不重复占用名额。", "spells");
   // 三级新增一道，另可替换一道旧法术；因此最多有两道二环职业法术。

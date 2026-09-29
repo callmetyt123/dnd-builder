@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
-import type { AbilityId, CharacterBuild, ClassId, SkillId, DruidChoices, WizardChoices, WarlockChoices, RangerChoices } from "../rules/types";
+import type { AbilityId, CharacterBuild, ClassId, SkillId, DruidChoices, WizardChoices, WarlockChoices, RangerChoices, BackgroundId, OriginChoices } from "../rules/types";
 
-import { PROFILES } from "../data/profiles";
+import { BACKGROUNDS } from "../data/backgrounds";
+import { changeBackground, defaultOriginChoices, recommendSkills, recommendedBoosts } from "../rules/origins";
 import { defaultBuild } from "../rules/defaultBuild";
 import { deriveCharacter } from "../rules/engine/deriveCharacter";
 import { normalizePlayState, updatePlayState, type PlayAction } from "../rules/engine/playState";
@@ -15,7 +16,10 @@ type Action =
   | { type: "druid"; patch: Partial<DruidChoices> }
   | { type: "wizard"; patch: Partial<WizardChoices> }
   | { type: "play"; action: PlayAction }
-  | { type: "gaming-set"; id: string }
+  | { type: "background"; id: BackgroundId }
+  | { type: "origin"; patch: Partial<OriginChoices> }
+  | { type: "origin-magic-default" }
+  | { type: "skills-recommend" }
   | { type: "boosts-equal" }
   | { type: "abilities-default" }
   | { type: "step"; step: BuilderStep }
@@ -38,9 +42,12 @@ function reducer(state: BuilderState, action: Action): BuilderState {
     const character = deriveCharacter(state.build);
     return { ...state, play: updatePlayState(normalizePlayState(state.play, character), action.action, character) };
   }
-  if (action.type === "gaming-set") return { ...state, build: { ...state.build, choices: { ...state.build.choices, soldierGamingSet: action.id } } };
-  if (action.type === "abilities-default") return { ...state, build: { ...state.build, abilities: defaultBuild(state.build.classId).abilities } };
-  if (action.type === "boosts-equal") return { ...state, build: { ...state.build, abilities: { ...state.build.abilities, backgroundBoosts: Object.fromEntries(PROFILES[state.build.classId].boostOptions.map((id) => [id, 1])) } } };
+  if (action.type === "background") return { ...state, build: changeBackground(state.build, action.id) };
+  if (action.type === "skills-recommend") return { ...state, build: recommendSkills(state.build) };
+  if (action.type === "origin") return { ...state, build: { ...state.build, choices: { ...state.build.choices, origin: { ...state.build.choices.origin, ...action.patch } } } };
+  if (action.type === "origin-magic-default") return { ...state, build: { ...state.build, choices: { ...state.build.choices, origin: { ...state.build.choices.origin, magicInitiate: defaultOriginChoices(state.build.classId).magicInitiate } } } };
+  if (action.type === "abilities-default") return { ...state, build: { ...state.build, abilities: { baseAssignment: defaultBuild(state.build.classId).abilities.baseAssignment, backgroundBoosts: recommendedBoosts(state.build.classId, state.build.backgroundId) } } };
+  if (action.type === "boosts-equal") return { ...state, build: { ...state.build, abilities: { ...state.build.abilities, backgroundBoosts: Object.fromEntries(BACKGROUNDS[state.build.backgroundId].abilities.map((id) => [id, 1])) } } };
   if (action.type === "step") return { ...state, step: action.step };
   if (action.type === "reset") return { step: "home", build: defaultBuild() };
   if (action.type === "playstyle") return { ...state, build: { ...state.build, playstyle: { tags: action.tags, complexity: action.complexity } } };
@@ -93,6 +100,9 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, restored.state ?? { step: "home", build: defaultBuild() });
   const [storageError, setStorageError] = useState("");
   const [notice, setNotice] = useState(restored.notice ?? "");
+
+  // 步骤切换回到页首，避免长背景页的滚动位置让下一步标题和说明不可见。
+  useEffect(() => { window.scrollTo(0, 0); }, [state.step]);
 
   useEffect(() => {
     try {

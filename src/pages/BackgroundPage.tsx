@@ -1,19 +1,47 @@
 import { BuilderShell } from "../components/builder/BuilderShell";
-import { Card } from "../components/common/Card";
-
+import { BACKGROUNDS, BACKGROUND_REASON, RECOMMENDED_BACKGROUND } from "../data/backgrounds";
+import { GAMING_SETS, features, itemNames } from "../data/characterDetails";
+import { SPELL_LIST } from "../data/spells";
+import { ABILITY_PRIORITY, classSkills } from "../rules/origins";
+import { validateBuild } from "../rules/validator/validateBuild";
+import type { BackgroundId, MagicInitiateChoices } from "../rules/types";
+import { abilityNames, skillNames } from "../translations/zh-CN";
 import { useBuilder } from "../store/builder";
-import { GAMING_SETS } from "../data/characterDetails";
 
 export function BackgroundPage() {
   const { state, dispatch } = useBuilder();
-  if ((state.build.classId === "warlock" || state.build.classId === "ranger")) return <BuilderShell previous="species" next="abilities"><section className="page-head"><h1>你曾是一名流浪者</h1><p>在街巷与旅途中学会观察、隐匿与把握机遇。</p></section><Card selected><h3>流浪者</h3><div className="facts"><span>属性：敏捷 / 感知 / 魅力</span><span>技能：洞悉 / 隐匿</span><span>工具熟练：盗贼工具</span><span>起源专长：幸运</span></div><p>拥有 2 点幸运点，长休恢复。作 D20 检定时获得优势，或使对你的攻击具有劣势，每次花费 1 点。</p></Card><section className="section"><h2>选择起始赌具</h2><p>获得实物，不获得该赌具熟练。背景另提供 2 把匕首、盗贼工具、铺盖、2 个小包、旅行者服装与 16 GP。</p><label>游戏套装<select value={(state.build.choices.ranger ?? state.build.choices.warlock)!.gamingSet} onChange={(e) => dispatch({ type: state.build.classId === "ranger" ? "ranger" : "warlock", patch: { gamingSet: e.target.value } })}>{Object.entries(GAMING_SETS).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label></section></BuilderShell>;
-  if (state.build.classId === "druid") return <BuilderShell previous="species" next="abilities"><section className="page-head"><h1>你曾是一名隐士</h1><p>在荒野独居中学习自然与疗愈。</p></section><Card selected><h3>隐士</h3><div className="facts"><span>属性：体质 / 感知 / 魅力</span><span>技能：医药 / 宗教</span><span>工具：草药工具</span><span>起源专长：医疗师</span></div><p>治疗法术的治疗骰掷出 1 可重掷，必须使用新结果。医疗包能力需要另行取得医疗包，草药工具不能替代。</p></Card><p className="muted-panel">背景装备：长棍、草药工具、铺盖、哲学书、油灯、3 瓶油、旅行者服装、16 GP。草药工具熟练与职业重复，不叠加。</p></BuilderShell>;
-  if (state.build.classId === "wizard") return <BuilderShell previous="species" next="abilities"><section className="page-head"><h1>你曾是一名贤者</h1><p>你在书卷与研究中积累了奥术知识。</p></section><Card selected><h3>贤者</h3><div className="facts"><span>属性：体质 / 智力 / 感知</span><span>技能：奥秘 / 历史</span><span>工具：书法工具</span><span>起源专长：魔法学徒（法师）</span></div><p>额外获得 2 道戏法和 1 道始终准备的一环法术；在后面的法术页配置。</p></Card><p className="muted-panel">背景装备：长棍、书法工具、历史书、8 张羊皮纸、长袍、8 GP。</p></BuilderShell>;
-  return (
-    <BuilderShell previous="species" next="abilities">
-      <section className="page-head"><h1>你的角色以前过着怎样的生活？</h1><p>背景决定属性提升范围、技能、工具、起源专长与一部分起始装备。</p></section>
-      <Card selected recommended><h3>士兵</h3><p>你曾接受正式的战斗训练，并有实际战场经验。</p><div className="facts"><span>属性：力量 / 敏捷 / 体质</span><span>技能：运动 / 威吓</span><span>起源专长：凶蛮打手</span><span>工具：一种游戏套装</span></div></Card>
-      <section className="section"><h2>选择一种游戏套装</h2><p>同时获得该工具的熟练与一套实物。</p><label>游戏套装<select value={state.build.choices.soldierGamingSet ?? ""} onChange={(e) => dispatch({ type: "gaming-set", id: e.target.value })}><option value="" disabled>请选择</option>{Object.entries(GAMING_SETS).map(([id, name]) => <option value={id} key={id}>{name}</option>)}</select></label></section>
-    </BuilderShell>
-  );
+  const build = state.build;
+  const background = BACKGROUNDS[build.backgroundId];
+  const recommended = RECOMMENDED_BACKGROUND[build.classId];
+  const origin = build.choices.origin;
+  const magic = origin.magicInitiate;
+  const patchMagic = (patch: Partial<MagicInitiateChoices>) => dispatch({ type: "origin", patch: { magicInitiate: { ...magic, ...patch } } });
+  const duplicate = classSkills(build).filter((id) => background.skills.includes(id));
+  const errors = validateBuild(build).messages.filter((m) => m.severity === "blocker" && (m.targetStep === "background" || m.id === "scholar" || m.id === "ranger-expertise"));
+  return <BuilderShell previous="species" next="abilities" nextDisabled={errors.some((m) => m.targetStep === "background")}>
+    <section className="page-head"><h1>你的角色以前过着怎样的生活？</h1><p>背景描述过去的经历，也提供属性提升、两项技能、工具和起源专长。所有已开放背景都可用于当前职业。</p></section>
+    <div className="muted-panel"><strong>不确定怎么选？</strong><p>{BACKGROUND_REASON[build.classId]}你也可以按角色故事选择其他背景。</p></div>
+    <div className="background-grid">{(Object.keys(BACKGROUNDS) as BackgroundId[]).sort((a, b) => Number(b === recommended) - Number(a === recommended)).map((id) => {
+      const option = BACKGROUNDS[id];
+      return <button type="button" className={`card clickable ${build.backgroundId === id ? "selected" : ""}`} key={id} aria-pressed={build.backgroundId === id} onClick={() => dispatch({ type: "background", id })}>
+        <h3>{option.name}{id === recommended && <span className="badge recommended">推荐</span>}</h3><p>{option.description}</p>
+        <div className="facts"><span>可提升：{option.abilities.map((a) => abilityNames[a]).join(" / ")}</span><span>技能：{option.skills.map((s) => skillNames[s]).join(" / ")}</span><span>专长：{features[option.feat].name}</span></div>
+      </button>;
+    })}</div>
+    <p className="hint">更换背景会把背景加值调整为当前组合的推荐值，保留基础属性、职业技能与法术。之后仍可自行修改属性加值。</p>
+    {!background.abilities.includes(ABILITY_PRIORITY[build.classId][0]) && <p className="validation warning">这个背景不能提升当前职业的主要属性，可能降低命中或法术效果；仍可继续车卡。</p>}
+    <section className="section" aria-label="当前背景能力"><h2>{background.name} · 你会获得什么</h2><h3>{features[background.feat].name}</h3><p>{features[background.feat].text}</p><p>工具熟练：{background.tool === "gaming-set" ? "所选游戏套装" : itemNames[background.tool]}</p>
+      {build.backgroundId === "hermit" && <p className="hint">此装备包没有医疗包。战地医师需要另行获得医疗包；草药工具不能替代。{build.classId === "druid" && "草药工具熟练与职业重复，不叠加。"}</p>}
+      <details><summary>查看背景起始装备 · 包 A</summary><p>{background.equipment.map((item) => `${itemNames[item.id] ?? (item.id === "gaming-set" ? "所选游戏套装" : item.id)} × ${item.quantity}`).join("、")}</p></details>
+    </section>
+    {(build.backgroundId === "soldier" || build.backgroundId === "wayfarer") && <section className="section"><h2>选择游戏套装</h2><p>{build.backgroundId === "soldier" ? "同时获得工具熟练与一套实物。" : "仅获得赌具实物；背景提供的工具熟练是盗贼工具。"}</p><label>游戏套装<select value={origin.gamingSet} onChange={(e) => dispatch({ type: "origin", patch: { gamingSet: e.target.value } })}>{Object.entries(GAMING_SETS).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label></section>}
+    {(duplicate.length > 0 || errors.some((m) => m.targetStep === "configuration")) && <section className="warning-panel" role="status"><strong>有技能选择需要留意</strong>{duplicate.length > 0 && <p>{duplicate.map((id) => skillNames[id]).join("、")}由职业与背景重复提供，熟练不叠加。可保留，或把重复的职业技能换为本职业其他技能。</p>}{errors.filter((m) => m.targetStep === "configuration").map((m) => <p key={m.id}>{m.message}</p>)}<button className="button secondary" onClick={() => dispatch({ type: "skills-recommend" })}>调整重复技能与失效专精</button></section>}
+    {build.backgroundId === "sage" && <section className="section"><h2>魔法学徒 · 法师法术</h2><p>已配好实用戏法与防护法术。法师推荐光亮术；其他职业推荐无需材料的魔法伎俩。法师之手可远距操作物件。专长独立于职业准备名额；一环法术每长休免费一次，也可消耗已有法术位。</p><button className="button secondary" onClick={() => dispatch({ type: "origin-magic-default" })}>恢复推荐专长法术</button>
+      <p>当前选择：{magic.cantrips.map((id) => SPELL_LIST.find((s) => s.id === id)?.name).join("、")}；{SPELL_LIST.find((s) => s.id === magic.spell)?.name}。使用{abilityNames[magic.ability]}施法。</p><details className="choice-section"><summary>自定义专长法术与施法属性</summary><fieldset className="origin-cantrips"><legend>选择两道专长戏法 · {magic.cantrips.length}/2</legend>{SPELL_LIST.filter((s) => s.level === 0).map((s) => <label key={s.id}><input type="checkbox" checked={magic.cantrips.includes(s.id)} disabled={!magic.cantrips.includes(s.id) && magic.cantrips.length >= 2} onChange={() => patchMagic({ cantrips: magic.cantrips.includes(s.id) ? magic.cantrips.filter((id) => id !== s.id) : [...magic.cantrips, s.id] })} /><span><strong>{s.name}</strong><small>{s.text}</small></span></label>)}</fieldset>
+      <div className="form-grid"><label>专长一环法术<select value={magic.spell} onChange={(e) => patchMagic({ spell: e.target.value })}>{SPELL_LIST.filter((s) => s.level === 1).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label><label>专长施法属性<select value={magic.ability} onChange={(e) => patchMagic({ ability: e.target.value as MagicInitiateChoices["ability"] })}>{(["intelligence", "wisdom", "charisma"] as const).map((id) => <option key={id} value={id}>{abilityNames[id]}</option>)}</select></label></div>
+      <p>{SPELL_LIST.find((s) => s.id === magic.spell)?.text}</p></details><p className="hint">含材料的专长法术仍需要相应材料。职业法器是否适用，取决于该职业的施法规则；人物卡附页会单独提醒。</p>
+    </section>}
+    {errors.filter((m) => m.targetStep === "background").map((m) => <p className="validation blocker" role="status" key={m.id}>{m.message}</p>)}
+    <p className="hint">目前开放 4 / 16 个 2024 背景，其余背景将随对应专长规则补齐。</p>
+  </BuilderShell>;
 }

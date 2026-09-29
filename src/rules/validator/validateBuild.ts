@@ -1,12 +1,13 @@
 import { validateRanger } from "./validateRanger";
 import { validateWarlock } from "./validateWarlock";
 import { validateDruid } from "./validateDruid";
-import { PROFILES } from "../../data/profiles";
 import { validateWizard } from "./validateWizard";
 import { GAMING_SETS } from "../../data/characterDetails";
 import { alignmentNames } from "../../translations/zh-CN";
 import { hasBuildShape, isSupportedBuild } from "./buildShape";
-import { SOLDIER } from "../../data/backgrounds/soldier";
+import { BACKGROUNDS } from "../../data/backgrounds";
+import { classSkills, ABILITY_PRIORITY } from "../origins";
+import { SPELL_LIST } from "../../data/spells";
 import { FIGHTER } from "../../data/classes/fighter";
 import { STANDARD_ARRAY, STANDARD_LANGUAGE_IDS } from "../../data/core";
 import { WEAPONS } from "../../data/weapons";
@@ -20,10 +21,10 @@ function multiset(values: number[]) {
 export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
   if (!hasBuildShape(build) || !isSupportedBuild(build)) {
-    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级矮人：战士／勇士／士兵，法师／塑能师／贤者，德鲁伊／月亮结社／隐士，或魔契师／邪魔宗主／流浪者，或游侠／驯兽师／流浪者。" }] };
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级矮人的五种职业子职方案，与士兵、贤者、隐士、流浪者背景自由组合。" }] };
   }
   const fighter = build.classId === "fighter";
-  const profile = PROFILES[build.classId];
+  const background = BACKGROUNDS[build.backgroundId];
   if (build.identity.alignment && !Object.prototype.hasOwnProperty.call(alignmentNames, build.identity.alignment)) {
     messages.push({ id: "identity-alignment-invalid", domain: "rules", severity: "blocker", message: "请选择有效的阵营。", targetStep: "identity" });
   }
@@ -33,8 +34,8 @@ export function validateBuild(build: unknown): ValidationResult {
   if (build.identity.name.length > 60 || (build.identity.gender?.length ?? 0) > 30 || (build.identity.appearance?.length ?? 0) > 300 || (build.identity.description?.length ?? 0) > 600 || (build.identity.personalityTraits?.length ?? 0) > 3 || build.identity.personalityTraits?.some((trait) => trait.length > 30)) {
     messages.push({ id: "identity-length", domain: "completeness", severity: "blocker", message: "姓名最多 60 字、性别 30 字、外貌 300 字、简介 600 字，性格特点最多 3 项。", targetStep: "identity" });
   }
-  if (fighter && (!build.choices.soldierGamingSet || !Object.prototype.hasOwnProperty.call(GAMING_SETS, build.choices.soldierGamingSet))) {
-    messages.push({ id: "gaming-set", domain: "completeness", severity: "blocker", message: "请选择一种游戏套装，作为士兵的工具熟练和起始装备。", targetStep: "background" });
+  if (["soldier", "wayfarer"].includes(build.backgroundId) && !Object.prototype.hasOwnProperty.call(GAMING_SETS, build.choices.origin.gamingSet)) {
+    messages.push({ id: "gaming-set", domain: "completeness", severity: "blocker", message: "请选择背景起始装备中的一种游戏套装；仅士兵背景授予该赌具熟练。", targetStep: "background" });
   }
 
   if (!build.identity.name.trim()) {
@@ -49,7 +50,7 @@ export function validateBuild(build: unknown): ValidationResult {
   }
 
   const boosts = Object.entries(build.abilities.backgroundBoosts) as [AbilityId, number][];
-  const allowedBoosts = new Set<AbilityId>(profile.boostOptions);
+  const allowedBoosts = new Set<AbilityId>(background.abilities);
   if (boosts.some(([ability]) => !allowedBoosts.has(ability))) {
     messages.push({ id: "background-boost-target", domain: "rules", severity: "blocker", message: "属性提升必须属于所选背景允许的三项属性。", targetStep: "abilities" });
   }
@@ -67,10 +68,6 @@ export function validateBuild(build: unknown): ValidationResult {
   if (invalidFighterSkill) {
     messages.push({ id: "fighter-skills-list", domain: "rules", severity: "blocker", message: "存在不属于战士职业技能列表的选择。", targetStep: "configuration" });
   }
-  const duplicatedBackgroundSkill = build.choices.fighterSkills.find((skill) => (SOLDIER.skillProficiencies as readonly string[]).includes(skill));
-  if (duplicatedBackgroundSkill) {
-    messages.push({ id: "duplicate-skill", domain: "recommendation", severity: "warning", message: "你选择了一项已经由士兵背景提供的技能熟练；熟练加值不会因此叠加。", targetStep: "configuration" });
-  }
 
   if (build.choices.weaponMasteries.length !== FIGHTER.weaponMasteryCount || new Set(build.choices.weaponMasteries).size !== FIGHTER.weaponMasteryCount) {
     messages.push({ id: "weapon-mastery-count", domain: "rules", severity: "blocker", message: `3级战士需要选择 ${FIGHTER.weaponMasteryCount} 种不同的精通武器。`, targetStep: "configuration" });
@@ -82,7 +79,7 @@ export function validateBuild(build: unknown): ValidationResult {
   } else if (build.classId === "ranger") messages.push(...validateRanger(build));
   else if (build.classId === "warlock") messages.push(...validateWarlock(build.choices.warlock!));
   else if (build.classId === "druid") messages.push(...validateDruid(build.choices.druid!));
-  else messages.push(...validateWizard(build.choices.wizard!));
+  else messages.push(...validateWizard(build.choices.wizard!, background.skills));
 
   if (build.choices.languages.length !== 2 || new Set(build.choices.languages).size !== 2) {
     messages.push({ id: "language-count", domain: "rules", severity: "blocker", message: "角色需要另外选择两种不同的标准语言。", targetStep: "species" });
@@ -91,6 +88,14 @@ export function validateBuild(build: unknown): ValidationResult {
     messages.push({ id: "language-list", domain: "rules", severity: "blocker", message: "请选择两种合法的额外标准语言。", targetStep: "species" });
   }
 
+  const duplicated = classSkills(build).filter((skill) => background.skills.includes(skill));
+  if (duplicated.length) messages.push({ id: "duplicate-skill", domain: "recommendation", severity: "warning", message: "职业技能与背景重复，熟练不会叠加。可在背景页一键调整，或在职业配置页改选其他职业技能。", targetStep: "background" });
+  if (!background.abilities.includes(ABILITY_PRIORITY[build.classId][0])) messages.push({ id: "background-main-ability", domain: "recommendation", severity: "warning", message: "这个背景不能提升当前职业的主要属性。仍可完成车卡；若更看重命中或法术效果，可以使用推荐背景。", targetStep: "background" });
+  if (background.feat === "magic-initiate") {
+    const m = build.choices.origin.magicInitiate;
+    if (m.cantrips.length !== 2 || new Set(m.cantrips).size !== 2 || m.cantrips.some((id) => !SPELL_LIST.some((s) => s.id === id && s.level === 0))) messages.push({ id: "initiate-cantrips", domain: "rules", severity: "blocker", message: "魔法学徒须选择两道不同的已录入法师戏法。", targetStep: "background" });
+    if (!SPELL_LIST.some((s) => s.id === m.spell && s.level === 1)) messages.push({ id: "initiate-spell", domain: "rules", severity: "blocker", message: "魔法学徒须选择一道已录入的一环法师法术。", targetStep: "background" });
+  }
   const derived = deriveCharacter(build);
   if (fighter && derived.abilities.strength.score < 14) {
     messages.push({ id: "heavy-fighter-low-str", domain: "recommendation", severity: "warning", message: `当前力量为 ${derived.abilities.strength.score}；这会降低推荐的重武器战士命中与伤害。`, targetStep: "abilities" });

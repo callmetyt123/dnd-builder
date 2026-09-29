@@ -75,7 +75,7 @@ export function druidChecks(assert: (ok: boolean, message: string) => void) {
   assert(state.play?.formId === "badger" && state.build.identity.name === "苔拉·月痕", "class switching preserves druid resources");
   const archived = parseDraft(JSON.stringify(switchClass(state, "wizard"))).state!;
   assert(archived.profiles?.druid?.play?.formId === "badger", "inactive druid draft restored");
-  for (const patch of [{ prepared: ["moonbeam", ...build.choices.druid!.prepared.slice(1)] }, { cantrips: ["fire-bolt", "guidance", "druidcraft"] }, { knownForms: ["cat", "cat", "badger", "wolf"] }, { knownForms: ["cat", "badger", "wolf", "eagle"] }, { order: "unknown" }, { skills: ["medicine", "nature"] }]) {
+  for (const patch of [{ prepared: ["moonbeam", ...build.choices.druid!.prepared.slice(1)] }, { cantrips: ["fire-bolt", "guidance", "druidcraft"] }, { knownForms: ["cat", "cat", "badger", "wolf"] }, { knownForms: ["cat", "badger", "wolf", "eagle"] }, { order: "unknown" }]) {
     const invalid = structuredClone(build); Object.assign(invalid.choices.druid!, patch);
     assert(!validateBuild(invalid).canGenerate, `invalid druid choice rejected: ${JSON.stringify(patch)}`);
   }

@@ -273,3 +273,13 @@ textarea { min-height: 92px; resize: vertical; }
 /* 伙伴操作在窄屏纵向排列，按钮与表单底部对齐。 */
 .ranger-panel .form-grid { align-items: end; }
 .ranger-panel .rest-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+
+/* 背景选项保持同等可选；推荐标签只解释默认建议。 */
+.background-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.background-grid .card { text-align: left; width: 100%; }
+.background-grid h3 { display: flex; align-items: center; gap: 12px; }
+.origin-cantrips { border: 1px solid var(--border, #ddd); border-radius: 12px; margin: 20px 0; padding: 16px; }
+.origin-cantrips label { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; }
+.origin-cantrips input { width: auto; margin-top: 5px; }
+.origin-cantrips small { display: block; font-weight: normal; line-height: 1.6; }
+@media (max-width: 640px) { .background-grid { grid-template-columns: 1fr; } }

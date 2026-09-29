@@ -2,7 +2,8 @@ import { FIEND_SPELLS, invocation } from "../../data/warlock";
 import { DRUID_ALWAYS, MOON_SPELLS } from "../../data/druidSpells";
 import { legalMoonForm } from "../../data/beasts";
 import { ARMOR } from "../../data/armor";
-import { SOLDIER } from "../../data/backgrounds/soldier";
+import { BACKGROUNDS } from "../../data/backgrounds";
+import { toolProficiencies } from "../origins";
 import { FIGHTER } from "../../data/classes/fighter";
 import { PROFILES } from "../../data/profiles";
 import { spell } from "../../data/spells";
@@ -32,6 +33,8 @@ function makeRoll(modifier: number, proficiency: ProficiencyRank, advantageSourc
 
 export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const profile = PROFILES[build.classId];
+  const background = BACKGROUNDS[build.backgroundId];
+  const initiate = background.feat === "magic-initiate" ? build.choices.origin.magicInitiate : undefined;
   const wizard = build.classId === "wizard" ? build.choices.wizard : undefined;
   const druid = build.classId === "druid" ? build.choices.druid : undefined;
   const warlock = build.classId === "warlock" ? build.choices.warlock : undefined;
@@ -45,7 +48,7 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   ) as DerivedCharacter["abilities"];
 
   const skillProficiencies = new Set<SkillId>([
-    ...profile.backgroundSkills,
+    ...background.skills,
     ...(ranger?.skills ?? warlock?.skills ?? druid?.skills ?? wizard?.skills ?? build.choices.fighterSkills),
   ]);
 
@@ -95,8 +98,8 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   const masterySet = new Set(build.choices.weaponMasteries);
   // 合并两个来源的装备，避免背景武器和重复金币在人物卡中丢失。
   const inventory = new Map<string, number>();
-  for (const item of profile.equipment) {
-    const id = item.id === "gaming-set" ? ranger?.gamingSet ?? warlock?.gamingSet ?? build.choices.soldierGamingSet ?? "gaming-set" : item.id;
+  for (const item of [...profile.equipment, ...background.equipment]) {
+    const id = item.id === "gaming-set" ? build.choices.origin.gamingSet : item.id;
     inventory.set(id, (inventory.get(id) ?? 0) + item.quantity);
   }
   const equipment = [...inventory].map(([id, quantity]) => ({ id, quantity }));
@@ -124,11 +127,13 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
   return {
     level: 3,
     hitDie: profile.hitDie,
+    tools: toolProficiencies(build),
+    originMagic: initiate ? { ...initiate, attack: abilities[initiate.ability].modifier + pb, dc: 8 + pb + abilities[initiate.ability].modifier } : undefined,
     primalCompanion: ranger?.primal,
-    spellcasting: ranger ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [], prepared: [...ranger.prepared, "hunters-mark"], initiateSpell: "", initiateCantrips: [], ritualSpells: ranger.prepared.filter((id) => spell(id)?.ritual) } : wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, initiateAttack: abilities[wizard.initiateAbility].modifier + pb, initiateDc: 8 + pb + abilities[wizard.initiateAbility].modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, initiateSpell: wizard.initiateSpell, initiateCantrips: wizard.initiateCantrips, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, initiateAttack: 0, initiateDc: 0, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], initiateSpell: "", initiateCantrips: [], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, initiateAttack: 0, initiateDc: 0, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, initiateSpell: "", initiateCantrips: [], ritualSpells: [] } : undefined,
+    spellcasting: ranger ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [], prepared: [...ranger.prepared, "hunters-mark"], ritualSpells: ranger.prepared.filter((id) => spell(id)?.ritual) } : wizard ? { attack: abilities.intelligence.modifier + pb, dc: 8 + pb + abilities.intelligence.modifier, book, cantrips: wizard.cantrips, prepared: wizard.prepared, ritualSpells: book.filter((id) => spell(id)?.ritual) } : druid ? { attack: abilities.wisdom.modifier + pb, dc: 8 + pb + abilities.wisdom.modifier, book: [], cantrips: [...druid.cantrips, MOON_SPELLS[0]], prepared: [...druid.prepared, ...DRUID_ALWAYS], ritualSpells: [...druid.prepared, ...DRUID_ALWAYS].filter((id) => spell(id)?.ritual) } : warlock ? { attack: abilities.charisma.modifier + pb, dc: 8 + pb + abilities.charisma.modifier, book: [], prepared: [...warlock.prepared, ...FIEND_SPELLS], cantrips: warlock.cantrips, ritualSpells: [] } : undefined,
     pactMagic: warlock ? { slotLevel: 2, invocations: warlock.invocations, atWill: warlock.invocations.flatMap((v) => invocation(v.id)?.spell ? [invocation(v.id)!.spell!] : []), darkBlessing: Math.max(1, abilities.charisma.modifier + build.level), concentrationAdvantage: warlock.invocations.some((v) => v.id === "eldritch-mind"), devilsSight: warlock.invocations.some((v) => v.id === "devils-sight") } : undefined,
     wildShape: druid ? { knownForms: druid.knownForms.filter(legalMoonForm), temporaryHp: build.level * 3 } : undefined,
-    armorNote: ranger ? `镶钉皮甲 · 12 + 敏捷${ranger.style === "defense" ? " + 防御" : ""}` : druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : undefined,
+    armorNote: ranger ? `镶钉皮甲 · 12 + 敏捷${ranger.style === "defense" ? " + 防御" : ""}` : druid ? "皮甲 + 敏捷 + 盾牌" : warlock ? "皮甲 · 11 + 敏捷" : wizard ? `无甲 · 10 + 敏捷${wizard.prepared.includes("mage-armor") || initiate?.spell === "mage-armor" ? `；法师护甲生效时 ${13 + abilities.dexterity.modifier}` : ""}` : undefined,
     proficiencyBonus: pb,
     abilities,
     maxHp,
@@ -140,13 +145,12 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     passivePerception: 10 + skills.perception.modifier,
     attacks,
     resources: [
-      ...(ranger ? [{ id: "spell-slot-1", max: 3, recovery: "长休恢复全部；短休不恢复" }, { id: "favored-enemy", max: 2, recovery: "长休恢复；免费施展猎人印记，仍需专注" }, { id: "lucky", max: pb, recovery: "长休恢复全部" }] : fighter ? [
+      ...(ranger ? [{ id: "spell-slot-1", max: 3, recovery: "长休恢复全部；短休不恢复" }, { id: "favored-enemy", max: 2, recovery: "长休恢复；免费施展猎人印记，仍需专注" }] : fighter ? [
       { id: "second-wind", max: FIGHTER.secondWindUsesAtLevel3, recovery: "短休恢复1次，长休恢复全部", shortRestRestore: 1 },
       { id: "action-surge", max: FIGHTER.actionSurgeUsesAtLevel3, recovery: "短休或长休恢复", shortRestRestore: 1 },
       ] : warlock ? [
         { id: "pact-slot", max: 2, recovery: "均为二环；短休或长休恢复全部", shortRestRestore: 2 },
         { id: "magical-cunning", max: 1, recovery: "长休恢复；一分钟仪式恢复 1 个已消耗的契约法术位" },
-        { id: "lucky", max: pb, recovery: "长休恢复全部；不随短休恢复" },
       ] : druid ? [
         { id: "wild-shape", max: 2, recovery: "短休恢复 1 次；长休恢复全部", shortRestRestore: 1 },
         { id: "spell-slot-1", max: 4, recovery: "长休恢复全部" },
@@ -155,8 +159,9 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
         { id: "spell-slot-1", max: 4, recovery: "长休恢复；短休可使用奥术回想" },
         { id: "spell-slot-2", max: 2, recovery: "长休恢复；短休可使用奥术回想" },
         { id: "arcane-recovery", max: 1, recovery: "长休恢复；短休时可恢复总环阶至多 2 的法术位" },
-        { id: "magic-initiate", max: 1, recovery: "长休恢复；免费施展所选一环法术" },
       ]),
+      ...(background.feat === "lucky" ? [{ id: "lucky", max: pb, recovery: "长休恢复全部；不随短休恢复" }] : []),
+      ...(initiate ? [{ id: "magic-initiate", max: 1, recovery: "长休恢复；免费施展所选一环法术" }] : []),
       { id: "stonecunning", max: pb, recovery: "长休恢复全部" },
     ],
     criticalThreshold: fighter ? CHAMPION.criticalThreshold : 20,
@@ -164,15 +169,15 @@ export function deriveCharacter(build: CharacterBuild): DerivedCharacter {
     senses: { darkvision: DWARF.darkvision },
     resistances: [...DWARF.resistances],
     features: [
-      ...(ranger ? ["ranger-spellcasting", "favored-enemy", "deft-explorer", "ranger-mastery", ranger.style === "defense" ? "fighting-style-defense" : "archery", "primal-companion", "lucky"] : fighter ? [
+      ...(ranger ? ["ranger-spellcasting", "favored-enemy", "deft-explorer", "ranger-mastery", ranger.style === "defense" ? "fighting-style-defense" : "archery", "primal-companion"] : fighter ? [
       "fighting-style-defense",
       "second-wind",
       "weapon-mastery",
       "action-surge",
       "tactical-mind",
       ...CHAMPION.features,
-      SOLDIER.originFeatId,
-      ] : warlock ? ["pact-magic", "magical-cunning", "fiend-spells", "dark-ones-blessing", "lucky"] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion", "healer"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip", "magic-initiate"]),
+      ] : warlock ? ["pact-magic", "magical-cunning", "fiend-spells", "dark-ones-blessing"] : druid ? ["druid-spellcasting", "druidic", druid.order, "wild-shape", "circle-forms", "wild-companion"] : ["spellcasting", "ritual-adept", "arcane-recovery", "scholar", "evocation-savant", "potent-cantrip"]),
+      background.feat,
       ...DWARF.features,
     ],
     equipment,

@@ -70,3 +70,10 @@ CharacterBuild ───┤
 - 长休后的替换机会只能使用一次，并在其他冒险记录操作后结束，避免将它存成随时可用的免费治疗。短休不自动治疗伙伴；长休仅恢复一同休息且至少 1 HP 的存活伙伴，不复活死者。
 - 游侠专注记录在新专注、失能、0 HP 或休息时更新。实际时间、目标、距离、成分、掷骰及动作经济由玩家确认，不实现回合引擎。
 - `RangerSheets` 输出三页速查或五页完整卡，共用预览和固定宽度导出 DOM。schemaVersion 1 与既有存档键不变，五职业状态独立保存。
+
+
+## v0.7 背景与职业解耦
+
+`data/profiles.ts` 仅提供职业数据，`data/backgrounds.ts` 提供背景数据；规则引擎按 `backgroundId` 合并装备、熟练、专长与资源。`rules/origins.ts` 封装合法推荐加值、显式技能调整与工具熟练。
+
+`choices.origin` 保存背景赌具和魔法学徒选择，`DerivedCharacter.originMagic` 与职业施法分别输出。所有职业的卡片通过共同出口追加背景附页。`store/migrateBuild.ts` 在结构校验之前迁移 v0.6 字段；已存在但格式错误的 origin 不会被默认值覆盖。

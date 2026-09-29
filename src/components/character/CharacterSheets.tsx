@@ -1,3 +1,4 @@
+import { OriginSpellSheet, OriginSummary } from "./OriginSheets";
 import { RangerSheets } from "./RangerSheets";
 import { WarlockSheets } from "./WarlockSheets";
 import { DruidSheets } from "./DruidSheets";
@@ -5,7 +6,7 @@ import type { CharacterBuild, DerivedCharacter, DerivedRoll } from "../../rules/
 import type { PlayState } from "../../rules/engine/playState";
 import { signed, damageFormula } from "../../rules/engine/format";
 import { abilityNames, alignmentNames, skillNames, masteryName, zhCN } from "../../translations/zh-CN";
-import { damageNames, features, GAMING_SETS, itemNames, masteryDescriptions } from "../../data/characterDetails";
+import { damageNames, features, itemNames, masteryDescriptions } from "../../data/characterDetails";
 import { WEAPONS } from "../../data/weapons";
 import { SpellPages, WizardQuickSheet } from "./WizardSheets";
 import { ABILITIES, SKILLS } from "../../data/core";
@@ -31,18 +32,22 @@ function Masteries({ c }: { c: DerivedCharacter }) {
   if (!active.length) return null;
   return <section><h3>已解锁精通速查</h3><div className="sheet-masteries">{active.map((id) => <p key={id}><b>{masteryName(id)}</b>　{masteryDescriptions[id]}</p>)}</div></section>;
 }
-export function CharacterSheets({ build, character: c, play, mode }: Props) {
+// 主卡与背景附页共用预览/导出树，避免某个职业遗漏非职业法术。
+export function CharacterSheets(props: Props) {
+  return <><ClassSheets {...props} /><OriginSpellSheet build={props.build} c={props.character} play={props.play} /></>;
+}
+function ClassSheets({ build, character: c, play, mode }: Props) {
   if (build.classId === "ranger") return <RangerSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "warlock") return <WarlockSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "druid") return <DruidSheets build={build} c={c} play={play} mode={mode} />;
   if (mode === "quick" && c.spellcasting) return <WizardQuickSheet build={build} c={c} play={play} />;
-  const total = c.spellcasting ? 3 + Math.ceil(new Set([...c.spellcasting.cantrips, ...c.spellcasting.initiateCantrips, ...c.spellcasting.book, c.spellcasting.initiateSpell]).size / 6) : 3;
+  const total = c.spellcasting ? 3 + Math.ceil(new Set([...c.spellcasting.cantrips, ...c.spellcasting.book]).size / 6) : 3;
   if (mode === "quick") return <article className="sheet-page" data-sheet-page>
     <Header build={build} title="战斗速查" page="01 / 01" /><Stats c={c} play={play} />
     <section><h3>你的回合</h3><p>移动至多 {c.speed} 尺 → 一个动作（通常攻击）→ 有合适能力时使用一个附赠动作。每轮通常可用一个反应；借机攻击需满足触发条件。</p></section>
     <Attacks c={c} /><Resources c={c} play={play} />
-    <section><h3>关键时刻</h3><div className="sheet-features compact">{["second-wind", "action-surge", "tactical-mind", "savage-attacker", "remarkable-athlete", "stonecunning"].map((id) => <div key={id}><b>{features[id].name}</b><small>{features[id].timing}</small><p>{features[id].text}</p></div>)}</div></section>
-    <Masteries c={c} /><p className="sheet-note">毒素抗性；对避免／结束中毒的豁免有优势。黑暗视觉 120 尺。链甲使隐匿检定具有劣势。完整技能与装备见「完整人物卡」。</p>
+    <section><h3>关键时刻</h3><div className="sheet-features compact">{["second-wind", "action-surge", "tactical-mind", "remarkable-athlete", "stonecunning"].map((id) => <div key={id}><b>{features[id].name}</b><small>{features[id].timing}</small><p>{features[id].text}</p></div>)}</div></section>
+    <OriginSummary c={c} /><Masteries c={c} /><p className="sheet-note">毒素抗性；对避免／结束中毒的豁免有优势。黑暗视觉 120 尺。链甲使隐匿检定具有劣势。完整技能与装备见「完整人物卡」。</p>
     <footer className="sheet-footer">D&D 5R · 战斗速查 · 数值含当前资源记录</footer>
   </article>;
   return <>
@@ -59,7 +64,7 @@ export function CharacterSheets({ build, character: c, play, mode }: Props) {
     </article>
     <article className="sheet-page" data-sheet-page>
       <Header build={build} title="完整人物卡 · 装备与身份" page={`03 / ${total}`} />
-      <div className="sheet-columns"><section><h3>起始装备</h3><div className="sheet-rolls">{c.equipment.map((item) => <div key={item.id}><span>{itemNames[item.id] ?? item.id}</span><b>× {item.quantity}</b></div>)}</div><p className="sheet-note">{c.spellcasting ? "未着装护甲；施展法师护甲后才可使用对应 AC。" : "链甲已着装，隐匿检定具有劣势；力量不足 13 时速度 −10 尺（已计入）。"}此处列出起始装备，消耗品数量由玩家另行记录。</p></section><section><h3>语言与工具</h3><p>{c.languages.map((id) => zhCN.language[id as keyof typeof zhCN.language]).join("、")}</p><p>工具熟练：{c.spellcasting ? "书法工具" : GAMING_SETS[build.choices.soldierGamingSet!]}</p>{c.spellcasting ? <><h3>学者套组</h3><p>背包、书籍、墨水、墨水笔、油灯、10 瓶油、10 张羊皮纸、火绒盒。</p><h3>施法材料</h3><p>奥术法器或法术书替代无标价且不消耗的材料。言语需能出声；姿势需一只自由手。兼有材料和姿势成分时，持法器的手可完成该法术的姿势。</p></> : <><h3>地城探索者套组</h3><p>背包、铁蒺藜、撬棍、2 瓶油、10 日份口粮、绳索、火绒盒、10 支火把、水袋。</p><h3>医疗包</h3><p>共 10 次；以利用动作花费 1 次，使一名 0 HP 且昏迷的生物伤势稳定，无需医药检定。</p></>}</section></div>
+      <div className="sheet-columns"><section><h3>起始装备</h3><div className="sheet-rolls">{c.equipment.map((item) => <div key={item.id}><span>{item.id === "quarterstaff" && build.classId === "wizard" ? "长棍（其中一根为奥术法器）" : itemNames[item.id] ?? item.id}</span><b>× {item.quantity}</b></div>)}</div><p className="sheet-note">{c.spellcasting ? "未着装护甲；施展法师护甲后才可使用对应 AC。" : "链甲已着装，隐匿检定具有劣势；力量不足 13 时速度 −10 尺（已计入）。"}此处列出起始装备，消耗品数量由玩家另行记录。</p></section><section><h3>语言与工具</h3><p>{c.languages.map((id) => zhCN.language[id as keyof typeof zhCN.language]).join("、")}</p><p>工具熟练：{c.tools.map((id) => itemNames[id] ?? id).join("、")}</p>{c.spellcasting ? <><h3>学者套组</h3><p>背包、书籍、墨水、墨水笔、油灯、10 瓶油、10 张羊皮纸、火绒盒。</p><h3>施法材料</h3><p>奥术法器或法术书替代无标价且不消耗的材料。言语需能出声；姿势需一只自由手。兼有材料和姿势成分时，持法器的手可完成该法术的姿势。</p></> : <><h3>地城探索者套组</h3><p>背包、铁蒺藜、撬棍、2 瓶油、10 日份口粮、绳索、火绒盒、10 支火把、水袋。</p>{c.equipment.some((e) => e.id === "healers-kit") && <><h3>医疗包</h3><p>共 10 次；以利用动作花费 1 次，使一名 0 HP 且昏迷的生物伤势稳定，无需医药检定。</p></>}</>}</section></div>
       <section className="sheet-story"><h3>角色身份</h3><p>{build.identity.gender || "性别未填写"} · {build.identity.age === undefined ? "年龄未填写" : `${build.identity.age} 岁`} · {build.identity.personalityTraits?.join("、") || "性格未填写"}</p><h4>外貌</h4><p>{build.identity.appearance || "—"}</p><h4>故事</h4><p>{build.identity.description || "—"}</p></section>
       <footer className="sheet-footer">D&D 5R · 初始构筑记录 · 装备变化请与主持人确认</footer>
     </article>

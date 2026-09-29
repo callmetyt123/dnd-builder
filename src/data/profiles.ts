@@ -1,31 +1,26 @@
 import { FIGHTER } from "./classes/fighter";
-import { SOLDIER } from "./backgrounds/soldier";
 import type { AbilityId, ClassId, SkillId } from "../rules/types";
-
-// 每个方案明确其职业与背景来源；数值推导不依赖页面选择文案。
+// 职业定义不含背景规则；背景选择不会改变职业的生命骰、豁免或装备包。
 export interface Profile {
-  name: string; subclass: string; background: string; hitDie: number; fixedHp: number;
-  saves: readonly AbilityId[]; skills: readonly SkillId[]; backgroundSkills: readonly SkillId[];
-  boostOptions: readonly AbilityId[]; equipment: readonly { id: string; quantity: number }[];
+  name: string; subclass: string; hitDie: number; fixedHp: number;
+  saves: readonly AbilityId[]; skills: readonly SkillId[];
+  equipment: readonly { id: string; quantity: number }[];
 }
 export const SCHOLAR_SKILLS: SkillId[] = ["arcana", "history", "investigation", "medicine", "nature", "religion"];
 export const PROFILES: Record<ClassId, Profile> = {
-  ranger: { name: "游侠", subclass: "驯兽师", background: "流浪者", hitDie: 10, fixedHp: 6,
-    saves: ["strength", "dexterity"], skills: ["animal-handling", "athletics", "insight", "investigation", "nature", "perception", "stealth", "survival"], backgroundSkills: ["insight", "stealth"], boostOptions: ["dexterity", "wisdom", "charisma"],
-    equipment: [{ id: "studded-leather", quantity: 1 }, { id: "scimitar", quantity: 1 }, { id: "shortsword", quantity: 1 }, { id: "longbow", quantity: 1 }, { id: "arrow", quantity: 20 }, { id: "quiver", quantity: 1 }, { id: "mistletoe", quantity: 1 }, { id: "explorers-pack", quantity: 1 }, { id: "dagger", quantity: 2 }, { id: "thieves-tools", quantity: 1 }, { id: "gaming-set", quantity: 1 }, { id: "bedroll", quantity: 1 }, { id: "pouch", quantity: 2 }, { id: "travelers-clothes", quantity: 1 }, { id: "gp", quantity: 23 }] },
-  warlock: { name: "魔契师", subclass: "邪魔宗主", background: "流浪者", hitDie: 8, fixedHp: 5,
+  ranger: { name: "游侠", subclass: "驯兽师", hitDie: 10, fixedHp: 6,
+    saves: ["strength", "dexterity"], skills: ["animal-handling", "athletics", "insight", "investigation", "nature", "perception", "stealth", "survival"],
+    equipment: [{ id: "studded-leather", quantity: 1 }, { id: "scimitar", quantity: 1 }, { id: "shortsword", quantity: 1 }, { id: "longbow", quantity: 1 }, { id: "arrow", quantity: 20 }, { id: "quiver", quantity: 1 }, { id: "mistletoe", quantity: 1 }, { id: "explorers-pack", quantity: 1 }, { id: "gp", quantity: 7 }] },
+  warlock: { name: "魔契师", subclass: "邪魔宗主", hitDie: 8, fixedHp: 5,
     saves: ["wisdom", "charisma"], skills: ["arcana", "deception", "history", "intimidation", "investigation", "nature", "religion"],
-    backgroundSkills: ["insight", "stealth"], boostOptions: ["dexterity", "wisdom", "charisma"],
-    equipment: [{ id: "leather-armor", quantity: 1 }, { id: "sickle", quantity: 1 }, { id: "dagger", quantity: 4 }, { id: "arcane-orb", quantity: 1 }, { id: "occult-book", quantity: 1 }, { id: "scholars-pack", quantity: 1 }, { id: "thieves-tools", quantity: 1 }, { id: "gaming-set", quantity: 1 }, { id: "bedroll", quantity: 1 }, { id: "pouch", quantity: 2 }, { id: "travelers-clothes", quantity: 1 }, { id: "gp", quantity: 31 }] },
-  druid: { name: "德鲁伊", subclass: "月亮结社", background: "隐士", hitDie: 8, fixedHp: 5,
+    equipment: [{ id: "leather-armor", quantity: 1 }, { id: "sickle", quantity: 1 }, { id: "dagger", quantity: 2 }, { id: "arcane-orb", quantity: 1 }, { id: "occult-book", quantity: 1 }, { id: "scholars-pack", quantity: 1 }, { id: "gp", quantity: 15 }] },
+  druid: { name: "德鲁伊", subclass: "月亮结社", hitDie: 8, fixedHp: 5,
     saves: ["intelligence", "wisdom"], skills: ["arcana", "animal-handling", "insight", "medicine", "nature", "perception", "religion", "survival"],
-    backgroundSkills: ["medicine", "religion"], boostOptions: ["constitution", "wisdom", "charisma"],
-    equipment: [{ id: "leather-armor", quantity: 1 }, { id: "shield", quantity: 1 }, { id: "sickle", quantity: 1 }, { id: "quarterstaff", quantity: 2 }, { id: "explorers-pack", quantity: 1 }, { id: "herbalism-kit", quantity: 2 }, { id: "gp", quantity: 25 }, { id: "bedroll", quantity: 1 }, { id: "philosophy-book", quantity: 1 }, { id: "lamp", quantity: 1 }, { id: "oil", quantity: 3 }, { id: "travelers-clothes", quantity: 1 }] },
-  fighter: { name: "战士", subclass: "勇士", background: "士兵", hitDie: FIGHTER.hitDie, fixedHp: FIGHTER.fixedHpAfterFirstLevel,
-    saves: FIGHTER.savingThrowProficiencies, skills: FIGHTER.skillOptions, backgroundSkills: SOLDIER.skillProficiencies,
-    boostOptions: SOLDIER.abilityOptions, equipment: [...FIGHTER.equipmentPackages["fighter-a"], ...SOLDIER.equipmentPackages["soldier-a"]] },
-  wizard: { name: "法师", subclass: "塑能师", background: "贤者", hitDie: 6, fixedHp: 4,
+    equipment: [{ id: "leather-armor", quantity: 1 }, { id: "shield", quantity: 1 }, { id: "sickle", quantity: 1 }, { id: "quarterstaff", quantity: 1 }, { id: "explorers-pack", quantity: 1 }, { id: "herbalism-kit", quantity: 1 }, { id: "gp", quantity: 9 }] },
+  fighter: { name: "战士", subclass: "勇士", hitDie: FIGHTER.hitDie, fixedHp: FIGHTER.fixedHpAfterFirstLevel,
+    saves: FIGHTER.savingThrowProficiencies, skills: FIGHTER.skillOptions,
+    equipment: FIGHTER.equipmentPackages["fighter-a"] },
+  wizard: { name: "法师", subclass: "塑能师", hitDie: 6, fixedHp: 4,
     saves: ["intelligence", "wisdom"], skills: ["arcana", "history", "insight", "investigation", "medicine", "nature", "religion"],
-    backgroundSkills: ["arcana", "history"], boostOptions: ["constitution", "intelligence", "wisdom"],
-    equipment: [{ id: "dagger", quantity: 2 }, { id: "quarterstaff", quantity: 1 }, { id: "robe", quantity: 1 }, { id: "spellbook", quantity: 1 }, { id: "scholars-pack", quantity: 1 }, { id: "gp", quantity: 5 }, { id: "quarterstaff", quantity: 1 }, { id: "calligraphers-supplies", quantity: 1 }, { id: "history-book", quantity: 1 }, { id: "parchment", quantity: 8 }, { id: "robe", quantity: 1 }, { id: "gp", quantity: 8 }] },
+    equipment: [{ id: "dagger", quantity: 2 }, { id: "quarterstaff", quantity: 1 }, { id: "robe", quantity: 1 }, { id: "spellbook", quantity: 1 }, { id: "scholars-pack", quantity: 1 }, { id: "gp", quantity: 5 }] },
 };

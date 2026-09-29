@@ -3,7 +3,7 @@ import { deriveCharacter } from "../src/rules/engine/deriveCharacter";
 import { normalizePlayState, updatePlayState } from "../src/rules/engine/playState";
 import { validateBuild } from "../src/rules/validator/validateBuild";
 import { parseDraft, switchClass } from "../src/store/draft";
-import type { WizardChoices } from "../src/rules/types";
+import type { WizardChoices, MagicInitiateChoices } from "../src/rules/types";
 
 export function wizardChecks(assert: (condition: unknown, message: string) => void) {
   const b = defaultBuild("wizard");
@@ -30,13 +30,14 @@ export function wizardChecks(assert: (condition: unknown, message: string) => vo
     { evocationBook: ["magic-missile", "shatter"] },
     { prepared: [...b.choices.wizard!.prepared, "alarm"] },
     { prepared: ["mage-armor", ...b.choices.wizard!.prepared.slice(1)] },
-    { initiateSpell: "web" }, { initiateSpell: "constructor" },
-    { initiateCantrips: ["light", "light"] },
-    { scholar: "nature" }, { skills: ["arcana", "investigation"] },
+    { scholar: "nature" },
   ] satisfies Partial<WizardChoices>[]) assert(!validateBuild(changed(patch)).canGenerate, "invalid wizard spell/skill source must block generation");
-  const charisma = deriveCharacter(changed({ initiateAbility: "charisma" }));
-  assert(charisma.spellcasting?.initiateDc === 10 && charisma.spellcasting.dc === 13, "feat casting ability is independent from wizard INT");
-  assert(validateBuild(changed({ initiateSpell: "shield" })).canGenerate, "feat may overlap book without using a second preparation slot");
+  const changedMagic = (patch: Partial<MagicInitiateChoices>) => ({ ...b, choices: { ...b.choices, origin: { ...b.choices.origin, magicInitiate: { ...b.choices.origin.magicInitiate, ...patch } } } });
+  for (const patch of [{ spell: "web" }, { spell: "constructor" }, { cantrips: ["light", "light"] }]) assert(!validateBuild(changedMagic(patch)).canGenerate, "invalid origin spell must block generation");
+  assert(validateBuild(changed({ skills: ["arcana", "investigation"] })).canGenerate, "duplicate skill proficiency is a recommendation warning");
+  const charisma = deriveCharacter(changedMagic({ ability: "charisma" }));
+  assert(charisma.originMagic?.dc === 10 && charisma.spellcasting?.dc === 13, "feat casting ability is independent from wizard INT");
+  assert(validateBuild(changedMagic({ spell: "shield" })).canGenerate, "feat may overlap book without using a second preparation slot");
   assert(!validateBuild({ ...b, choices: { ...b.choices, wizard: null } }).canGenerate, "malformed wizard payload must not throw");
   assert(parseDraft(JSON.stringify({ step: "character", build: changed({ cantrips: [] }) })).state?.step === "review", "incomplete wizard draft must return to review");
   let play = normalizePlayState(undefined, c);

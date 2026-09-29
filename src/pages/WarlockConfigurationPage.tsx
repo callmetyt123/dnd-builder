@@ -18,6 +18,6 @@ export function WarlockConfigurationPage() {
     <button className="button secondary" onClick={() => dispatch({ type: "warlock", patch: { cantrips: defaultBuild("warlock").choices.warlock!.cantrips, invocations: defaultBuild("warlock").choices.warlock!.invocations } })}>恢复推荐祈唤与绑定戏法</button>
     {errors.map((m) => <p className="validation blocker" key={m.id}>{m.message}</p>)}
     {w.invocations.map((v, i) => { const option = invocation(v.id); const targets = w.cantrips.filter((id) => eligibleTarget(v.id, id, w.cantrips)); return <section className="section" key={i}><div className="form-grid"><label>祈唤 {i + 1}<select value={v.id} onChange={(e) => { const id = e.target.value; replace(i, id, w.cantrips.find((s) => eligibleTarget(id, s, w.cantrips))); }}>{INVOCATIONS.map((o) => <option key={o.id} value={o.id}>{o.name} · {o.minLevel} 级起</option>)}</select></label>{option?.target && <label>绑定戏法 {i + 1}<select value={v.target ?? ""} onChange={(e) => replace(i, v.id, e.target.value)}>{!targets.includes(v.target ?? "") && <option value={v.target ?? ""}>请选择符合条件的已知戏法</option>}{targets.map((id) => <option key={id} value={id}>{spell(id)?.name}</option>)}</select></label>}</div><p>{option?.text}</p></section>; })}
-    <p className="muted-panel">下一页可调整戏法；绑定失效后需回到此页修正。起始装备：皮甲、镰刀、2 把匕首、奥术宝珠、神秘学书籍、学者套组与 15 GP；再合并流浪者装备。</p>
+    <p className="muted-panel">下一页可调整戏法；绑定失效后需回到此页修正。起始装备：皮甲、镰刀、2 把匕首、奥术宝珠、神秘学书籍、学者套组与 15 GP；再合并所选背景装备。</p>
   </BuilderShell>;
 }

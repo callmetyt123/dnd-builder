@@ -51,11 +51,15 @@ export interface Identity {
   description?: string;
 }
 
+export type BackgroundId = "soldier" | "sage" | "hermit" | "wayfarer";
+export interface MagicInitiateChoices { cantrips: string[]; spell: string; ability: "intelligence" | "wisdom" | "charisma" }
+export interface OriginChoices { gamingSet: string; magicInitiate: MagicInitiateChoices }
+
 export type ClassId = "fighter" | "wizard" | "druid" | "warlock" | "ranger";
-export interface RangerChoices { skills: SkillId[]; expertise: SkillId; extraLanguages: string[]; style: "archery" | "defense"; prepared: string[]; gamingSet: string; primal: PrimalChoice }
+export interface RangerChoices { skills: SkillId[]; expertise: SkillId; extraLanguages: string[]; style: "archery" | "defense"; prepared: string[]; primal: PrimalChoice }
 export interface InvocationChoice { id: string; target?: string }
 export interface WarlockChoices {
-  skills: SkillId[]; cantrips: string[]; prepared: string[]; invocations: InvocationChoice[]; gamingSet: string;
+  skills: SkillId[]; cantrips: string[]; prepared: string[]; invocations: InvocationChoice[];
 }
 export interface DruidChoices {
   skills: SkillId[]; order: "magician" | "warden"; cantrips: string[]; prepared: string[]; knownForms: string[];
@@ -64,7 +68,6 @@ export interface WizardChoices {
   skills: SkillId[]; scholar: SkillId; cantrips: string[];
   // 分开记录升级来源，防止一级法术书被二环法术填满。
   earlyBook: string[]; level3Book: string[]; evocationBook: string[]; prepared: string[];
-  initiateCantrips: string[]; initiateSpell: string; initiateAbility: "intelligence" | "wisdom" | "charisma";
 }
 
 export interface CharacterBuild {
@@ -73,7 +76,7 @@ export interface CharacterBuild {
   classId: ClassId;
   subclassId: "champion" | "evoker" | "moon" | "fiend" | "beast-master";
   speciesId: "dwarf";
-  backgroundId: "soldier" | "sage" | "hermit" | "wayfarer";
+  backgroundId: BackgroundId;
   profileId: "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
   playstyle: {
     tags: string[];
@@ -89,7 +92,7 @@ export interface CharacterBuild {
     druid?: DruidChoices;
     warlock?: WarlockChoices;
     languages: string[];
-    soldierGamingSet?: string;
+    origin: OriginChoices;
     fighterSkills: SkillId[];
     fightingStyle: "defense";
     weaponMasteries: string[];
@@ -133,7 +136,9 @@ export interface DerivedResource {
 export interface DerivedCharacter {
   level: 3;
   hitDie: number;
-  spellcasting?: { attack: number; dc: number; initiateAttack: number; initiateDc: number; book: string[]; prepared: string[]; cantrips: string[]; initiateSpell: string; initiateCantrips: string[]; ritualSpells: string[] };
+  spellcasting?: { attack: number; dc: number; book: string[]; prepared: string[]; cantrips: string[]; ritualSpells: string[] };
+  originMagic?: MagicInitiateChoices & { attack: number; dc: number };
+  tools: string[];
   primalCompanion?: PrimalChoice;
   pactMagic?: { slotLevel: 2; invocations: InvocationChoice[]; atWill: string[]; darkBlessing: number; concentrationAdvantage: boolean; devilsSight: boolean };
   wildShape?: { knownForms: string[]; temporaryHp: number };

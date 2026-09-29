@@ -1,3 +1,5 @@
+import { originChecks } from "./originSelftest";
+import { defaultOriginChoices } from "../src/rules/origins";
 import { rangerChecks } from "./rangerSelftest";
 import { warlockChecks } from "./warlockSelftest";
 import { druidChecks } from "./druidSelftest";
@@ -37,7 +39,7 @@ const build: CharacterBuild = {
   },
   choices: {
     languages: ["dwarvish", "giant"],
-    soldierGamingSet: "dice-set",
+    origin: defaultOriginChoices("fighter"),
     fighterSkills: ["perception", "survival"],
     fightingStyle: "defense",
     weaponMasteries: ["greatsword", "flail", "javelin"],
@@ -78,7 +80,7 @@ for (const value of [null, [], {}, { ...build, abilities: null }, { ...build, le
 }
 assert(!validateBuild({ ...build, identity: { ...build.identity, age: -1 } }).canGenerate, "negative age must be rejected");
 assert(!validateBuild({ ...build, identity: { ...build.identity, alignment: "??" } }).canGenerate, "unknown alignment must be rejected");
-assert(!validateBuild({ ...build, choices: { ...build.choices, soldierGamingSet: "unknown" } }).canGenerate, "unknown gaming set must be rejected");
+assert(!validateBuild({ ...build, choices: { ...build.choices, origin: { ...build.choices.origin, gamingSet: "unknown" } } }).canGenerate, "unknown gaming set must be rejected");
 assert(!validateBuild({ ...build, choices: { ...build.choices, weaponMasteries: ["constructor", "flail", "javelin"] } }).canGenerate, "inherited property must not be a weapon");
 assert(!validateBuild({ ...build, choices: { ...build.choices, languages: ["giant", "giant"] } }).canGenerate, "duplicate languages must be rejected");
 assert(!validateBuild({ ...build, choices: { ...build.choices, fighterSkills: ["arcana", "survival"] } }).canGenerate, "non-fighter skills must be rejected");
@@ -117,6 +119,7 @@ assert(updatePlayState(rested, { type: "resource", id: "second-wind", value: -3 
 const clamped = normalizePlayState({ hp: 999, temporaryHp: -1, hitDice: 8, remaining: { "second-wind": 9, "action-surge": null } }, derived);
 assert(clamped.hp === 31 && clamped.temporaryHp === 0 && clamped.hitDice === 3 && clamped.remaining["second-wind"] === 2 && clamped.remaining["action-surge"] === 1, "tampered play state must be bounded");
 assert(parseDraft(JSON.stringify({ step: "character", build, play })).state?.play?.hp === 8, "play state must survive draft serialization");
+originChecks(assert);
 wizardChecks(assert);
 druidChecks(assert);
 warlockChecks(assert);

@@ -1,3 +1,4 @@
+import { migrateBuild } from "./migrateBuild";
 import type { CharacterBuild, ClassId } from "../rules/types";
 import { defaultBuild } from "../rules/defaultBuild";
 import { deriveCharacter } from "../rules/engine/deriveCharacter";
@@ -23,6 +24,7 @@ export function parseDraft(raw: string | null): DraftRestore {
   if (!raw) return { state: null };
   try {
     const value: unknown = JSON.parse(raw);
+    if (isRecord(value)) value.build = migrateBuild(value.build);
     if (!isRecord(value) || !hasBuildShape(value.build) || !isSupportedBuild(value.build)) {
       return { state: null, notice: "旧草稿的格式或角色方案不受支持，已保留原始数据。你可以重新创建角色。", preserveOriginal: true };
     }
@@ -32,6 +34,7 @@ export function parseDraft(raw: string | null): DraftRestore {
     const profiles: BuilderState["profiles"] = {};
     if (isRecord(value.profiles)) for (const id of ["fighter", "wizard", "druid", "warlock", "ranger"] as const) {
       const saved = value.profiles[id];
+      if (isRecord(saved)) saved.build = migrateBuild(saved.build);
       if (isRecord(saved) && hasBuildShape(saved.build) && isSupportedBuild(saved.build) && saved.build.classId === id) {
         profiles[id] = { build: saved.build, play: saved.play === undefined ? undefined : normalizePlayState(saved.play, deriveCharacter(saved.build)) };
       }
