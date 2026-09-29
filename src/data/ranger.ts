@@ -1,3 +1,4 @@
+import { RANGER_SPELL_IDS } from "./primalSpells";
 import type { Spell } from "./spells";
 import type { AbilityScores } from "../rules/types";
 
@@ -12,7 +13,7 @@ export const PRIMAL_FORMS: PrimalForm[] = [
   { id: "sky", name: "天空野兽", size: "小型", hp: 16, hitDie: 6, speed: "步行 10 尺／飞行 60 尺", darkvision: 60, abilities: { strength: 6, dexterity: 16, constitution: 13, intelligence: 8, wisdom: 14, charisma: 11 }, dice: "1d4", damageBonus: 3, damageTypes: ["slashing"], effect: "飞掠：飞行离开敌人触及时不引发借机攻击。没有悬浮；失能或速度归零时按飞行坠落规则处理。" },
 ];
 export const primalForm = (id: string) => PRIMAL_FORMS.find((f) => f.id === id);
-export const RANGER_PREPARABLE = ["cure-wounds", "ensnaring-strike", "goodberry", "longstrider", "speak-with-animals", "detect-magic", "entangle", "alarm"];
+export const RANGER_PREPARABLE = RANGER_SPELL_IDS.filter((id) => id !== "hunters-mark");
 export const RANGER_MASTERIES = ["longbow", "shortsword", "scimitar", "dagger"];
 export const RANGER_STYLES = { archery: "箭术", defense: "防御" } as const;
 // 共享法术卡保留基本规则；职业专属免费次数不写进通用法术效果。

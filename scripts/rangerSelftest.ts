@@ -41,7 +41,7 @@ export function rangerChecks(assert: (ok: boolean, message: string) => void) {
   assert(bad((v) => { v.choices.ranger!.prepared[0] = "misty-step"; }), "ranger cannot prepare second-level spell at three");
   assert(bad((v) => { v.choices.ranger!.primal = { form: "sky", damage: "piercing", appearance: "鹰" }; }), "sky damage restricted to slashing");
   assert(bad((v) => { v.choices.ranger!.primal.appearance = ""; }), "partner appearance required");
-  assert(RANGER_PREPARABLE.length === 8 && PRIMAL_FORMS.length === 3, "curated selection scope");
+  assert(RANGER_PREPARABLE.length === 13 && PRIMAL_FORMS.length === 3, "complete first-level selection and three companion forms");
   let p = normalizePlayState(undefined, c);
   assert(p.primal?.hp === 20 && p.primal.hitDice === 3 && !p.primal.canReplace && p.remaining["spell-slot-1"] === 3, "initial companion and slots");
   const noReplace = updatePlayState(p, { type: "primal-replace", choice: { form: "sky", damage: "slashing", appearance: "鹰" } }, c);

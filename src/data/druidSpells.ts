@@ -1,10 +1,11 @@
+import { DRUID_SPELL_IDS } from "./primalSpells";
 import type { Spell } from "./spells";
 
 // 结社和德鲁伊语提供的法术不占六个准备名额；兽形例外仅来自结社。
 export const MOON_SPELLS = ["starry-wisp", "cure-wounds", "moonbeam"];
 export const DRUID_ALWAYS = ["speak-with-animals", "cure-wounds", "moonbeam"];
-export const DRUID_CANTRIPS = ["guidance", "druidcraft", "thorn-whip"];
-export const DRUID_PREPARABLE = ["healing-word", "entangle", "faerie-fire", "detect-magic", "thunderwave", "goodberry", "lesser-restoration", "spike-growth"];
+export const DRUID_CANTRIPS = DRUID_SPELL_IDS.slice(0, 13);
+export const DRUID_PREPARABLE = DRUID_SPELL_IDS.slice(13);
 export const DRUID_SPELLS: Spell[] = [
   { id: "guidance", name: "神导术", level: 0, school: "预言", time: "动作", range: "触碰", components: "V、S", duration: "至多 1 分钟", concentration: true, text: "触碰自愿生物并选择一项技能；持续期间该技能的属性检定获得 1d4 加值。" },
   { id: "druidcraft", name: "德鲁伊伎俩", level: 0, school: "变化", time: "动作", range: "30 尺", components: "V、S", duration: "立即", text: "选择一项：用持续一轮的感官效应预报当地未来 24 小时天气；让花、种子或叶蕾开放；创造 5 尺立方内无害的感官效应；点熄蜡烛、火把或小篝火。" },

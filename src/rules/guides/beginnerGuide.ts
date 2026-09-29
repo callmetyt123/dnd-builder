@@ -1,3 +1,4 @@
+import { primalAction } from "./primalGuide";
 import { MANEUVERS } from "../../data/expandedSubclasses";
 import type { CharacterBuild, DerivedCharacter, DerivedAttack, SkillId } from "../types";
 import { spell } from "../../data/spells";
@@ -60,6 +61,9 @@ function spellAction(c: DerivedCharacter, id: string): GuideAction {
   const healingModifier = c.spellcasting!.attack - c.proficiencyBonus;
   let how = use?.[1].replace(/ \+ 你的施法属性调整值/g, signed(healingModifier)).replace("；在完整卡查看该来源的施法属性", "") ?? "先翻到完整人物卡中的这道法术，确认目标、范围和效果，再向主持人描述你的做法。";
   if (c.pactMagic && id === "burning-hands") how = how.replace("3d6", "4d6");
+  if (c.pactMagic && id === "cure-wounds") how = how.replace("2d8", "4d8").replace("（一环）", "（二环）");
+  // 此处只生成职业法术提示；起源法术保留自身的伤害类型。
+  if (c.pactMagic?.psychicDamage) how = how.replace(/(暗蚀|火焰|寒冷|光耀|闪电|力场|雷鸣|强酸|毒素|钝击|穿刺|挥砍)(?=伤害)/g, "心灵");
   if (how.includes("豁免")) how += ` 豁免难度 DC ${c.spellcasting!.dc}，由主持人处理。`;
   return { id, title: s.name, when: use?.[0] ?? "需要这道已准备法术的效果时", how,
     cost: `${s.time} · ${c.pactMagic ? "1 格二环契约法术位" : `1 格${s.level === 1 ? "一" : "二"}环法术位`}${s.concentration ? " · 需要专注" : ""} · 成分见完整卡` };
@@ -76,7 +80,7 @@ function basicAction(c: DerivedCharacter): GuideAction {
     const effect = warlockCantrip(c, id), simple = attackCantrips[id];
     if (!effect && !simple) continue;
     const attack = effect ? effect.attack : simple[0].includes("攻击");
-    return { id, title: spell(id)!.name, when: "想保留法术位、继续造成伤害时", how: `${effect ? `${effect.range} 尺` : simple[2]}内，${attack ? `掷 d20${signed(c.spellcasting!.attack)} 作${effect ? "远程法术攻击" : simple[0]}，达到目标 AC 命中` : `目标作智力豁免（DC ${c.spellcasting!.dc}），失败`}后造成 ${effect ? effect.damage : simple[1]}。${effect?.push ? "命中大型或更小生物，可推离至多 10 尺。" : ""}`, cost: "动作 · 戏法，不消耗法术位" };
+    return { id, title: spell(id)!.name, when: "想保留法术位、继续造成伤害时", how: `${effect ? effect.rangeLabel ?? `${effect.range} 尺` : simple[2]}内，${attack ? `掷 d20${signed(c.spellcasting!.attack)} 作${effect ? effect.attackLabel : simple[0]}，达到目标 AC 命中` : `目标作${effect?.save ?? "智力"}豁免（DC ${c.spellcasting!.dc}），失败`}后造成 ${effect ? effect.damage : simple[1]}。${effect?.note ?? ""}${effect?.push ? "命中大型或更小生物，可推离至多 10 尺。" : ""}`, cost: "动作 · 戏法，不消耗法术位" };
   }
   return weaponAction(c);
 }
@@ -123,19 +127,33 @@ export function beginnerGuide(build: CharacterBuild, c: DerivedCharacter): Begin
     const form = beast(build.choices.druid!.knownForms[0])!;
     role = "你能用自然魔法帮助队伍，也能变成已知野兽探索或战斗。";
     approach = "先判断要施法还是变形。远处用戏法；需要兽形能力时，翻到对应兽形卡再变形。";
-    actions = [basicAction(c), { id: form.id, title: `变形：${form.name}`, when: "需要所选野兽的行动或探索能力时", how: "变成该已知兽形并获得 9 临时 HP；HP 上限不变，临时 HP 耗尽也不会自动变回。攻击和移动使用完整卡中的兽形数据。", cost: "附赠动作 · 消耗 1 次荒野变形；上限 2 次，短休恢复 1 次" }, spells[0]];
+    actions = [basicAction(c), { id: form.id, title: `变形：${form.name}`, when: "需要所选野兽的行动或探索能力时", how: `变成该已知兽形并获得 ${build.subclassId === "moon" ? 9 : 3} 临时 HP；HP 上限不变，临时 HP 耗尽也不会自动变回。攻击和移动使用完整卡中的兽形数据。`, cost: "附赠动作 · 消耗 1 次荒野变形；上限 2 次，短休恢复 1 次" }, spells[0]];
     reminders = ["兽形只能施展结社明确允许的法术，仍需成分；原形与兽形数值分开查询。", "同一时间只能维持一个专注效果；受伤时提醒主持人进行维持专注的体质豁免。"];
-  } else if (build.classId === "ranger") {
+    if (build.subclassId !== "moon") {
+      actions[1] = primalAction(build, c)!;
+      approach = "先在安全位置用戏法，需要支援或特殊能力时，再花法术位或荒野变形次数。";
+      reminders[0] = "野兽形态只能选 CR ≤ 1/4 且无飞行速度的已知形态，获得 3 临时 HP，三级不能在野兽形态施法。";
+    }
+  } else if (build.classId === "ranger" && c.primalCompanion) {
     const p = derivePrimalCompanion(c, c.primalCompanion!);
     role = "你和原初行侣一起行动，能用武器、自然魔法和伙伴协助队伍。";
     approach = "自己攻击，再考虑用附赠动作指挥伙伴；想施展猎人印记时，先决定这个回合怎样分配附赠动作。";
     actions = [weaponAction(c), { id: "primal-companion", title: `指挥${p.name}`, when: "想让伙伴攻击或做其他事情时", how: `伙伴在你的回合行动。野兽打击：近战 5 尺，d20${signed(p.attack)}，命中造成 ${p.damage} ${damageNames[c.primalCompanion!.damage]}。未指挥时只回避。`, cost: "你的附赠动作；或牺牲自己的一次攻击，仅指挥野兽打击" }, { id: "hunters-mark", title: "持续追击：猎人印记", when: "准备连续攻击一个敌人时", how: "90 尺内标记可见目标；你本人的攻击命中它时额外 +1d6 力场伤害，伙伴不加伤。需要专注。", cost: "附赠动作 · 每长休免费 2 次，用完可耗 1 格一环位" }];
     reminders = ["指挥伙伴、施展或转移猎人印记都可能占用附赠动作，一个回合只能用一个。", "你与伙伴分别记录 HP；伙伴形态、特殊能力和恢复方式见完整卡。"];
+  } else if (build.classId === "ranger") {
+    role = "你擅长用武器追猎，也能用自然魔法帮助探索与治疗。";
+    approach = "先用武器攻击；想持续追击时施展猎人印记，再检查子职能力的触发条件。";
+    actions = [weaponAction(c), { id: "hunters-mark", title: "持续追击：猎人印记", when: "准备连续攻击一个敌人时", how: "90 尺内标记可见目标；你的攻击命中它时额外 +1d6 力场伤害。需要专注，转移目标仍用附赠动作。", cost: "附赠动作 · 每长休免费 2 次，用完可耗 1 格一环位" }, primalAction(build, c)!];
+    reminders = ["猎人印记与其他专注法术不能同时维持；受伤需作维持专注的体质豁免。", "武器基础伤害不包含条件加伤，触发时再加骰。三级攻击动作通常只有一次攻击。"];
   } else {
     role = build.classId === "wizard" ? "你靠奥术应对不同局面。戏法适合日常使用，法术位留给需要扭转局势的时刻。" : "你用戏法稳定作战，并以少量契约法术和所选祈唤应对关键局面。";
     approach = "先找安全位置；没有特别需求时用常用攻击，遇到危险或机会再考虑下面的法术。";
     actions = [basicAction(c), ...spells];
     reminders = [build.classId === "wizard" ? "三级塑能师还没有保护盟友免受范围法术影响的法术塑形；放范围法术前先确认同伴位置。" : "契约法术位只有 2 格，均为二环，短休或长休恢复；戏法不耗位。祈唤只增强你实际指定的法术。", "同一时间只专注一个效果；受伤时提醒主持人进行维持专注的体质豁免。一回合最多消耗一个法术位施法。"];
+  }
+  if (build.classId === "warlock" && build.subclassId !== "fiend") {
+    actions[2] = primalAction(build, c)!;
+    if (build.subclassId === "great-old-one") reminders[1] = "职业惑控与幻术可省去言语、姿势，但材料仍需满足；起源法术不受影响。每次施展职业法术可选择心灵伤害。";
   }
   if (build.classId === "wizard" && build.subclassId !== "evoker") {
     const abilities: Record<string, GuideAction> = {

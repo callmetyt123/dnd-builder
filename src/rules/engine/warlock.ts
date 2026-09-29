@@ -8,8 +8,8 @@ export function warlockCantrip(c: DerivedCharacter, id: string) {
   const base = Object.prototype.hasOwnProperty.call(CANTRIP_DAMAGE, id) ? CANTRIP_DAMAGE[id] : undefined;
   if (!base || !c.pactMagic) return undefined;
   const has = (invocationId: string) => c.pactMagic!.invocations.some((v) => v.id === invocationId && v.target === id);
-  return { damage: `${damageFormula(base.dice, has("agonizing-blast") ? c.abilities.charisma.modifier : 0)} ${base.damage}`,
-    range: base.range + (has("eldritch-spear") ? c.level * 30 : 0), attack: base.attack,
+  return { damage: `${damageFormula(base.dice, (has("agonizing-blast") ? c.abilities.charisma.modifier : 0) + (id === "true-strike" ? c.abilities.charisma.modifier : 0))} ${c.pactMagic.psychicDamage ? "心灵" : base.damage}`,
+    range: base.range + (has("eldritch-spear") ? c.level * 30 : 0), attack: base.attack, attackLabel: id === "true-strike" ? "武器攻击" : base.melee ? "近战法术攻击" : "远程法术攻击", save: base.save ?? "智力", rangeLabel: base.rangeLabel, note: base.note,
     push: has("repelling-blast") && base.attack };
 }
 

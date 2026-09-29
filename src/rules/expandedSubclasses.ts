@@ -1,3 +1,5 @@
+import { changePrimalSubclass, reconcilePrimalChoices, isPrimalBuild } from "./primalSubclasses";
+import type { PrimalSubclassId } from "./types";
 import { speciesCantripIds } from "./species";
 import { featSources } from "./origins";
 import type { CharacterBuild, FighterSubclass, WizardSubclass } from "./types";
@@ -36,6 +38,11 @@ export function changeExpandedSubclass(build: CharacterBuild, id: FighterSubclas
   return { ...build, subclassId: id, choices: { ...build.choices, wizard: { ...w, cantrips, evocationBook, prepared, illusionCantrip: undefined } } };
 }
 export function subclassDefaults(build: CharacterBuild): CharacterBuild {
+  if (isPrimalBuild(build)) {
+    const base = defaultBuild(build.classId);
+    if (build.classId === "druid") base.choices.druid = { ...base.choices.druid!, land: build.choices.druid?.land, starForm: build.choices.druid?.starForm, starMap: build.choices.druid?.starMap };
+    return reconcilePrimalChoices(changePrimalSubclass(base, build.subclassId as PrimalSubclassId));
+  }
   let next = changeExpandedSubclass(defaultBuild(build.classId), build.subclassId as FighterSubclass | WizardSubclass);
   if (build.classId === "fighter" && ["eldritch-knight", "psi-warrior"].includes(build.subclassId)) next = { ...next, abilities: { ...next.abilities, baseAssignment: { strength: 15, dexterity: 12, constitution: 13, intelligence: 14, wisdom: 10, charisma: 8 } } };
   return next;

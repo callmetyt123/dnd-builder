@@ -1,3 +1,4 @@
+import { DRUID_SUBCLASSES, WARLOCK_SUBCLASSES, RANGER_SUBCLASSES } from "../../data/primalSubclasses";
 import { FIGHTER_SUBCLASSES, WIZARD_SUBCLASSES } from "../../data/expandedSubclasses";
 import { ROGUE_SUBCLASSES } from "../../data/rogue";
 import { SPECIES } from "../../data/species";
@@ -36,6 +37,9 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   if (value.classId === "warlock" && (!isRecord(pact) || !["skills", "cantrips", "prepared"].every((k) => strings(pact[k])) || !Array.isArray(pact.invocations) || !pact.invocations.every((v) => isRecord(v) && typeof v.id === "string" && (v.target === undefined || typeof v.target === "string")))) return false;
   const d = c.druid;
   if (value.classId === "druid" && (!isRecord(d) || !["skills", "cantrips", "prepared", "knownForms"].every((k) => strings(d[k])) || typeof d.order !== "string")) return false;
+  if (isRecord(d) && !["land", "starForm", "starMap"].every((k) => d[k] === undefined || typeof d[k] === "string")) return false;
+  if (isRecord(pact) && pact.psychicDamage !== undefined && typeof pact.psychicDamage !== "string") return false;
+  if (isRecord(ranger) && !["huntersPrey", "feySkill", "feyGift"].every((k) => ranger[k] === undefined || typeof ranger[k] === "string")) return false;
   const w = c.wizard;
   if (value.classId === "wizard" && (!isRecord(w) || !["skills", "cantrips", "earlyBook", "level3Book", "evocationBook", "prepared"].every((k) => strings(w[k])) || typeof w.scholar !== "string" || (w.illusionCantrip !== undefined && typeof w.illusionCantrip !== "string"))) return false;
   const origin = c.origin;
@@ -56,9 +60,9 @@ export function isSupportedBuild(build: CharacterBuild): boolean {
   if (!Object.prototype.hasOwnProperty.call(BACKGROUNDS, build.backgroundId) || build.equipment.backgroundPackage !== `${build.backgroundId}-a`) return false;
   if (build.schemaVersion !== 1 || build.level !== 3 || !Object.prototype.hasOwnProperty.call(SPECIES, build.speciesId)) return false;
   if (build.classId === "rogue") return Object.prototype.hasOwnProperty.call(ROGUE_SUBCLASSES, build.subclassId) && build.profileId === "rogue" && build.equipment.classPackage === "rogue-a";
-  if (build.classId === "ranger") return build.subclassId === "beast-master" && build.profileId === "ranger-beast-master" && build.equipment.classPackage === "ranger-a";
-  if (build.classId === "warlock") return build.subclassId === "fiend" && build.profileId === "warlock-fiend" && build.equipment.classPackage === "warlock-a";
-  if (build.classId === "druid") return build.subclassId === "moon" && build.profileId === "druid-moon" && build.equipment.classPackage === "druid-a";
+  if (build.classId === "ranger") return Object.prototype.hasOwnProperty.call(RANGER_SUBCLASSES, build.subclassId) && build.profileId === "ranger-beast-master" && build.equipment.classPackage === "ranger-a";
+  if (build.classId === "warlock") return Object.prototype.hasOwnProperty.call(WARLOCK_SUBCLASSES, build.subclassId) && build.profileId === "warlock-fiend" && build.equipment.classPackage === "warlock-a";
+  if (build.classId === "druid") return Object.prototype.hasOwnProperty.call(DRUID_SUBCLASSES, build.subclassId) && build.profileId === "druid-moon" && build.equipment.classPackage === "druid-a";
   if (build.classId === "wizard") return Object.prototype.hasOwnProperty.call(WIZARD_SUBCLASSES, build.subclassId) && build.profileId === "wizard-evoker" && build.equipment.classPackage === "wizard-a";
   return build.classId === "fighter" && Object.prototype.hasOwnProperty.call(FIGHTER_SUBCLASSES, build.subclassId)
     && build.profileId === "fighter-heavy" && build.choices.fightingStyle === "defense"

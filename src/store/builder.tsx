@@ -1,3 +1,5 @@
+import { changePrimalSubclass, reconcilePrimalChoices } from "../rules/primalSubclasses";
+import type { PrimalSubclassId, DruidChoices as PrimalDruidChoices } from "../rules/types";
 import { changeExpandedSubclass, defaultFighterChoices } from "../rules/expandedSubclasses";
 import type { FighterChoices, FighterSubclass, WizardSubclass } from "../rules/types";
 import { applyRecommendation, type RecommendationStep } from "../rules/guides/onboarding";
@@ -17,6 +19,8 @@ import { switchClass, parseDraft, STORAGE_KEY, type BuilderState, type BuilderSt
 export type { BuilderState, BuilderStep } from "./draft";
 
 type Action =
+  | { type: "primal-subclass"; id: PrimalSubclassId }
+  | { type: "primal-druid"; patch: Partial<PrimalDruidChoices> }
   | { type: "expanded-subclass"; id: FighterSubclass | WizardSubclass }
   | { type: "fighter"; patch: Partial<FighterChoices> }
   | { type: "recommend-step"; step: RecommendationStep }
@@ -47,6 +51,8 @@ type Action =
   | { type: "identity"; patch: Partial<CharacterBuild["identity"]> };
 
 function reducer(state: BuilderState, action: Action): BuilderState {
+  if (action.type === "primal-subclass") return { ...state, build: changePrimalSubclass(state.build, action.id) };
+  if (action.type === "primal-druid") return { ...state, build: reconcilePrimalChoices({ ...state.build, choices: { ...state.build.choices, druid: { ...state.build.choices.druid!, ...action.patch } } }) };
   if (action.type === "expanded-subclass") {
     const build = changeExpandedSubclass(state.build, action.id);
     return { ...state, build, play: state.play ? normalizePlayState(state.play, deriveCharacter(build)) : undefined };

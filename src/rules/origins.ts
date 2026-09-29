@@ -1,3 +1,4 @@
+import { FEY_SKILLS } from "../data/primalSubclasses";
 import { SKILLS } from "../data/core";
 import { TOOL_OPTIONS, CRAFTER_TOOLS, INSTRUMENTS } from "../data/originOptions";
 import { ORIGIN_SPELL_IDS } from "../data/originSpells";
@@ -40,6 +41,7 @@ export function extraSkills(build: CharacterBuild): SkillId[] {
 }
 export function magicOptions(list: MagicList) { return ORIGIN_SPELL_IDS[list].map((id) => spell(id)!).filter(Boolean); }
 export function classSkills(build: CharacterBuild): SkillId[] {
+  if (build.classId === "ranger" && build.subclassId === "fey-wanderer") return [...build.choices.ranger!.skills, build.choices.ranger!.feySkill ?? "persuasion"];
   return build.classId === "fighter" ? [...build.choices.fighterSkills, ...(build.subclassId === "battle-master" && build.choices.fighter ? [build.choices.fighter.studentSkill] : [])] : build.choices[build.classId]!.skills;
 }
 export function proficientSkills(build: CharacterBuild): SkillId[] {
@@ -84,7 +86,8 @@ export function recommendSkills(build: CharacterBuild): CharacterBuild {
     choices.wizard = { ...w, skills, scholar };
   } else if (build.classId === "ranger") {
     const r = choices.ranger!;
-    choices.ranger = { ...r, skills, expertise: [...skills, ...background.skills, ...extraSkills(build)].includes(r.expertise) ? r.expertise : skills[0] };
+    const feySkill = build.subclassId === "fey-wanderer" ? FEY_SKILLS.find((id) => ![...skills, ...background.skills, ...extraSkills(build)].includes(id)) ?? "persuasion" : r.feySkill;
+    choices.ranger = { ...r, skills, feySkill, expertise: [...skills, ...background.skills, ...extraSkills(build), ...(build.subclassId === "fey-wanderer" ? [feySkill!] : [])].includes(r.expertise) ? r.expertise : skills[0] };
   } else if (build.classId === "druid") choices.druid = { ...choices.druid!, skills };
   else choices.warlock = { ...choices.warlock!, skills };
   return { ...build, choices };

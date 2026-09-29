@@ -1,3 +1,5 @@
+import { PrimalSubclassSheet } from "./PrimalSubclassSheet";
+import { SummonedBeastSheet } from "./SummonedBeastSheet";
 import { SubclassSheet } from "./SubclassSheet";
 import { subclassFeatures } from "../../rules/expandedSubclasses";
 import { BeginnerSheet } from "./BeginnerSheet";
@@ -43,7 +45,7 @@ function Masteries({ c }: { c: DerivedCharacter }) {
 export function CharacterSheets(props: Props) {
   if (props.mode === "quick") return <BeginnerSheet build={props.build} c={props.character} />;
   const play = normalizePlayState(undefined, props.character);
-  return <><ClassSheets {...props} play={play} /><OriginDetailSheet build={props.build} c={props.character} play={play} /><OriginSpellSheet build={props.build} c={props.character} play={play} /><FamiliarSheet build={props.build} c={props.character} /></>;
+  return <><ClassSheets {...props} play={play} /><PrimalSubclassSheet build={props.build} c={props.character} /><SummonedBeastSheet build={props.build} c={props.character} /><OriginDetailSheet build={props.build} c={props.character} play={play} /><OriginSpellSheet build={props.build} c={props.character} play={play} /><FamiliarSheet build={props.build} c={props.character} /></>;
 }
 function ClassSheets({ build, character: c, play, mode }: Props & { play: PlayState }) {
   if (build.classId === "rogue") return <RogueSheets build={build} c={c} play={play} mode={mode} />;

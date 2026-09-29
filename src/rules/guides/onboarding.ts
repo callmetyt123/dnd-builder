@@ -1,3 +1,4 @@
+import { primalSubclass } from "../../data/primalSubclasses";
 import { subclassDefaults, defaultFighterChoices } from "../expandedSubclasses";
 import type { CharacterBuild, ClassId, ValidationMessage } from "../types";
 import { changeSpecies } from "../species";
@@ -21,7 +22,7 @@ const route: Record<ClassId, { tags: string[]; complexity: number; reason: strin
   fighter: { tags: ["melee", "durability"], complexity: 0, reason: "用武器和护甲在前线作战，常用选择清楚。", effort: "较少：记住武器攻击、回气和动作如潮；护甲不能保证敌人只攻击你。" },
   rogue: { tags: ["stealth", "mobile", "ranged"], complexity: 1, reason: "擅长潜行、技能检定与寻找偷袭机会，也能使用短弓。", effort: "适中：留意偷袭条件和附赠动作；入门推荐盗贼子职。" },
   warlock: { tags: ["magic"], complexity: 1, reason: "以攻击戏法为常用手段，少量契约法术应对关键时刻。", effort: "适中：管理两格契约法术位和祈唤，短休恢复法术位。" },
-  ranger: { tags: ["ranged", "nature", "hybrid"], complexity: 2, reason: "用长弓和动物伙伴协同，也有少量自然法术。", effort: "较多：同时安排自己和伙伴的行动；指挥伙伴与部分法术争用附赠动作。" },
+  ranger: { tags: ["ranged", "nature", "hybrid"], complexity: 2, reason: "用武器与自然法术追猎探索，也可选择动物伙伴路线。", effort: "适中：管理猎人印记与少量法术；推荐猎人，驯兽师另需管理伙伴。" },
   druid: { tags: ["support", "nature", "hybrid"], complexity: 2, reason: "兼顾治疗、控制与野兽变形，能帮助同伴并探索环境。", effort: "较多：需要查询法术和兽形，分别理解原形与兽形的能力。" },
   wizard: { tags: ["magic", "support"], complexity: 2, reason: "法术选择丰富，适合用奥术伤害和控制应对不同局面。", effort: "较多：理解准备法术、法术位和专注；法师不以治疗为长项。" },
 };
@@ -76,7 +77,7 @@ export function recommendationInfo(build: CharacterBuild, step: RecommendationSt
   if (step === "species") return { title: `入门备选：${SPECIES[next.speciesId].name}`, why: build.classId === "rogue" ? "半身人的灵巧形象适合潜行，幸运可重掷掷出 1 的 d20 检定。其他种族同样可选。" : "矮人提供额外生命值和黑暗视觉，适合先熟悉职业能力。其他种族同样可选。", scope: "只更换种族及其专属选项；额外语言仍按你的选择。", preview: "种族不限制职业；属性提升在背景步骤选择。", label: `选择${SPECIES[next.speciesId].name}` };
   if (step === "background") return { title: `推荐背景：${BACKGROUNDS[next.backgroundId].name}`, why: BACKGROUND_REASON[build.classId], scope: "更换背景、背景装备及背景加值；相关专长选项按原有切换规则更新。", preview: `获得${BACKGROUNDS[next.backgroundId].skills.map((id) => skillNames[id]).join("、")}熟练。`, label: "采用推荐背景" };
   if (step === "abilities") return { title: "先采用推荐属性", why: build.classId === "fighter" && ["eldritch-knight", "psi-warrior"].includes(build.subclassId) ? "推荐力量 15、智力 14、体质 13 作为基础值：兼顾武器、子职能力与生存。切换子职会保留旧属性，点击此处才采用这一组。" : `优先${abilityNames[ABILITY_PRIORITY[build.classId][0]]}，支持这个职业的常用攻击或施法，再兼顾生存能力。`, scope: "替换六项基础属性及背景加值，仍遵守你当前背景允许提升的属性。", preview: Object.entries(next.abilities.baseAssignment).map(([id, score]) => `${abilityNames[id as keyof typeof abilityNames]} ${score}`).join(" · "), label: "采用推荐属性" };
-  if (step === "configuration") return { title: "这一套配置可以直接开始", why: configurationWhy[build.classId], scope: `替换职业技能、专精与本页推荐项；${build.classId === "warlock" ? "祈唤及绑定的两道戏法一起替换。" : build.classId === "ranger" ? "包括风格、精通、额外语言和伙伴外形。" : build.classId === "rogue" ? "包括精通和额外语言，保留所选子职。" : build.classId === "druid" ? "包括已知兽形，保留原初职能与法术。" : build.classId === "fighter" ? "包括战技、战争学者熟练或联结武器；保留起源、属性与法术。" : "保留起源、属性与法术。"}`, preview: `推荐职业技能：${classSkills(next).map((id) => skillNames[id]).join("、")}。避开起源已提供的熟练；没有空余选项时才保留重复。`, label: "采用推荐职业配置" };
+  if (step === "configuration") return { title: "这一套配置可以直接开始", why: primalSubclass(build) ? `${primalSubclass(build)!.reason} ${build.classId === "druid" ? "已知兽形按当前结社上限选择。" : build.classId === "ranger" ? "箭术配合长弓；保留你选的子职选项。" : "推荐魔能爆、苦痛魔爆、斥力魔爆与魔能意志。"}` : configurationWhy[build.classId], scope: `替换职业技能、专精与本页推荐项；${build.classId === "warlock" ? "祈唤及绑定的两道戏法一起替换。" : build.classId === "ranger" ? build.subclassId === "beast-master" ? "包括风格、精通、额外语言和伙伴外形。" : "包括风格、精通、额外语言与额外技能，保留子职。" : build.classId === "rogue" ? "包括精通和额外语言，保留所选子职。" : build.classId === "druid" ? "包括已知兽形，保留原初职能与法术。" : build.classId === "fighter" ? "包括战技、战争学者熟练或联结武器；保留起源、属性与法术。" : "保留起源、属性与法术。"}`, preview: `推荐职业技能：${classSkills(next).map((id) => skillNames[id]).join("、")}。避开起源已提供的熟练；没有空余选项时才保留重复。`, label: "采用推荐职业配置" };
   const magic = next.choices[next.classId];
-  return { title: "先用这组法术熟悉角色", why: build.classId === "druid" && build.choices.druid?.order === "warden" ? "指引术辅助检定，自然伎俩表现自然魔法；治愈真言帮助同伴，纠缠术限制敌人。" : spellWhy[build.classId], scope: `替换职业戏法与准备法术${build.classId === "wizard" ? "及法术书" : ""}；起源法术保留。${build.classId === "warlock" ? "保留祈唤；若绑定失效，检查清单会引导你修正。" : ""}`, preview: `准备：${magic?.prepared.map((id) => spell(id)?.name ?? id).join("、") ?? ""}。`, label: "采用推荐法术" };
+  return { title: "先用这组法术熟悉角色", why: build.classId === "druid" && build.choices.druid?.order === "warden" ? "优先选择两道可用戏法；治愈真言帮助同伴，纠缠术限制敌人。结社额外法术独立保留。" : spellWhy[build.classId], scope: `替换职业戏法与准备法术${build.classId === "wizard" ? "及法术书" : ""}；起源法术保留。${build.classId === "warlock" ? "保留祈唤；若绑定失效，检查清单会引导你修正。" : ""}`, preview: `准备：${magic?.prepared.map((id) => spell(id)?.name ?? id).join("、") ?? ""}。`, label: "采用推荐法术" };
 }

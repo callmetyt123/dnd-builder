@@ -16,6 +16,14 @@ export const WARLOCK_SPELLS: Spell[] = [
   { id: "false-life", name: "虚假生命", level: 1, school: "死灵", time: "动作", range: "自身", components: "V、S、M（酒精）", duration: "立即", text: "获得 2d4+4 临时 HP，二环额外 +5。临时 HP 不叠加。若通过邪魔活力祈唤施展，另按该祈唤取最大值 12，不耗位。" },
 ];
 export const PACT_EFFECTS: Record<string, string> = {
+  "arms-of-hadar": "二环契约施法：力量豁免失败受 3d6 暗蚀伤害且至其下一回合前不能作反应；成功半伤且可反应。",
+  "dissonant-whispers": "二环契约施法：感知豁免失败受 4d6 心灵伤害并立即用反应远离；成功半伤且不移动。",
+  "cure-wounds": "二环契约施法：恢复 4d8 + 魅力调整值 HP。",
+  "guiding-bolt": "二环契约施法：命中造成 5d6 光耀伤害。",
+  bane: "二环契约施法：至多四名目标，其余条件不变。",
+  "witch-bolt": "二环契约施法：最初命中造成 3d12 闪电；后续附赠动作自动伤害仍为 1d12。",
+  "unseen-servant": "二环契约施法没有额外效果；可用仪式施展不耗位。",
+  "tashas-hideous-laughter": "二环契约施法：至多两名目标，其余条件不变。",
   "burning-hands": "二环契约施法：15 尺锥形内生物敏捷豁免，失败受 4d6 火焰伤害，成功半伤；点燃未被携带或着装的易燃物。会伤及盟友。",
   "armor-of-agathys": "二环契约施法：获得 10 临时 HP，近战攻击命中你的生物受 10 寒冷伤害。持续 1 小时；没有临时 HP 时提前结束。临时 HP 被其他来源替换为正值不会提前结束，但不能叠加。",
   "hellish-rebuke": "二环契约施法：触发伤害你的生物作敏捷豁免，失败受 3d10 火焰伤害，成功半伤。",

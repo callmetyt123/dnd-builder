@@ -68,15 +68,19 @@ export type ClassId = "fighter" | "wizard" | "druid" | "warlock" | "ranger" | "r
 export type FighterSubclass = "champion" | "battle-master" | "eldritch-knight" | "psi-warrior";
 export type WizardSubclass = "evoker" | "abjurer" | "diviner" | "illusionist";
 export interface FighterChoices { maneuvers: string[]; studentSkill: SkillId; artisanTool: string; cantrips: string[]; prepared: string[]; bondedWeapons: string[] }
+export type DruidSubclass = "moon" | "land" | "sea" | "stars";
+export type WarlockSubclass = "fiend" | "archfey" | "celestial" | "great-old-one";
+export type RangerSubclass = "beast-master" | "hunter" | "fey-wanderer" | "gloom-stalker";
+export type PrimalSubclassId = DruidSubclass | WarlockSubclass | RangerSubclass;
 export type RogueSubclass = "thief" | "assassin" | "arcane-trickster" | "soulknife";
 export interface RogueChoices { skills: SkillId[]; expertise: SkillId[]; extraLanguage: string; cantrips: string[]; prepared: string[] }
-export interface RangerChoices { skills: SkillId[]; expertise: SkillId; extraLanguages: string[]; style: "archery" | "defense"; prepared: string[]; primal: PrimalChoice }
+export interface RangerChoices { skills: SkillId[]; expertise: SkillId; extraLanguages: string[]; style: "archery" | "defense"; prepared: string[]; primal: PrimalChoice; huntersPrey?: "colossus-slayer" | "horde-breaker"; feySkill?: SkillId; feyGift?: string }
 export interface InvocationChoice { id: string; target?: string }
 export interface WarlockChoices {
-  skills: SkillId[]; cantrips: string[]; prepared: string[]; invocations: InvocationChoice[];
+  skills: SkillId[]; cantrips: string[]; prepared: string[]; invocations: InvocationChoice[]; psychicDamage?: "original" | "psychic";
 }
 export interface DruidChoices {
-  skills: SkillId[]; order: "magician" | "warden"; cantrips: string[]; prepared: string[]; knownForms: string[];
+  skills: SkillId[]; order: "magician" | "warden"; cantrips: string[]; prepared: string[]; knownForms: string[]; land?: "arid" | "polar" | "temperate" | "tropical"; starForm?: "archer" | "chalice" | "dragon"; starMap?: string;
 }
 export interface WizardChoices {
   skills: SkillId[]; scholar: SkillId; cantrips: string[];
@@ -89,7 +93,7 @@ export interface CharacterBuild {
   schemaVersion: 1;
   level: 3;
   classId: ClassId;
-  subclassId: RogueSubclass | FighterSubclass | WizardSubclass | "moon" | "fiend" | "beast-master";
+  subclassId: RogueSubclass | FighterSubclass | WizardSubclass | DruidSubclass | WarlockSubclass | RangerSubclass;
   speciesId: SpeciesId;
   backgroundId: BackgroundId;
   profileId: "rogue" | "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
@@ -161,7 +165,7 @@ export interface DerivedCharacter {
   size: "small" | "medium";
   tools: string[];
   primalCompanion?: PrimalChoice;
-  pactMagic?: { slotLevel: 2; invocations: InvocationChoice[]; atWill: string[]; darkBlessing: number; concentrationAdvantage: boolean; devilsSight: boolean };
+  pactMagic?: { slotLevel: 2; invocations: InvocationChoice[]; atWill: string[]; darkBlessing: number; psychicDamage?: boolean; concentrationAdvantage: boolean; devilsSight: boolean };
   wildShape?: { knownForms: string[]; temporaryHp: number };
   armorNote?: string;
   proficiencyBonus: number;

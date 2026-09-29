@@ -1,13 +1,15 @@
 import { BuilderShell } from "../components/builder/BuilderShell";
 import { RANGER_PREPARABLE } from "../data/ranger";
+import { automaticMagic } from "../data/primalSubclasses";
 import { spell } from "../data/spells";
-import { validateRanger } from "../rules/validator/validateRanger";
 import { useBuilder } from "../store/builder";
+import { PrimalSpellChoices } from "./PrimalSpellChoices";
 
 export function RangerSpellsPage() {
-  const { state, dispatch } = useBuilder(); const r = state.build.choices.ranger!;
-  const errors = validateRanger(state.build).filter((m) => m.targetStep === "spells");
-  // 准备列表是最终构筑；冒险中的替换频率在提示中限制，不把编辑器当长休操作。
-  return <BuilderShell previous="configuration" next="identity" nextDisabled={errors.length > 0}><section className="page-head"><h1>准备游侠法术</h1><p>4 道职业法术 + 始终准备的猎人印记。三级有 3 个一环法术位，没有二环位或职业戏法。</p></section><p className="muted-panel">长休恢复法术位，每次长休只能替换一道准备法术。以下为已核对的精选子集；编辑构筑不代表已完成长休。</p>
-    <section className="section"><h2>职业准备 · {r.prepared.length}/4</h2><div className="spell-choices">{RANGER_PREPARABLE.map((id) => { const s = spell(id)!; const selected = r.prepared.includes(id); return <div className={`spell-choice ${selected ? "selected" : ""}`} key={id}><label><input type="checkbox" checked={selected} disabled={!selected && r.prepared.length >= 4} onChange={() => dispatch({ type: "ranger", patch: { prepared: selected ? r.prepared.filter((v) => v !== id) : [...r.prepared,id] } })} /><span><b>{s.name}</b><small>{s.time}{s.concentration ? " · 专注" : ""}{s.ritual ? " · 仪式" : ""}</small></span></label><details><summary>法术说明</summary><p>{s.range} · {s.components} · {s.duration}</p><p>{s.text}</p></details></div>; })}</div></section><section className="section"><h2>宿敌 · 猎人印记</h2><p>{spell("hunters-mark")!.text}</p><p>每长休两次免费施展，仍需附赠动作与专注；也可用法术位施展。指挥伙伴、施展或转移印记会争用同一个附赠动作。</p></section></BuilderShell>;
+  const { state, dispatch } = useBuilder(), b = state.build, r = b.choices.ranger!, auto = automaticMagic(b);
+  // 保留独立的宿敌与子职来源，普通准备名额不重复选择它们。
+  return <BuilderShell previous="configuration" next="identity"><section className="page-head"><h1>准备游侠法术</h1><p>四道职业准备，另加猎人印记与所选子职法术。三级有三个一环位，没有二环位。</p></section><p className="muted-panel">完整开放 PHB 2024 一环游侠目录。长休恢复法术位，每次长休只能替换一道准备法术；编辑构筑不代表完成休息。</p>
+    <PrimalSpellChoices build={b} title="职业准备法术" ids={RANGER_PREPARABLE.filter((id) => !auto.prepared.includes(id))} selected={r.prepared} max={4} set={(prepared) => dispatch({ type: "ranger", patch: { prepared } })} />
+    <section className="success-panel"><h2>始终准备 · 独立名额</h2><p>{auto.prepared.map((id) => spell(id)!.name).join("、")}</p><p>{spell("hunters-mark")!.text}</p><p>猎人印记每长休两次免费施展，仍需附赠动作与专注；其他子职法术不免费。{b.subclassId === "beast-master" && "指挥伙伴与施展或转移印记争用附赠动作。"}</p></section>
+  </BuilderShell>;
 }

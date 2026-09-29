@@ -22,7 +22,7 @@ export function deriveWildShape(base: DerivedCharacter, formId?: string): Derive
     return [id, roll(base.skills[id], abilities[a].modifier + magician, form.skills[id])];
   })) as DerivedCharacter["skills"];
   return { ...base, abilities, savingThrows: saves, skills, passivePerception: 10 + skills.perception.modifier,
-    armorClass: Math.max(form.armorClass, 13 + abilities.wisdom.modifier), armorNote: "野兽 AC 与 13 + 感知，取高值",
+    armorClass: base.features.includes("circle-forms") ? Math.max(form.armorClass, 13 + abilities.wisdom.modifier) : form.armorClass, armorNote: base.features.includes("circle-forms") ? "野兽 AC 与 13 + 感知，取高值" : "使用野兽数据中的 AC",
     speed: form.speed, initiative: roll({ ...base.initiative, proficiency: "none" }, abilities.dexterity.modifier + (base.features.includes("alert") ? base.proficiencyBonus : 0)),
     attacks: [], senses: { darkvision: form.darkvision }, resistances: form.resistances ?? [],
     features: base.features.filter((id) => !base.speciesFeatures.includes(id)),

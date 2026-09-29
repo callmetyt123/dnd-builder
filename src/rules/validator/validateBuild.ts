@@ -24,7 +24,7 @@ function multiset(values: number[]) {
 export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
   if (!hasBuildShape(build) || !isSupportedBuild(build)) {
-    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级、六种职业、十五条子职路线、十种种族和十六种背景。" }] };
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级、六种职业、二十四条子职路线、十种种族和十六种背景。" }] };
   }
   const fighter = build.classId === "fighter";
   const background = BACKGROUNDS[build.backgroundId];
@@ -80,8 +80,8 @@ export function validateBuild(build: unknown): ValidationResult {
 
   } else if (build.classId === "rogue") messages.push(...validateRogue(build));
   else if (build.classId === "ranger") messages.push(...validateRanger(build));
-  else if (build.classId === "warlock") messages.push(...validateWarlock(build.choices.warlock!));
-  else if (build.classId === "druid") messages.push(...validateDruid(build.choices.druid!));
+  else if (build.classId === "warlock") messages.push(...validateWarlock(build.choices.warlock!, build));
+  else if (build.classId === "druid") messages.push(...validateDruid(build.choices.druid!, build));
   else messages.push(...validateWizard(build.choices.wizard!, proficientSkills(build), build.subclassId as WizardSubclass, originCantripIds(build), illusionCantrip(build)));
 
   if (build.choices.languages.length !== 2 || new Set(build.choices.languages).size !== 2) {

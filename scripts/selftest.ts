@@ -1,3 +1,4 @@
+import { primalChecks } from "./primalSelftest";
 import { expansionChecks } from "./expansionSelftest";
 import { onboardingChecks } from "./onboardingSelftest";
 import { handoffChecks } from "./handoffSelftest";
@@ -136,4 +137,5 @@ wizardChecks(assert);
 druidChecks(assert);
 warlockChecks(assert);
 rangerChecks(assert);
+primalChecks(assert);
 console.log(`rules selftest: OK (${checks} checks)`);

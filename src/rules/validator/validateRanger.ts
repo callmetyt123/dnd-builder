@@ -1,3 +1,4 @@
+import { automaticMagic, HUNTERS_PREY, FEY_SKILLS, FEY_GIFTS } from "../../data/primalSubclasses";
 import { proficientSkills } from "../origins";
 import { PROFILES } from "../../data/profiles";
 import { STANDARD_LANGUAGE_IDS } from "../../data/core";
@@ -15,7 +16,12 @@ export function validateRanger(build: CharacterBuild): ValidationMessage[] {
   check(unique(r.extraLanguages, 2) && r.extraLanguages.every((id) => (STANDARD_LANGUAGE_IDS as readonly string[]).includes(id) && !["common", ...build.choices.languages].includes(id)), "ranger-languages", "熟练探险家需选择两门尚未掌握的语言；本阶段开放标准语言子集。" );
   check(["archery", "defense"].includes(r.style), "ranger-style", "本阶段战斗风格可选箭术或防御。" );
   check(unique(build.choices.weaponMasteries, 2) && build.choices.weaponMasteries.every((id) => RANGER_MASTERIES.includes(id)), "ranger-mastery", "选择两种当前装备武器的精通。" );
-  check(unique(r.prepared, 4) && r.prepared.every((id) => RANGER_PREPARABLE.includes(id)), "ranger-spells", "选择 4 道不同的一环游侠法术；猎人印记额外准备。", "spells");
-  check(!!primalForm(r.primal.form)?.damageTypes.includes(r.primal.damage) && r.primal.appearance.trim().length > 0 && r.primal.appearance.length <= 40, "ranger-primal", "选择合法伙伴类型与伤害类型，并填写至多 40 字的外形。" );
+  check(unique(r.prepared, 4) && r.prepared.every((id) => RANGER_PREPARABLE.includes(id) && !automaticMagic(build).prepared.includes(id)), "ranger-spells", "选择 4 道不同的一环游侠法术；猎人印记额外准备。", "spells");
+  if (build.subclassId === "beast-master") check(!!primalForm(r.primal.form)?.damageTypes.includes(r.primal.damage) && r.primal.appearance.trim().length > 0 && r.primal.appearance.length <= 40, "ranger-primal", "选择合法伙伴类型与伤害类型，并填写至多 40 字的外形。" );
+  if (build.subclassId === "hunter") check(Object.prototype.hasOwnProperty.call(HUNTERS_PREY, r.huntersPrey ?? "colossus-slayer"), "hunters-prey", "请选择巨像屠夫或灭族者。");
+  if (build.subclassId === "fey-wanderer") {
+    check(FEY_SKILLS.includes(r.feySkill ?? "persuasion"), "fey-skill", "额外技能选择欺瞒、表演或游说。");
+    check(Object.prototype.hasOwnProperty.call(FEY_GIFTS, r.feyGift ?? "butterflies"), "fey-gift", "请选择精野之赐外观。");
+  }
   return messages;
 }

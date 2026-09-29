@@ -19,3 +19,6 @@ export const BEASTS: Beast[] = [
 ];
 export const beast = (id: string) => BEASTS.find((b) => b.id === id);
 export const legalMoonForm = (id: string) => { const b = beast(id); return !!b && b.cr <= 1 && !b.fly; };
+
+// 普通三级变形上限为 CR 1/4，只有月亮结社提高至 CR 1。
+export const legalDruidForm = (id: string, moon: boolean) => { const b = beast(id); return !!b && b.cr <= (moon ? 1 : 0.25) && !b.fly; };
