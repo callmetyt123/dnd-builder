@@ -1,4 +1,5 @@
-import { isNewClass, NEW_CLASSES } from "../data/newClasses";
+import { newSkillCount } from "../data/newSubclasses";
+import { isNewClass } from "../data/newClasses";
 import { FEY_SKILLS } from "../data/primalSubclasses";
 import { SKILLS } from "../data/core";
 import { TOOL_OPTIONS, CRAFTER_TOOLS, INSTRUMENTS } from "../data/originOptions";
@@ -45,7 +46,7 @@ export function featSources(build: CharacterBuild): { source: string; id: Origin
 }
 export function originFeats(build: CharacterBuild): OriginFeat[] { return [...new Set(featSources(build).map((f) => f.id))]; }
 export function extraSkills(build: CharacterBuild): SkillId[] {
-  return [...(build.speciesId === "human" || build.speciesId === "elf" ? [build.choices.species.skill] : []), ...featSources(build).flatMap((f) => f.id === "skilled" ? f.choices.skilled.filter((id): id is SkillId => Object.prototype.hasOwnProperty.call(SKILLS, id)) : [])];
+  return [...(build.subclassId === "mercy" ? ["insight", "medicine"] as SkillId[] : []),...(build.speciesId === "human" || build.speciesId === "elf" ? [build.choices.species.skill] : []), ...featSources(build).flatMap((f) => f.id === "skilled" ? f.choices.skilled.filter((id): id is SkillId => Object.prototype.hasOwnProperty.call(SKILLS, id)) : [])];
 }
 export function magicOptions(list: MagicList) { return ORIGIN_SPELL_IDS[list].map((id) => spell(id)!).filter(Boolean); }
 export function classSkills(build: CharacterBuild): SkillId[] {
@@ -74,7 +75,7 @@ export function changeBackground(build: CharacterBuild, backgroundId: Background
 // 一键修复只动重复技能和失效专精；从本职业列表补齐，不额外授予熟练。
 export function recommendSkills(build: CharacterBuild): CharacterBuild {
   const background = BACKGROUNDS[build.backgroundId];
-  const count = isNewClass(build.classId) ? NEW_CLASSES[build.classId].count : build.classId === "rogue" ? 4 : build.classId === "ranger" ? 3 : 2;
+  const count = isNewClass(build.classId) ? newSkillCount(build) : build.classId === "rogue" ? 4 : build.classId === "ranger" ? 3 : 2;
   const options = PROFILES[build.classId].skills.filter((id) => ![...background.skills, ...extraSkills(build)].includes(id));
   const skills = [...new Set([...classSkills(build).filter((id) => options.includes(id)), ...options, ...PROFILES[build.classId].skills])].slice(0, count);
   const choices = { ...build.choices };
@@ -110,7 +111,7 @@ export function backgroundTool(build: CharacterBuild): string {
   return tool === "gaming-set" ? build.choices.origin.gamingSet : tool === "artisan-tool" ? build.choices.origin.artisanTool : tool === "instrument" ? build.choices.origin.instrument : tool;
 }
 export function classTools(build: CharacterBuild): string[] {
-  if (isNewClass(build.classId)) return build.choices[build.classId]!.tools;
+  if (isNewClass(build.classId)) return [...build.choices[build.classId]!.tools, ...(build.subclassId === "mercy" ? ["herbalism-kit"] : [])];
   return build.classId === "fighter" && build.subclassId === "battle-master" && build.choices.fighter ? [build.choices.fighter.artisanTool] : build.classId === "druid" ? ["herbalism-kit"] : build.classId === "rogue" ? ["thieves-tools", ...(build.subclassId === "assassin" ? ["disguise-kit", "poisoners-kit"] : [])] : [];
 }
 export function toolProficiencies(build: CharacterBuild): string[] {

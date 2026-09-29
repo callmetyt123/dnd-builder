@@ -1,3 +1,4 @@
+import { newSubclassChecks } from "./newSubclassSelftest";
 import { newClassChecks } from "./newClassSelftest";
 import { primalChecks } from "./primalSelftest";
 import { expansionChecks } from "./expansionSelftest";
@@ -140,4 +141,5 @@ warlockChecks(assert);
 rangerChecks(assert);
 primalChecks(assert);
 newClassChecks(assert);
+newSubclassChecks(assert);
 console.log(`rules selftest: OK (${checks} checks)`);

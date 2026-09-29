@@ -4,7 +4,7 @@ export const zhCN = {
   class: { barbarian: "野蛮人", bard: "吟游诗人", cleric: "牧师", monk: "武僧", paladin: "圣武士", sorcerer: "术士",  rogue: "游荡者", ranger: "游侠",
     fighter: "战士", wizard: "法师", druid: "德鲁伊", warlock: "魔契师",
   },
-  subclass: { berserker:"狂战士道途", lore:"逸闻学院", life:"生命领域", "open-hand":"散打武者", devotion:"奉献之誓", draconic:"龙族术法", land: "大地结社", sea: "海洋结社", stars: "星辰结社", archfey: "至高妖精宗主", celestial: "天界宗主", "great-old-one": "旧日支配者宗主", hunter: "猎人", "fey-wanderer": "妖精漫游者", "gloom-stalker": "幽域追猎者", thief: "盗贼", assassin: "刺客", "arcane-trickster": "诡术师", soulknife: "魂刃", "beast-master": "驯兽师", ranger: "游侠",
+  subclass: { "wild-heart":"兽心道途", "world-tree":"世界树道途", "zealot":"狂热者道途", "dance":"舞蹈学院", "glamour":"魅心学院", "valor":"勇气学院", "light":"光明领域", "trickery":"诡术领域", "war":"战争领域", "shadow":"暗影武者", "elements":"四象武者", "mercy":"命流武者", "ancients":"古贤之誓", "glory":"荣耀之誓", "vengeance":"复仇之誓", "aberrant":"畸变术法", "clockwork":"时械术法", "wild-magic":"狂野术法", berserker:"狂战士道途", lore:"逸闻学院", life:"生命领域", "open-hand":"散打武者", devotion:"奉献之誓", draconic:"龙族术法", land: "大地结社", sea: "海洋结社", stars: "星辰结社", archfey: "至高妖精宗主", celestial: "天界宗主", "great-old-one": "旧日支配者宗主", hunter: "猎人", "fey-wanderer": "妖精漫游者", "gloom-stalker": "幽域追猎者", thief: "盗贼", assassin: "刺客", "arcane-trickster": "诡术师", soulknife: "魂刃", "beast-master": "驯兽师", ranger: "游侠",
     champion: "勇士", "battle-master": "战斗大师", "eldritch-knight": "奥法骑士", "psi-warrior": "灵能武士", abjurer: "防护师", diviner: "预言师", illusionist: "幻术师", evoker: "塑能师", moon: "月亮结社", fiend: "邪魔宗主",
   },
   species: {

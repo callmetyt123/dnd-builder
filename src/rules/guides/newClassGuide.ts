@@ -1,4 +1,6 @@
-import { isNewClass, NEW_CLASSES } from "../../data/newClasses";
+import { newSubclass } from "../../data/newSubclasses";
+import { NEW_SUBCLASS_FEATURES } from "../../data/newSubclassFeatures";
+import { isNewClass } from "../../data/newClasses";
 import { METAMAGIC } from "../../data/newClassFeatures";
 import { newChoices } from "../newClasses";
 import { signed } from "../engine/format";
@@ -38,5 +40,37 @@ export function newClassGuide(b:CharacterBuild,c:DerivedCharacter,basic:GuideAct
     actions=[basic,action("innate-sorcery","集中施法：先天术法","准备连续使用术士法术时",`持续 1 分钟：术士法术攻击有优势，术士法术豁免 DC 从 ${c.spellcasting!.dc} 提高到 ${c.spellcasting!.dc+1}。起源来源不受益。`,"附赠动作 · 每长休 2 次"),action("metamagic",`修改法术：${m.name}`,"所选法术满足该超魔条件时",m.text,`消耗 ${m.cost} 术法点 · 共 3 点，长休补满；另一种见完整卡`)];
     reminders=["一回合最多消耗一个法术位施法；瞬发法术还有额外限制。法术位与术法点分别记录。","一次只专注一个效果；三级龙族术法尚无伤害抗性或飞行。"];
   }
-  return {role:NEW_CLASSES[id].reason,approach,actions,reminders};
+  const sub=b.subclassId;
+  const featureAction=(key:string):GuideAction=>{const f=NEW_SUBCLASS_FEATURES[key];return action(key,f.name,"需要运用子职特长时",f.text,f.timing);};
+  if(id==="barbarian" && sub!=="berserker") {
+    actions[2]=featureAction(sub==="wild-heart"?"rage-wilds":sub==="world-tree"?"tree-vitality":"divine-fury");
+    if(sub==="wild-heart") actions[2]={...actions[2],title:`兽性狂暴：${({bear:"熊",eagle:"鹰",wolf:"狼"} as Record<string,string>)[q.wildHeart??"bear"]}`,how: q.wildHeart==="eagle"?"启动狂暴时可同时疾走和撤离，之后狂暴中可用附赠动作同时执行两者。每次狂暴可改选熊或狼。":q.wildHeart==="wolf"?"狂暴中，盟友攻击你 5 尺内敌人有优势。每次狂暴可改选熊或鹰。":"狂暴中，除力场、心灵、暗蚀、光耀以外的伤害都有抗性。每次狂暴可改选鹰或狼。"};
+    reminders=["狂暴力量攻击伤害 +2；不能施法或专注。鲁莽攻击给自己力量攻击优势，也让敌人攻击你有优势。",sub==="zealot"?"附赠动作可消耗任意枚 d12 自疗，共 4 枚，长休补满；不能与启动狂暴同回合各用一次。":"临时生命不相加；子职不会让你在三级获得额外攻击。"];
+  }
+  if(id==="bard" && sub!=="lore") {
+    actions[2]=featureAction(sub==="dance"?"dazzling-footwork":sub==="glamour"?"mantle-inspiration":"combat-inspiration");
+    if(sub==="dance") actions[2]={...actions[2],how:`无甲无盾时，徒手命中 d20${signed(c.abilities.dexterity.modifier+2)}，伤害 1d6${signed(c.abilities.dexterity.modifier)} 钝击。在动作、附赠动作或反应中消耗激励，还可在其中徒手打击一次。`};
+    approach=newSubclass(b).reason;
+    reminders=[sub==="dance"?"皮甲只携带不穿；穿甲或持盾会失去炫目舞步的全部增益。":"三级激励长休恢复；给予同伴激励与其他子职用法共用次数。",common];
+  }
+  if(id==="cleric" && sub!=="life") {
+    actions[1]=healing!;
+    actions[2]=featureAction(sub==="light"?"radiance-dawn":sub==="trickery"?"invoke-duplicity":"guided-strike");
+    approach=newSubclass(b).reason;
+    reminders=[sub==="light"?"守御之光：30 尺内可见生物攻击时，反应使其有劣势；感知次数（至少 1），长休恢复。":sub==="war"?"战争祭司：附赠动作再作一次武器或徒手攻击；感知次数（至少 1），短休或长休恢复。":"诡术祝福：魔法动作给自己或 30 尺内自愿生物隐匿优势；长休或再次使用前持续。","一次只专注一个法术；引导神力与法术位分别记录。"];
+  }
+  if(id==="monk" && sub!=="open-hand") {
+    actions[1]=featureAction(sub==="shadow"?"shadow-arts":sub==="elements"?"elemental-attunement":"hand-healing");
+    approach=newSubclass(b).reason;
+    reminders=[sub==="mercy"?`徒手命中并伤害后可花 1 功力追加 1d6${signed(c.abilities.wisdom.modifier)} 暗蚀，每回合一次。`:"疾风连击花 1 功力，用附赠动作打两次徒手；没有散打的倒地或阻止借机效果。",common];
+  }
+  if(id==="paladin" && sub!=="devotion") {
+    actions[1]=featureAction(sub==="ancients"?"natures-wrath":sub==="glory"?"inspiring-smite":"vow-enmity");
+    reminders=["近战武器或徒手命中后可附赠动作施展至圣斩，需言语：2d8 光耀，对邪魔／亡灵再加 1d8；每长休免费一次，否则耗一环位。",common];
+  }
+  if(id==="sorcerer" && sub!=="draconic") {
+    actions[2]=featureAction(sub==="aberrant"?"telepathic-speech":sub==="clockwork"?"restore-balance":"tides-chaos");
+    reminders=["超魔与法术位分别消耗，条件见完整卡；一回合最多消耗一个法术位施法。",sub==="wild-magic"?"混乱之潮用过后，耗位施展术士法术会自动掷浪涌表并恢复潮汐；普通浪涌则先掷 d20，20 才查表。":"无甲 AC 不含法师护甲等临时效果；一次只维持一个专注。"];
+  }
+  return {role:newSubclass(b).reason,approach,actions,reminders};
 }

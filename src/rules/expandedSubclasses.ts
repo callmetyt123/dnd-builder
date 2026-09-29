@@ -1,3 +1,5 @@
+import { isNewClass } from "../data/newClasses";
+import { newSubclassDefaults } from "./newClasses";
 import { changePrimalSubclass, reconcilePrimalChoices, isPrimalBuild } from "./primalSubclasses";
 import type { PrimalSubclassId } from "./types";
 import { speciesCantripIds } from "./species";
@@ -38,6 +40,7 @@ export function changeExpandedSubclass(build: CharacterBuild, id: FighterSubclas
   return { ...build, subclassId: id, choices: { ...build.choices, wizard: { ...w, cantrips, evocationBook, prepared, illusionCantrip: undefined } } };
 }
 export function subclassDefaults(build: CharacterBuild): CharacterBuild {
+  if (isNewClass(build.classId)) return newSubclassDefaults(build);
   if (isPrimalBuild(build)) {
     const base = defaultBuild(build.classId);
     if (build.classId === "druid") base.choices.druid = { ...base.choices.druid!, land: build.choices.druid?.land, starForm: build.choices.druid?.starForm, starMap: build.choices.druid?.starMap };

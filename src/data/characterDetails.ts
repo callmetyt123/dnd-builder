@@ -1,3 +1,4 @@
+import { NEW_SUBCLASS_FEATURES } from "./newSubclassFeatures";
 import { NEW_CLASS_FEATURES } from "./newClassFeatures";
 import { PRIMAL_FEATURES } from "./primalSubclasses";
 import { EXPANDED_FEATURES } from "./expandedSubclasses";
@@ -62,7 +63,7 @@ export const itemNames: Record<string, string> = { greataxe: "巨斧", longsword
 };
 export const damageNames: Record<string, string> = { slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击" };
 export const features: Record<string, { name: string; timing: string; text: string }> = {
-  ...ROGUE_FEATURES, ...EXPANDED_FEATURES, ...PRIMAL_FEATURES, ...NEW_CLASS_FEATURES,
+  ...ROGUE_FEATURES, ...EXPANDED_FEATURES, ...PRIMAL_FEATURES, ...NEW_CLASS_FEATURES, ...NEW_SUBCLASS_FEATURES,
   "star-guiding-bolt": { name: "星图 · 免费光导箭", timing: "持握星图", text: "按一环施展，长休恢复。" },
   "dreadful-strike": { name: "恐惧打击", timing: "武器命中时", text: "每回合至多一次额外 2d6 心灵伤害；长休恢复次数。" },
 "celestial-resistance": {"name": "天界抗性", "timing": "被动", "text": "光耀与暗蚀伤害抗性。"},

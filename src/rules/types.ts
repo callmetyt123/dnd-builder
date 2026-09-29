@@ -65,9 +65,9 @@ export interface SpeciesChoices {
 export interface InnateMagic { source: string; ability: "intelligence" | "wisdom" | "charisma"; cantrips: string[]; spells: string[]; resource?: string; freeUses: number; attack: number; dc: number }
 
 export type NewClassId = "barbarian" | "bard" | "cleric" | "monk" | "paladin" | "sorcerer";
-export type NewSubclassId = "berserker" | "lore" | "life" | "open-hand" | "devotion" | "draconic";
+export type NewSubclassId = "berserker" | "wild-heart" | "world-tree" | "zealot" | "lore" | "dance" | "glamour" | "valor" | "life" | "light" | "trickery" | "war" | "open-hand" | "shadow" | "elements" | "mercy" | "devotion" | "ancients" | "glory" | "vengeance" | "draconic" | "aberrant" | "clockwork" | "wild-magic";
 // 六个入门职业共用表单结构，规则与名额由职业定义约束。
-export interface NewClassChoices { skills: SkillId[]; expertise: SkillId[]; tools: string[]; instrument: string; order: string; style: string; metamagic: string[]; cantrips: string[]; prepared: string[] }
+export interface NewClassChoices { wildHeart?: string; manifestation?: string; skills: SkillId[]; expertise: SkillId[]; tools: string[]; instrument: string; order: string; style: string; metamagic: string[]; cantrips: string[]; prepared: string[] }
 export type ClassId = NewClassId | "fighter" | "wizard" | "druid" | "warlock" | "ranger" | "rogue";
 export type FighterSubclass = "champion" | "battle-master" | "eldritch-knight" | "psi-warrior";
 export type WizardSubclass = "evoker" | "abjurer" | "diviner" | "illusionist";

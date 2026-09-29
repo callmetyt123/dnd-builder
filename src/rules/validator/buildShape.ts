@@ -1,4 +1,6 @@
-import { isNewClass, NEW_CLASSES } from "../../data/newClasses";
+import { NEW_SUBCLASSES } from "../../data/newSubclasses";
+import type { NewSubclassId } from "../types";
+import { isNewClass } from "../../data/newClasses";
 import { DRUID_SUBCLASSES, WARLOCK_SUBCLASSES, RANGER_SUBCLASSES } from "../../data/primalSubclasses";
 import { FIGHTER_SUBCLASSES, WIZARD_SUBCLASSES } from "../../data/expandedSubclasses";
 import { ROGUE_SUBCLASSES } from "../../data/rogue";
@@ -30,6 +32,7 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   const base = a.baseAssignment;
   if (isNewClass(String(value.classId))) {
     const n = c[String(value.classId)];
+    if (isRecord(n) && !["wildHeart", "manifestation"].every(k => n[k] === undefined || typeof n[k] === "string")) return false;
     if (!isRecord(n) || !["skills", "expertise", "tools", "metamagic", "cantrips", "prepared"].every((k) => strings(n[k])) || !["instrument", "order", "style"].every((k) => typeof n[k] === "string")) return false;
   }
   const f = c.fighter;
@@ -64,7 +67,7 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
 export function isSupportedBuild(build: CharacterBuild): boolean {
   if (!Object.prototype.hasOwnProperty.call(BACKGROUNDS, build.backgroundId) || build.equipment.backgroundPackage !== `${build.backgroundId}-a`) return false;
   if (build.schemaVersion !== 1 || build.level !== 3 || !Object.prototype.hasOwnProperty.call(SPECIES, build.speciesId)) return false;
-  if (isNewClass(build.classId)) return build.subclassId === NEW_CLASSES[build.classId].subclassId && build.profileId === build.classId && build.equipment.classPackage === `${build.classId}-a`;
+  if (isNewClass(build.classId)) return NEW_SUBCLASSES[build.subclassId as NewSubclassId]?.classId === build.classId && build.profileId === build.classId && build.equipment.classPackage === `${build.classId}-a`;
   if (build.classId === "rogue") return Object.prototype.hasOwnProperty.call(ROGUE_SUBCLASSES, build.subclassId) && build.profileId === "rogue" && build.equipment.classPackage === "rogue-a";
   if (build.classId === "ranger") return Object.prototype.hasOwnProperty.call(RANGER_SUBCLASSES, build.subclassId) && build.profileId === "ranger-beast-master" && build.equipment.classPackage === "ranger-a";
   if (build.classId === "warlock") return Object.prototype.hasOwnProperty.call(WARLOCK_SUBCLASSES, build.subclassId) && build.profileId === "warlock-fiend" && build.equipment.classPackage === "warlock-a";

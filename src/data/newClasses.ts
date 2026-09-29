@@ -388,7 +388,7 @@ export const NEW_CLASSES: Record<NewClassId, NewClassDefinition> = {
       "magic"
     ],
     "complexity": 2,
-    "training": "简易武器，无护甲受训。奥术水晶为职业法器；无甲时龙族体魄提供独立 AC 公式。"
+    "training": "简易武器，无护甲受训。奥术水晶为职业法器；无甲防护按当前子职计算。"
   }
 };
 NEW_CLASSES.bard.skills = Object.keys(SKILLS) as SkillId[];

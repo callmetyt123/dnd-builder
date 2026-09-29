@@ -18,7 +18,7 @@ export const NEW_CLASS_FEATURES: Record<string, {name:string; timing:string; tex
   "reckless-attack": {
     "name": "鲁莽攻击",
     "timing": "自己回合第一次攻击检定时决定",
-    "text": "直到你的下回合开始，力量攻击检定有优势；期间敌人攻击你也有优势。狂暴中使用时，当前回合首次力量攻击命中追加 2d6 同类型伤害（狂战士狂怒）。三级没有免疫魅惑／恐慌。"
+    "text": "直到你的下回合开始，力量攻击检定有优势；期间敌人攻击你也有优势。子职额外效果按当前子职另列。"
   },
   "primal-knowledge": {
     "name": "原初学识",
@@ -36,9 +36,9 @@ export const NEW_CLASS_FEATURES: Record<string, {name:string; timing:string; tex
     "text": "60 尺内可见生物成功于属性或攻击检定，或作伤害掷骰时，掷 d6 从其结果减去。可使成功变失败；不能降低豁免。与授予同伴激励共用次数。"
   },
   "bard-skills": {
-    "name": "逸闻与专精",
+    "name": "技能专精与万事通",
     "timing": "熟练已计入",
-    "text": "三项职业技能加逸闻三项，共六项自选熟练；两项已熟练技能专精。万事通使未熟练且未另加熟练加值的技能属性检定 +1；不加先攻、攻击或豁免。三级没有魔法探秘。"
+    "text": "三项职业技能；逸闻学院另加三项。两项已熟练技能专精。万事通使未熟练且未另加熟练加值的技能属性检定 +1；不加先攻、攻击或豁免。三级没有魔法探秘。"
   },
   "cleric-order": {
     "name": "圣职",
@@ -48,7 +48,7 @@ export const NEW_CLASS_FEATURES: Record<string, {name:string; timing:string; tex
   "channel-divinity-cleric": {
     "name": "引导神力",
     "timing": "两次 · 短休恢复一次，长休全恢复",
-    "text": "每次选择神圣火花、驱散亡灵或维持生命。神圣火花：魔法动作，持圣徽指向 30 尺内可见的另一生物；恢复 1d8 + 感知 HP，或令其体质豁免，失败受同量暗蚀／光耀，成功半伤。不是法术，不触发生命门徒。"
+    "text": "每次选择神圣火花、驱散亡灵或当前领域的引导神力能力。神圣火花：魔法动作，持圣徽指向 30 尺内可见的另一生物；恢复 1d8 + 感知 HP，或令其体质豁免，失败受同量暗蚀／光耀，成功半伤。不是法术，不触发生命门徒。"
   },
   "preserve-life": {
     "name": "维持生命",
@@ -103,7 +103,7 @@ export const NEW_CLASS_FEATURES: Record<string, {name:string; timing:string; tex
   "channel-divinity-paladin": {
     "name": "引导神力",
     "timing": "两次 · 短休恢复一次，长休全恢复",
-    "text": "在圣洁武器与神圣感知之间共用次数。神圣感知：附赠动作消耗一次，10 分钟内感知 60 尺内天族、邪魔和亡灵的位置及类型、被祝福或亵渎的地点物件；失能提前结束。"
+    "text": "在当前誓言能力与神圣感知之间共用次数。神圣感知：附赠动作消耗一次，10 分钟内感知 60 尺内天族、邪魔和亡灵的位置及类型、被祝福或亵渎的地点物件；失能提前结束。"
   },
   "sacred-weapon": {
     "name": "圣洁武器",
@@ -188,4 +188,40 @@ export const METAMAGIC: Record<string, {name:string; cost:number; text:string}> 
     "text": "仅能用于升环会额外增加生物目标的法术，将本次有效环阶提高一环；不是把任意单体法术复制。"
   }
 };
-export const PALADIN_STYLES: Record<string, {name:string; text:string}> = { defense: {name:"防御", text:"穿着护甲时 AC +1，已计入。"}, dueling: {name:"决斗",text:"单手持一把近战武器且无其他武器时，其伤害 +2；盾牌不妨碍。表内不预加，满足条件时再加。"}, "blessed-warrior": {name:"受祝福的勇士",text:"两道自选牧师戏法视为圣武士法术，按魅力施法。"} };
+export const PALADIN_STYLES: Record<string, {name:string; text:string}> = { defense: {name:"防御", text:"穿着护甲时 AC +1，已计入。"}, dueling: {name:"对决",text:"单手持一把近战武器且无其他武器时，其伤害 +2；盾牌不妨碍。表内不预加，满足条件时再加。"}, "blessed-warrior": {name:"受祝福的勇士",text:"两道自选牧师戏法视为圣武士法术，按魅力施法。"} };
+
+// 所有 PHB 2024 战斗风格均可选；条件效果不改写当前持盾姿态。
+Object.assign(PALADIN_STYLES, {
+  "archery": {
+    "name": "箭术",
+    "text": "远程武器攻击检定 +2；投掷近战武器不享受。起始包没有弓弩，不自动赠送。"
+  },
+  "blind-fighting": {
+    "name": "盲斗",
+    "text": "10 尺盲视，可在该范围感知未处于全身掩护后的事物；不依赖视觉。"
+  },
+  "great-weapon-fighting": {
+    "name": "巨武器战斗",
+    "text": "双手持握有双手或多用词条的近战武器攻击时，伤害骰的 1、2 视为 3。持盾时不能双手攻击；表内不预先改骰。"
+  },
+  "interception": {
+    "name": "拦截",
+    "text": "可见生物攻击命中你 5 尺内另一生物时，反应减伤 1d10+2；须持盾或简易／军用武器。"
+  },
+  "protection": {
+    "name": "守护",
+    "text": "持盾时，可见生物攻击你 5 尺内其他目标，反应使触发攻击有劣势；至你下回合开始，只要你仍在目标 5 尺内，其他对其攻击也有劣势。"
+  },
+  "thrown-weapon-fighting": {
+    "name": "投掷武器战斗",
+    "text": "带投掷词条武器作远程攻击命中，伤害 +2；近战使用不加。表内标枪以投掷方式计入。"
+  },
+  "two-weapon-fighting": {
+    "name": "双武器战斗",
+    "text": "轻型词条额外攻击若原本不能加属性伤害，则可加属性调整值。包 A 没有两把轻型武器，不自动赠送。"
+  },
+  "unarmed-fighting": {
+    "name": "徒手战斗",
+    "text": "徒手伤害可为 1d6+力量；攻击时未持任何武器或盾牌则为 1d8+力量。每回合开始可对一名被你擒抱的生物造成 1d4 钝击。"
+  }
+});

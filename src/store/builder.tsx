@@ -1,4 +1,4 @@
-import { patchNewChoices } from "../rules/newClasses";
+import { patchNewChoices, changeNewSubclass } from "../rules/newClasses";
 import { changePrimalSubclass, reconcilePrimalChoices } from "../rules/primalSubclasses";
 import type { PrimalSubclassId, DruidChoices as PrimalDruidChoices } from "../rules/types";
 import { changeExpandedSubclass, defaultFighterChoices } from "../rules/expandedSubclasses";
@@ -20,6 +20,7 @@ import { switchClass, parseDraft, STORAGE_KEY, type BuilderState, type BuilderSt
 export type { BuilderState, BuilderStep } from "./draft";
 
 type Action =
+  | { type: "new-subclass"; id: import("../rules/types").NewSubclassId }
   | { type: "new-class"; patch: Partial<import("../rules/types").NewClassChoices> }
   | { type: "primal-subclass"; id: PrimalSubclassId }
   | { type: "primal-druid"; patch: Partial<PrimalDruidChoices> }
@@ -53,6 +54,7 @@ type Action =
   | { type: "identity"; patch: Partial<CharacterBuild["identity"]> };
 
 function reducer(state: BuilderState, action: Action): BuilderState {
+  if (action.type === "new-subclass") return { ...state, build: changeNewSubclass(state.build, action.id) };
   if (action.type === "new-class") return { ...state, build: patchNewChoices(state.build, action.patch) };
   if (action.type === "primal-subclass") return { ...state, build: changePrimalSubclass(state.build, action.id) };
   if (action.type === "primal-druid") return { ...state, build: reconcilePrimalChoices({ ...state.build, choices: { ...state.build.choices, druid: { ...state.build.choices.druid!, ...action.patch } } }) };
