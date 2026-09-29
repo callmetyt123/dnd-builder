@@ -1,3 +1,4 @@
+import { hasSpellStep } from "../data/rogue";
 import { migrateBuild } from "./migrateBuild";
 import type { CharacterBuild, ClassId } from "../rules/types";
 import { defaultBuild } from "../rules/defaultBuild";
@@ -32,7 +33,7 @@ export function parseDraft(raw: string | null): DraftRestore {
     // 允许未完成的合法结构继续编辑，但不能从损坏草稿绕过生成人物卡的门禁。
     const checkedStep = step === "character" && !validateBuild(value.build).canGenerate ? "review" : step;
     const profiles: BuilderState["profiles"] = {};
-    if (isRecord(value.profiles)) for (const id of ["fighter", "wizard", "druid", "warlock", "ranger"] as const) {
+    if (isRecord(value.profiles)) for (const id of ["fighter", "wizard", "druid", "warlock", "ranger", "rogue"] as const) {
       const saved = value.profiles[id];
       if (isRecord(saved)) saved.build = migrateBuild(saved.build);
       if (isRecord(saved) && hasBuildShape(saved.build) && isSupportedBuild(saved.build) && saved.build.classId === id) {
@@ -40,7 +41,7 @@ export function parseDraft(raw: string | null): DraftRestore {
       }
     }
     const character = deriveCharacter(value.build);
-    return { state: { step: checkedStep === "spells" && value.build.classId === "fighter" ? "configuration" : checkedStep, profiles, build: value.build, play: value.play === undefined ? undefined : normalizePlayState(value.play, character) }, notice: checkedStep !== value.step ? "草稿已恢复，请先检查尚未完成的内容。" : undefined };
+    return { state: { step: checkedStep === "spells" && !hasSpellStep(value.build) ? "configuration" : checkedStep, profiles, build: value.build, play: value.play === undefined ? undefined : normalizePlayState(value.play, character) }, notice: checkedStep !== value.step ? "草稿已恢复，请先检查尚未完成的内容。" : undefined };
   } catch {
     return { state: null, notice: "草稿无法解析，已保留原始数据。你可以重新创建角色。", preserveOriginal: true };
   }

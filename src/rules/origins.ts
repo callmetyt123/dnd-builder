@@ -8,6 +8,7 @@ import { PROFILES, SCHOLAR_SKILLS } from "../data/profiles";
 import type { AbilityId, BackgroundId, CharacterBuild, ClassId, OriginChoices, SkillId } from "./types";
 
 export const ABILITY_PRIORITY: Record<ClassId, AbilityId[]> = {
+  rogue: ["dexterity", "constitution", "intelligence", "wisdom", "strength", "charisma"],
   fighter: ["strength", "constitution", "dexterity", "wisdom", "charisma", "intelligence"],
   wizard: ["intelligence", "constitution", "dexterity", "wisdom", "charisma", "strength"],
   druid: ["wisdom", "constitution", "dexterity", "intelligence", "charisma", "strength"],
@@ -20,7 +21,7 @@ export function recommendedBoosts(classId: ClassId, backgroundId: BackgroundId) 
   return { [allowed[0]]: 2, [allowed[1]]: 1 };
 }
 export function defaultMagic(list: MagicList, classId: ClassId = "fighter") {
-  const ability = classId === "warlock" ? "charisma" as const : classId === "wizard" ? "intelligence" as const : "wisdom" as const;
+  const ability = classId === "warlock" ? "charisma" as const : (classId === "wizard" || classId === "rogue") ? "intelligence" as const : "wisdom" as const;
   return { ability, cantrips: list === "cleric" ? ["guidance", "sacred-flame"] : list === "druid" ? ["guidance", "druidcraft"] : [classId === "wizard" ? "light" : "prestidigitation", "mage-hand"], spell: list === "wizard" ? classId === "wizard" ? "mage-armor" : "shield" : "healing-word" };
 }
 export function defaultFeatChoices(classId: ClassId = "fighter"): FeatChoices {
@@ -63,11 +64,16 @@ export function changeBackground(build: CharacterBuild, backgroundId: Background
 // 一键修复只动重复技能和失效专精；从本职业列表补齐，不额外授予熟练。
 export function recommendSkills(build: CharacterBuild): CharacterBuild {
   const background = BACKGROUNDS[build.backgroundId];
-  const count = build.classId === "ranger" ? 3 : 2;
+  const count = build.classId === "rogue" ? 4 : build.classId === "ranger" ? 3 : 2;
   const options = PROFILES[build.classId].skills.filter((id) => ![...background.skills, ...extraSkills(build)].includes(id));
   const skills = [...new Set([...classSkills(build).filter((id) => options.includes(id)), ...options, ...PROFILES[build.classId].skills])].slice(0, count);
   const choices = { ...build.choices };
   if (build.classId === "fighter") choices.fighterSkills = skills;
+  else if (build.classId === "rogue") {
+    const r = choices.rogue!;
+    const available = [...new Set([...skills, ...background.skills, ...extraSkills(build)])];
+    choices.rogue = { ...r, skills, expertise: [...new Set([...r.expertise.filter((id) => available.includes(id)), ...available])].slice(0, 2) };
+  }
   else if (build.classId === "wizard") {
     const w = choices.wizard!;
     const available = [...skills, ...background.skills, ...extraSkills(build)];
@@ -85,14 +91,17 @@ export function backgroundTool(build: CharacterBuild): string {
   const tool = BACKGROUNDS[build.backgroundId].tool;
   return tool === "gaming-set" ? build.choices.origin.gamingSet : tool === "artisan-tool" ? build.choices.origin.artisanTool : tool === "instrument" ? build.choices.origin.instrument : tool;
 }
+export function classTools(build: CharacterBuild): string[] {
+  return build.classId === "druid" ? ["herbalism-kit"] : build.classId === "rogue" ? ["thieves-tools", ...(build.subclassId === "assassin" ? ["disguise-kit", "poisoners-kit"] : [])] : [];
+}
 export function toolProficiencies(build: CharacterBuild): string[] {
-  return [...new Set([backgroundTool(build), ...(build.classId === "druid" ? ["herbalism-kit"] : []), ...featSources(build).flatMap((f) => f.id === "crafter" ? f.choices.crafter : f.id === "musician" ? f.choices.musician : f.id === "skilled" ? f.choices.skilled.filter((id) => Object.prototype.hasOwnProperty.call(TOOL_OPTIONS, id)) : [])])];
+  return [...new Set([backgroundTool(build), ...classTools(build), ...featSources(build).flatMap((f) => f.id === "crafter" ? f.choices.crafter : f.id === "musician" ? f.choices.musician : f.id === "skilled" ? f.choices.skilled.filter((id) => Object.prototype.hasOwnProperty.call(TOOL_OPTIONS, id)) : [])])];
 }
 
 // 推荐只填可自选熟练，避开职业、背景和另一专长已提供的项目。
 export function recommendedFeatChoices(build: CharacterBuild, source: "background" | "human"): FeatChoices {
   const defaults = defaultFeatChoices(build.classId);
-  const occupied = new Set<string>([...classSkills(build), ...BACKGROUNDS[build.backgroundId].skills, backgroundTool(build), ...(build.classId === "druid" ? ["herbalism-kit"] : []), ...(build.speciesId === "elf" || build.speciesId === "human" ? [build.choices.species.skill] : [])]);
+  const occupied = new Set<string>([...classSkills(build), ...BACKGROUNDS[build.backgroundId].skills, backgroundTool(build), ...classTools(build), ...(build.speciesId === "elf" || build.speciesId === "human" ? [build.choices.species.skill] : [])]);
   for (const [i, f] of featSources(build).entries()) if ((source === "human" && i === 0) || (source === "background" && i === 1)) {
     const ids = f.id === "skilled" ? f.choices.skilled : f.id === "crafter" ? f.choices.crafter : f.id === "musician" ? f.choices.musician : [];
     ids.forEach((id) => occupied.add(id));

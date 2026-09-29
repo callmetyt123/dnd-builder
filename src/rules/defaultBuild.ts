@@ -3,6 +3,13 @@ import { defaultOriginChoices } from "./origins";
 import type { CharacterBuild, ClassId } from "./types";
 
 export function defaultBuild(classId: ClassId = "fighter"): CharacterBuild {
+  if (classId === "rogue") {
+    const base = defaultBuild();
+    return { ...base, classId, subclassId: "thief", profileId: "rogue", backgroundId: "criminal",
+      abilities: { baseAssignment: { strength: 12, dexterity: 15, constitution: 13, intelligence: 14, wisdom: 10, charisma: 8 }, backgroundBoosts: { dexterity: 2, constitution: 1 } },
+      choices: { ...base.choices, origin: defaultOriginChoices(classId), fighterSkills: [], weaponMasteries: ["dagger", "shortbow"], rogue: { skills: ["perception", "investigation", "acrobatics", "insight"], expertise: ["stealth", "sleight-of-hand"], extraLanguage: "elvish", cantrips: ["mind-sliver", "minor-illusion"], prepared: ["charm-person", "disguise-self", "fog-cloud"] } },
+      equipment: { classPackage: "rogue-a", backgroundPackage: "criminal-a" } };
+  }
   if (classId === "ranger") {
     const base = defaultBuild();
     return { ...base, classId, subclassId: "beast-master", backgroundId: "wayfarer", profileId: "ranger-beast-master",

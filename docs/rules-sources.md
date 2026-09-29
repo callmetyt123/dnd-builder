@@ -109,3 +109,13 @@ V1 只考虑 5R 三宝书内容：
 - 三级边界：龙裔不获得五级飞行；歌利亚不获得五级巨大形态；阿斯莫天界启示仅按当前激活方式提供临时效果。精灵冥想为 4 小时，兽人冲刺资源可短休恢复。
 
 - 荒野变形保留原生物类型；纸卡标注为类人生物（兽形）。核对：[官方职业规则](https://www.dndbeyond.com/sources/dnd/br-2024/character-classes)。
+
+## v0.9 游荡者核对（2026-09-29）
+
+- [官方职业规则](https://www.dndbeyond.com/sources/dnd/br-2024/character-classes)：游荡者核心、偷袭、专精、稳定瞄准和盗贼三级特性。
+- [DND5eChm/5echm_web 的 pages 分支](https://github.com/DND5eChm/5echm_web/tree/pages)：`玩家手册2024/角色职业/游荡者/` 下游荡者、盗贼、刺客、诡术师、魂刃条目；中文术语与未公开子职三级内容以这些条目核对，自行编写机制摘要。
+- 诡术师：法师之手加两道戏法，三道一环准备法术，两个一环法术位；没有旧版学派限制，长休不重选准备。魂刃：4d6 灵能骰，短休恢复一枚；念刃有 60/120 尺射程、自带侵扰，可用于借机攻击，第二击仍加攻击属性。
+- 刺客：先攻优势，首轮条件攻击优势及偷袭 +3，同轮固定加伤不会变成自动重击；工具额外授予实物与熟练。
+- [语言表](https://www.dndbeyond.com/sources/dnd/br-2024/creating-a-character)：补齐标准语言龙语，职业额外语言覆盖标准／稀有表，原初方言不当作额外独立名额。
+- [装备](https://www.dndbeyond.com/sources/dnd/br-2024/equipment)：包 A 与窃贼套组（附盖提灯、7 瓶油等）；补录游荡者可熟练的全部武器。精通不自动赠送物品。
+- [规则术语表](https://www.dndbeyond.com/sources/dnd/br-2024/rules-glossary)：纸卡补充躲藏的前提、DC 15、结束条件，以及轻型／迅击的动作限制。Acrobatics 中文统一为参考中的「特技」。

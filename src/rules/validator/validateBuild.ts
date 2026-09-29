@@ -1,3 +1,4 @@
+import { validateRogue } from "./validateRogue";
 import { validateOrigins } from "./validateOrigins";
 import { validateRanger } from "./validateRanger";
 import { validateWarlock } from "./validateWarlock";
@@ -20,7 +21,7 @@ function multiset(values: number[]) {
 export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
   if (!hasBuildShape(build) || !isSupportedBuild(build)) {
-    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级、五种职业子职方案、十种种族和十六种背景。" }] };
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级、六种职业、九条子职路线、十种种族和十六种背景。" }] };
   }
   const fighter = build.classId === "fighter";
   const background = BACKGROUNDS[build.backgroundId];
@@ -73,7 +74,8 @@ export function validateBuild(build: unknown): ValidationResult {
     messages.push({ id: "weapon-mastery-known", domain: "rules", severity: "blocker", message: "当前开发切片中存在尚未录入规则数据的武器精通选择。", targetStep: "configuration" });
   }
 
-  } else if (build.classId === "ranger") messages.push(...validateRanger(build));
+  } else if (build.classId === "rogue") messages.push(...validateRogue(build));
+  else if (build.classId === "ranger") messages.push(...validateRanger(build));
   else if (build.classId === "warlock") messages.push(...validateWarlock(build.choices.warlock!));
   else if (build.classId === "druid") messages.push(...validateDruid(build.choices.druid!));
   else messages.push(...validateWizard(build.choices.wizard!, proficientSkills(build)));

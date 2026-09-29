@@ -1,3 +1,4 @@
+import { RogueConfigurationPage } from "./RogueConfigurationPage";
 import { proficientSkills } from "../rules/origins";
 import { BACKGROUNDS } from "../data/backgrounds";
 import { RangerConfigurationPage } from "./RangerConfigurationPage";
@@ -25,6 +26,7 @@ export function ConfigurationPage() {
     const next = current.includes(id) ? current.filter((v) => v !== id) : current.length >= 3 ? [current[1], current[2], id] : [...current, id];
     dispatch({ type: "weapon-masteries", ids: next });
   };
+  if (state.build.classId === "rogue") return <RogueConfigurationPage />;
   if (state.build.classId === "ranger") return <RangerConfigurationPage />;
   if (state.build.classId === "warlock") return <WarlockConfigurationPage />;
   if (state.build.classId === "druid") return <DruidConfigurationPage />;

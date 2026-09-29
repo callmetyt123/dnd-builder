@@ -1,8 +1,9 @@
+import { ROGUE_FEATURES } from "./rogueFeatures";
 // 文案按 PHB 2024 的当前等级整理；每项只说明适用条件和操作。
 export const GAMING_SETS: Record<string, string> = {
   "dice-set": "骰子套组", "dragonchess-set": "龙棋套组", "playing-card-set": "纸牌套组", "three-dragon-ante-set": "三龙牌套组",
 };
-export const itemNames: Record<string, string> = {
+export const itemNames: Record<string, string> = { "burglars-pack": "窃贼套组", club: "短棒", handaxe: "手斧", mace: "硬头锤", rapier: "刺剑", whip: "鞭", "hand-crossbow": "手弩", greatclub: "巨棒", "light-hammer": "轻锤", dart: "飞镖", sling: "投石索",
   "disguise-kit": "易容工具", "poisoners-kit": "制毒工具",
 "alchemists-supplies": "炼金工具",
 "brewers-supplies": "酿酒工具",
@@ -57,6 +58,7 @@ export const itemNames: Record<string, string> = {
 };
 export const damageNames: Record<string, string> = { slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击" };
 export const features: Record<string, { name: string; timing: string; text: string }> = {
+  ...ROGUE_FEATURES,
 "celestial-resistance": {"name": "天界抗性", "timing": "被动", "text": "光耀与暗蚀伤害抗性。"},
 "healing-hands": {"name": "治愈之手", "timing": "魔法动作 · 每长休一次", "text": "触碰一个生物，使其恢复 2d4 HP。"},
 "celestial-revelation": {"name": "天启", "timing": "附赠动作 · 每长休一次", "text": "持续 1 分钟，可无需动作提前结束。每个自己回合一次，以攻击或法术伤害目标时额外造成 2 点伤害。每次启动选一种：天堂飞翼（等于速度的飞行速度，加伤光耀）；内耀辉光（10 尺明亮及额外 10 尺微光，每个自己回合结束对 10 尺内每个其他生物造成 2 光耀伤害，加伤光耀）；死灵环绕（启动时 10 尺内能看见你的非盟友作魅力豁免，失败恐慌至你下回合结束，加伤暗蚀）。死灵环绕 DC 见种族附页。"},
@@ -128,7 +130,7 @@ export const features: Record<string, { name: string; timing: string; text: stri
   stonecunning: { name: "石中精妙", timing: "附赠动作 · 矮人", text: "获得 60 尺震颤感知，持续 10 分钟；必须站在或接触石质表面才能使用该感知。长休恢复全部次数。" },
   "savage-attacker": { name: "凶蛮打手", timing: "每回合一次 · 起源专长", text: "武器命中时，将武器伤害骰掷两组，选择其中一组使用。" },
 };
-export const masteryDescriptions: Record<string, string> = {
+export const masteryDescriptions: Record<string, string> = { push: "命中大型或更小生物时，可将它沿远离你的直线推开至多 10 尺。",
   nick: "轻型属性的额外攻击可纳入攻击动作，不再耗附赠动作，每回合仅一次；用另一把轻型武器，不加正属性伤害调整值。",
   graze: "未命中生物时，仍可造成等于攻击属性调整值的同类型伤害；只有提高该调整值才能增加此伤害。",
   sap: "命中后，目标下回合开始前的下一次攻击检定具有劣势。",

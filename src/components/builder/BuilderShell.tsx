@@ -1,3 +1,4 @@
+import { hasSpellStep } from "../../data/rogue";
 import type { ReactNode } from "react";
 import { useBuilder, type BuilderStep } from "../../store/builder";
 
@@ -15,7 +16,7 @@ const ALL_STEPS: { id: BuilderStep; label: string }[] = [
 
 export function BuilderShell({ children, previous, next, nextLabel = "下一步", nextDisabled = false }: { children: ReactNode; previous?: BuilderStep; next?: BuilderStep; nextLabel?: string; nextDisabled?: boolean }) {
   const { state, dispatch, storageError } = useBuilder();
-  const FLOW = ALL_STEPS.filter((s) => s.id !== "spells" || state.build.classId !== "fighter");
+  const FLOW = ALL_STEPS.filter((s) => s.id !== "spells" || hasSpellStep(state.build));
   const currentIndex = FLOW.findIndex((item) => item.id === state.step);
   return (
     <div className="app-shell">

@@ -31,8 +31,8 @@ export const BACKGROUNDS: Record<BackgroundId, BackgroundDefinition> = {
   hermit: { name: "隐士", description: "曾在远离人群的地方生活，思考世界并学习疗愈。适合愿意照顾同伴的角色。", abilities: ["constitution", "wisdom", "charisma"], skills: ["medicine", "religion"], tool: "herbalism-kit", feat: "healer", equipment: [{ id: "quarterstaff", quantity: 1 }, { id: "herbalism-kit", quantity: 1 }, { id: "bedroll", quantity: 1 }, { id: "philosophy-book", quantity: 1 }, { id: "lamp", quantity: 1 }, { id: "oil", quantity: 3 }, { id: "travelers-clothes", quantity: 1 }, { id: "gp", quantity: 16 }] },
   wayfarer: { name: "流浪者", description: "在街巷与旅途中学会观察、隐匿与把握机遇。幸运点需要你判断何时使用。", abilities: ["dexterity", "wisdom", "charisma"], skills: ["insight", "stealth"], tool: "thieves-tools", feat: "lucky", equipment: [{ id: "dagger", quantity: 2 }, { id: "thieves-tools", quantity: 1 }, { id: "gaming-set", quantity: 1 }, { id: "bedroll", quantity: 1 }, { id: "pouch", quantity: 2 }, { id: "travelers-clothes", quantity: 1 }, { id: "gp", quantity: 16 }] },
 };
-export const RECOMMENDED_BACKGROUND: Record<ClassId, BackgroundId> = { fighter: "soldier", wizard: "sage", druid: "hermit", warlock: "wayfarer", ranger: "wayfarer" };
-export const BACKGROUND_REASON: Record<ClassId, string> = {
+export const RECOMMENDED_BACKGROUND: Record<ClassId, BackgroundId> = { rogue: "criminal", fighter: "soldier", wizard: "sage", druid: "hermit", warlock: "wayfarer", ranger: "wayfarer" };
+export const BACKGROUND_REASON: Record<ClassId, string> = { rogue: "罪犯提升敏捷与体质，提供巧手、隐匿和警戒；与推荐职业技能互补。重复盗贼工具熟练不叠加，实物仍保留。",
   fighter: "士兵可以提升力量和体质；凶蛮打手直接帮助武器伤害，不增加每日资源。",
   wizard: "智者可以提升智力和体质，提供知识技能与额外法师法术。",
   druid: "隐士可以提升感知和体质，医疗师帮助你改善治疗法术的结果。",

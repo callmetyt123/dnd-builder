@@ -3,7 +3,7 @@ import { BACKGROUNDS } from "../../data/backgrounds";
 import { SKILLS } from "../../data/core";
 import { ARTISAN_TOOLS, CRAFTER_TOOLS, INSTRUMENTS, ORIGIN_FEATS, TOOL_OPTIONS } from "../../data/originOptions";
 import { GAMING_SETS } from "../../data/characterDetails";
-import { backgroundTool, featSources, magicOptions, classSkills } from "../origins";
+import { backgroundTool, featSources, magicOptions, classSkills, classTools } from "../origins";
 import type { CharacterBuild, ValidationMessage } from "../types";
 
 export function validateOrigins(build: CharacterBuild): ValidationMessage[] {
@@ -35,7 +35,7 @@ export function validateOrigins(build: CharacterBuild): ValidationMessage[] {
     }
   }
   // 合法的重复熟练不阻断车卡，也不将其误算为专精或额外熟练。
-  const supplied = [...classSkills(build), ...bg.skills, backgroundTool(build), ...(build.classId === "druid" ? ["herbalism-kit"] : []), ...(build.speciesId === "human" || build.speciesId === "elf" ? [sc.skill] : []), ...sources.flatMap((f) => f.id === "skilled" ? f.choices.skilled : f.id === "crafter" ? f.choices.crafter : f.id === "musician" ? f.choices.musician : [])];
+  const supplied = [...classSkills(build), ...bg.skills, backgroundTool(build), ...classTools(build), ...(build.speciesId === "human" || build.speciesId === "elf" ? [sc.skill] : []), ...sources.flatMap((f) => f.id === "skilled" ? f.choices.skilled : f.id === "crafter" ? f.choices.crafter : f.id === "musician" ? f.choices.musician : [])];
   if (new Set(supplied).size !== supplied.length) messages.push({ id: "origin-proficiency-overlap", domain: "recommendation", severity: "warning", targetStep: "background", message: "部分技能或工具由多个来源重复提供，熟练不叠加；可保留，也可调整允许自选的项目。" });
   return messages;
 }

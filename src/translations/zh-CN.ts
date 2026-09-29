@@ -1,10 +1,10 @@
 import type { AbilityId, AlignmentId, SkillId } from "../rules/types";
 
 export const zhCN = {
-  class: { ranger: "游侠",
+  class: { rogue: "游荡者", ranger: "游侠",
     fighter: "战士", wizard: "法师", druid: "德鲁伊", warlock: "魔契师",
   },
-  subclass: { "beast-master": "驯兽师", ranger: "游侠",
+  subclass: { thief: "盗贼", assassin: "刺客", "arcane-trickster": "诡术师", soulknife: "魂刃", "beast-master": "驯兽师", ranger: "游侠",
     champion: "勇士", evoker: "塑能师", moon: "月亮结社", fiend: "邪魔宗主",
   },
   species: {
@@ -17,7 +17,7 @@ acolyte: "侍僧", artisan: "工匠", charlatan: "骗子", criminal: "罪犯", e
   fightingStyle: {
     defense: "防御",
   },
-  mastery: {
+  mastery: { push: "推离",
     graze: "擦掠", nick: "迅击", topple: "推倒",
     sap: "削弱",
     slow: "缓速",
@@ -43,7 +43,7 @@ acolyte: "侍僧", artisan: "工匠", charlatan: "骗子", criminal: "罪犯", e
     "dwarven-toughness": "矮人刚毅",
     stonecunning: "石中精妙",
   },
-  language: {
+  language: { draconic: "龙语", abyssal: "深渊语", celestial: "天界语", "deep-speech": "深潜语", infernal: "炼狱语", primordial: "原初语", sylvan: "木族语", "thieves-cant": "盗贼黑话", undercommon: "地底通用语",
     druidic: "德鲁伊语", common: "通用语",
     "common-sign-language": "通用手语",
     dwarvish: "矮人语",
@@ -72,7 +72,7 @@ export const abilityNames: Record<AbilityId, string> = {
 };
 
 export const skillNames: Record<SkillId, string> = {
-  acrobatics: "体操",
+  acrobatics: "特技",
   "animal-handling": "驯兽",
   arcana: "奥秘",
   athletics: "运动",

@@ -8,6 +8,9 @@ export interface Profile {
 }
 export const SCHOLAR_SKILLS: SkillId[] = ["arcana", "history", "investigation", "medicine", "nature", "religion"];
 export const PROFILES: Record<ClassId, Profile> = {
+  rogue: { name: "游荡者", subclass: "盗贼", hitDie: 8, fixedHp: 5,
+    saves: ["dexterity", "intelligence"], skills: ["acrobatics", "athletics", "deception", "insight", "intimidation", "investigation", "perception", "persuasion", "sleight-of-hand", "stealth"],
+    equipment: [{ id: "leather-armor", quantity: 1 }, { id: "dagger", quantity: 2 }, { id: "shortsword", quantity: 1 }, { id: "shortbow", quantity: 1 }, { id: "arrow", quantity: 20 }, { id: "quiver", quantity: 1 }, { id: "thieves-tools", quantity: 1 }, { id: "burglars-pack", quantity: 1 }, { id: "gp", quantity: 8 }] },
   ranger: { name: "游侠", subclass: "驯兽师", hitDie: 10, fixedHp: 6,
     saves: ["strength", "dexterity"], skills: ["animal-handling", "athletics", "insight", "investigation", "nature", "perception", "stealth", "survival"],
     equipment: [{ id: "studded-leather", quantity: 1 }, { id: "scimitar", quantity: 1 }, { id: "shortsword", quantity: 1 }, { id: "longbow", quantity: 1 }, { id: "arrow", quantity: 20 }, { id: "quiver", quantity: 1 }, { id: "mistletoe", quantity: 1 }, { id: "explorers-pack", quantity: 1 }, { id: "gp", quantity: 7 }] },

@@ -1,3 +1,4 @@
+import { RogueSheets } from "./RogueSheets";
 import { FamiliarSheet } from "./FamiliarSheet";
 import { SPECIES } from "../../data/species";
 import { OriginSpellSheet, OriginSummary, OriginDetailSheet, SpeciesSummary, classFeatureIds, isOriginResource } from "./OriginSheets";
@@ -39,6 +40,7 @@ export function CharacterSheets(props: Props) {
   return <><ClassSheets {...props} /><OriginDetailSheet build={props.build} c={props.character} play={props.play} /><OriginSpellSheet build={props.build} c={props.character} play={props.play} /><FamiliarSheet build={props.build} c={props.character} /></>;
 }
 function ClassSheets({ build, character: c, play, mode }: Props) {
+  if (build.classId === "rogue") return <RogueSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "ranger") return <RangerSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "warlock") return <WarlockSheets build={build} c={c} play={play} mode={mode} />;
   if (build.classId === "druid") return <DruidSheets build={build} c={c} play={play} mode={mode} />;

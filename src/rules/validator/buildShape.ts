@@ -1,3 +1,4 @@
+import { ROGUE_SUBCLASSES } from "../../data/rogue";
 import { SPECIES } from "../../data/species";
 import { BACKGROUNDS } from "../../data/backgrounds";
 import { ABILITIES } from "../../data/core";
@@ -24,6 +25,8 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
   if (!isRecord(a) || !isRecord(c) || !isRecord(e) || !isRecord(i) || !isRecord(p)) return false;
   if (!isRecord(a.baseAssignment) || !isRecord(a.backgroundBoosts)) return false;
   const base = a.baseAssignment;
+  const rogue = c.rogue;
+  if (value.classId === "rogue" && (!isRecord(rogue) || !["skills", "expertise", "cantrips", "prepared"].every((k) => strings(rogue[k])) || typeof rogue.extraLanguage !== "string")) return false;
   const ranger = c.ranger;
   if (value.classId === "ranger" && (!isRecord(ranger) || !["skills", "prepared", "extraLanguages"].every((k) => strings(ranger[k])) || !["expertise", "style"].every((k) => typeof ranger[k] === "string") || !isRecord(ranger.primal) || !["form", "damage", "appearance"].every((k) => typeof (ranger.primal as Record<string, unknown>)[k] === "string"))) return false;
   const pact = c.warlock;
@@ -49,6 +52,7 @@ export function hasBuildShape(value: unknown): value is CharacterBuild {
 export function isSupportedBuild(build: CharacterBuild): boolean {
   if (!Object.prototype.hasOwnProperty.call(BACKGROUNDS, build.backgroundId) || build.equipment.backgroundPackage !== `${build.backgroundId}-a`) return false;
   if (build.schemaVersion !== 1 || build.level !== 3 || !Object.prototype.hasOwnProperty.call(SPECIES, build.speciesId)) return false;
+  if (build.classId === "rogue") return Object.prototype.hasOwnProperty.call(ROGUE_SUBCLASSES, build.subclassId) && build.profileId === "rogue" && build.equipment.classPackage === "rogue-a";
   if (build.classId === "ranger") return build.subclassId === "beast-master" && build.profileId === "ranger-beast-master" && build.equipment.classPackage === "ranger-a";
   if (build.classId === "warlock") return build.subclassId === "fiend" && build.profileId === "warlock-fiend" && build.equipment.classPackage === "warlock-a";
   if (build.classId === "druid") return build.subclassId === "moon" && build.profileId === "druid-moon" && build.equipment.classPackage === "druid-a";

@@ -11,7 +11,7 @@ import { validateBuild } from "../src/rules/validator/validateBuild";
 import { parseDraft } from "../src/store/draft";
 
 export function originChecks(assert: (condition: unknown, message: string) => void) {
-  const classes: ClassId[] = ["fighter", "wizard", "druid", "warlock", "ranger"];
+  const classes = ["fighter", "wizard", "druid", "warlock", "ranger"] as const;
   const backgrounds = ["soldier", "sage", "hermit", "wayfarer"] as const;
   const classGold = { fighter: 4, wizard: 5, druid: 9, warlock: 15, ranger: 7 };
   const backgroundGold = { soldier: 14, sage: 8, hermit: 16, wayfarer: 16 };

@@ -64,7 +64,9 @@ export interface SpeciesChoices {
 }
 export interface InnateMagic { source: string; ability: "intelligence" | "wisdom" | "charisma"; cantrips: string[]; spells: string[]; resource?: string; freeUses: number; attack: number; dc: number }
 
-export type ClassId = "fighter" | "wizard" | "druid" | "warlock" | "ranger";
+export type ClassId = "fighter" | "wizard" | "druid" | "warlock" | "ranger" | "rogue";
+export type RogueSubclass = "thief" | "assassin" | "arcane-trickster" | "soulknife";
+export interface RogueChoices { skills: SkillId[]; expertise: SkillId[]; extraLanguage: string; cantrips: string[]; prepared: string[] }
 export interface RangerChoices { skills: SkillId[]; expertise: SkillId; extraLanguages: string[]; style: "archery" | "defense"; prepared: string[]; primal: PrimalChoice }
 export interface InvocationChoice { id: string; target?: string }
 export interface WarlockChoices {
@@ -83,10 +85,10 @@ export interface CharacterBuild {
   schemaVersion: 1;
   level: 3;
   classId: ClassId;
-  subclassId: "champion" | "evoker" | "moon" | "fiend" | "beast-master";
+  subclassId: RogueSubclass | "champion" | "evoker" | "moon" | "fiend" | "beast-master";
   speciesId: SpeciesId;
   backgroundId: BackgroundId;
-  profileId: "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
+  profileId: "rogue" | "fighter-heavy" | "wizard-evoker" | "druid-moon" | "warlock-fiend" | "ranger-beast-master";
   playstyle: {
     tags: string[];
     complexity: "simple" | "balanced" | "deep";
@@ -96,6 +98,7 @@ export interface CharacterBuild {
     backgroundBoosts: Partial<Record<AbilityId, number>>;
   };
   choices: {
+    rogue?: RogueChoices;
     ranger?: RangerChoices;
     wizard?: WizardChoices;
     druid?: DruidChoices;
@@ -108,7 +111,7 @@ export interface CharacterBuild {
     weaponMasteries: string[];
   };
   equipment: {
-    classPackage: "fighter-a" | "wizard-a" | "druid-a" | "warlock-a" | "ranger-a";
+    classPackage: "rogue-a" | "fighter-a" | "wizard-a" | "druid-a" | "warlock-a" | "ranger-a";
     backgroundPackage: `${BackgroundId}-a`;
   };
   identity: Identity;
@@ -158,6 +161,7 @@ export interface DerivedCharacter {
   armorNote?: string;
   proficiencyBonus: number;
   abilities: Record<AbilityId, { score: number; modifier: number }>;
+  rogue?: { subclass: RogueSubclass; sneakDice: "2d6"; climb?: number };
   maxHp: number;
   armorClass: number;
   speed: number;

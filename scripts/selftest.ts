@@ -1,3 +1,4 @@
+import { rogueChecks } from "./rogueSelftest";
 import { speciesChecks } from "./speciesSelftest";
 import { defaultSpeciesChoices } from "../src/rules/species";
 import { originChecks } from "./originSelftest";
@@ -124,6 +125,7 @@ assert(clamped.hp === 31 && clamped.temporaryHp === 0 && clamped.hitDice === 3 &
 assert(parseDraft(JSON.stringify({ step: "character", build, play })).state?.play?.hp === 8, "play state must survive draft serialization");
 originChecks(assert);
 speciesChecks(assert);
+rogueChecks(assert);
 wizardChecks(assert);
 druidChecks(assert);
 warlockChecks(assert);

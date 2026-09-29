@@ -35,6 +35,7 @@ export const SKILLS: Record<SkillId, { defaultAbility: AbilityId }> = {
 export const STANDARD_LANGUAGE_IDS = [
   "common",
   "common-sign-language",
+  "draconic",
   "dwarvish",
   "elvish",
   "giant",

@@ -1,3 +1,5 @@
+import { changeRogueSubclass } from "../rules/rogue";
+import type { RogueChoices, RogueSubclass } from "../rules/types";
 import { changeSpecies } from "../rules/species";
 import type { SpeciesId, SpeciesChoices } from "../rules/types";
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
@@ -12,6 +14,8 @@ import { switchClass, parseDraft, STORAGE_KEY, type BuilderState, type BuilderSt
 export type { BuilderState, BuilderStep } from "./draft";
 
 type Action =
+  | { type: "rogue"; patch: Partial<RogueChoices> }
+  | { type: "rogue-subclass"; id: RogueSubclass }
   | { type: "class"; id: ClassId }
   | { type: "ranger"; patch: Partial<RangerChoices> }
   | { type: "warlock"; patch: Partial<WarlockChoices> }
@@ -37,6 +41,8 @@ type Action =
   | { type: "identity"; patch: Partial<CharacterBuild["identity"]> };
 
 function reducer(state: BuilderState, action: Action): BuilderState {
+  if (action.type === "rogue" && state.build.classId === "rogue") return { ...state, build: { ...state.build, choices: { ...state.build.choices, rogue: { ...state.build.choices.rogue!, ...action.patch } } } };
+  if (action.type === "rogue-subclass") return changeRogueSubclass(state, action.id);
   if (action.type === "species") return { ...state, build: changeSpecies(state.build, action.id) };
   if (action.type === "species-choices") return { ...state, build: { ...state.build, choices: { ...state.build.choices, species: { ...state.build.choices.species, ...action.patch } } } };
   if (action.type === "class") return switchClass(state, action.id);

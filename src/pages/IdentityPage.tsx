@@ -1,3 +1,4 @@
+import { hasSpellStep } from "../data/rogue";
 import { SPECIES } from "../data/species";
 import { BuilderShell } from "../components/builder/BuilderShell";
 import type { AlignmentId } from "../rules/types";
@@ -16,7 +17,7 @@ export function IdentityPage() {
     dispatch({ type: "identity", patch: { personalityTraits: next } });
   };
   return (
-    <BuilderShell previous={state.build.classId !== "fighter" ? "spells" : "configuration"} next="review">
+    <BuilderShell previous={hasSpellStep(state.build) ? "spells" : "configuration"} next="review">
       <section className="page-head"><h1>完善你的角色</h1><p>规则性的内容已经基本完成。角色是谁，由你自己决定。</p></section>
       <div className="form-stack"><label>角色姓名 *<input maxLength={60} value={identity.name} onChange={(e) => dispatch({ type: "identity", patch: { name: e.target.value } })} /></label><label>性别（可选）<input maxLength={30} value={identity.gender ?? ""} onChange={(e) => dispatch({ type: "identity", patch: { gender: e.target.value } })} /></label><label>年龄（可选）<input type="number" min="0" step="1" value={identity.age ?? ""} onChange={(e) => dispatch({ type: "identity", patch: { age: e.target.value ? Number(e.target.value) : undefined } })} /><span className="field-note">{SPECIES[state.build.speciesId].name}寿命参考：约 {SPECIES[state.build.speciesId].lifespan} 年。年龄不是职业限制。</span></label></div>
       <section className="section"><h2>阵营 *</h2><p className="hint">直接选择最接近你角色通常行为方式的一格。</p><div className="alignment-grid">{alignments.map((id) => <button key={id} className={identity.alignment === id ? "selected" : ""} onClick={() => dispatch({ type: "identity", patch: { alignment: id } })}><strong>{alignmentNames[id]}</strong><span>{alignmentSummaries[id]}</span></button>)}</div></section>
