@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test:rules": "tsc -p tsconfig.rules.json --outDir .tmp-rules && printf '{\"type\":\"commonjs\"}' > .tmp-rules/package.json && node .tmp-rules/scripts/selftest.js",
+    "test:rules": "tsc -p tsconfig.rules.json --outDir .tmp-rules && node scripts/runRulesSelftest.mjs",
     "typecheck": "tsc -b"
   },
   "dependencies": {

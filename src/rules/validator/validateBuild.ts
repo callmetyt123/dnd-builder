@@ -26,7 +26,7 @@ function multiset(values: number[]) {
 export function validateBuild(build: unknown): ValidationResult {
   const messages: ValidationMessage[] = [];
   if (!hasBuildShape(build) || !isSupportedBuild(build)) {
-    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级、十二种职业、三十条子职路线、十种种族和十六种背景。" }] };
+    return { rulesLegal: false, complete: false, supported: false, canGenerate: false, messages: [{ id: "unsupported-build", domain: "support", severity: "blocker", message: "数据结构或角色方案不受支持。当前支持三级、十二种职业、四十八条子职路线、十种种族和十六种背景。" }] };
   }
   const fighter = build.classId === "fighter";
   const background = BACKGROUNDS[build.backgroundId];
