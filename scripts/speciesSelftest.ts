@@ -1,4 +1,4 @@
-import { createElement } from "react";
+﻿import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CharacterSheets } from "../src/components/character/CharacterSheets";
 import { BACKGROUNDS } from "../src/data/backgrounds";
@@ -28,10 +28,10 @@ export function speciesChecks(assert: (ok: unknown, message: string) => void) {
       assert(c.resources.some((r) => r.id === "stonecunning") === (species === "dwarf"), `${label}: dwarf resource isolated`);
       assert(c.resources.every((r) => Number.isInteger(r.max) && r.max > 0) && new Set(c.resources.map((r) => r.id)).size === c.resources.length, `${label}: independent resources`);
       assert(c.savingThrows.wisdom.state === (species === "gnome" ? "advantage" : "normal"), `${label}: gnome save advantage isolated`);
-      for (const mode of ["quick", "full"] as const) {
+      for (const mode of ["quick", "reference"] as const) {
         const html = renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: c, play: normalizePlayState(undefined, c), mode }));
         assert(!/undefined|NaN/.test(html), `${label}/${mode}: complete printed values`);
-        assert((mode === "full" ? html.includes("起源能力附页") : (html.match(/data-sheet-page/g) ?? []).length === 1) && html.includes(BACKGROUNDS[bg].name), `${label}/${mode}: origins printable`);
+        assert((mode === "reference" ? html.includes("起源能力附页") : (html.match(/data-sheet-page/g) ?? []).length === 1) && html.includes(BACKGROUNDS[bg].name), `${label}/${mode}: origins printable`);
         assert(html.includes("石中精妙") === (species === "dwarf"), `${label}/${mode}: no stale dwarf text`);
       }
     }
@@ -80,7 +80,7 @@ export function speciesChecks(assert: (ok: unknown, message: string) => void) {
   assert(validateBuild(skilled).canGenerate && proficientSkills(skilled).includes("nature"), "Skilled can repeat with independent choices");
   const familiar = named(changeBackground(defaultBuild(), "sage")); familiar.choices.origin.magicInitiate.spell = "find-familiar";
   const familiarC = deriveCharacter(familiar);
-  const familiarHtml = renderToStaticMarkup(createElement(CharacterSheets, { build: familiar, character: familiarC, play: normalizePlayState(undefined, familiarC), mode: "full" }));
+  const familiarHtml = renderToStaticMarkup(createElement(CharacterSheets, { build: familiar, character: familiarC, play: normalizePlayState(undefined, familiarC), mode: "reference" }));
   assert(familiarHtml.includes("寻获魔宠 · 随行记录") && familiarHtml.includes("魔宠不能攻击"), "Find Familiar adds its offline reference without permitting attacks");
   const gnome = named(changeSpecies(defaultBuild(), "gnome"));
   let gnomeC = deriveCharacter(gnome);

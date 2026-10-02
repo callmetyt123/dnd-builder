@@ -19,7 +19,7 @@ import type { CharacterBuild, ClassId, RogueSubclass, SpeciesId, BackgroundId } 
 export function handoffChecks(assert: (ok: unknown, message: string) => void) {
   const routes: CharacterBuild[] = (["fighter", "wizard", "druid", "warlock", "ranger"] as ClassId[]).map(defaultBuild);
   for (const subclassId of ["thief", "assassin", "arcane-trickster", "soulknife"] as RogueSubclass[]) routes.push({ ...defaultBuild("rogue"), subclassId });
-  const render = (b: CharacterBuild, mode: "quick" | "full", dirty = false) => {
+  const render = (b: CharacterBuild, mode: "quick" | "standard" | "reference", dirty = false) => {
     const c = deriveCharacter(b), play = normalizePlayState(undefined, c);
     if (dirty) { play.hp = 1; play.temporaryHp = 97; play.hitDice = 0; play.remaining = Object.fromEntries(c.resources.map((r) => [r.id, 0])); play.formId = "cat"; play.agathys = true; play.warlockArmor = "unarmored"; if (play.primal) { play.primal.hp = 1; play.primal.choice.appearance = "旧冒险伙伴"; } }
     return renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: c, play, mode }));
@@ -35,9 +35,15 @@ export function handoffChecks(assert: (ok: unknown, message: string) => void) {
   }
   for (const route of routes) {
     route.identity.name = "状态隔离验证";
-    for (const mode of ["quick", "full"] as const) assert(render(route, mode) === render(route, mode, true), `${route.subclassId}/${mode}: old HP, resources and temporary effects cannot change output`);
-    const full = render(route, "full");
-    assert(full.includes("当前 HP ____") && full.includes("临时 HP ____") && full.includes("使用后勾选") && full.includes("□"), `${route.subclassId}: offline write-in fields`);
+    for (const mode of ["quick", "standard", "reference"] as const) assert(render(route, mode) === render(route, mode, true), `${route.subclassId}/${mode}: old HP, resources and temporary effects cannot change output`);
+    // 常规卡固定两页，只保留可记录数值与写空位，不铺规则正文。
+    const standard = render(route, "standard");
+    assert((standard.match(/data-sheet-page/g) ?? []).length === 2, `${route.subclassId}: standard card stays at two pages`);
+    assert(standard.includes("当前 HP ____") && standard.includes("临时 HP ____") && standard.includes("使用后勾选") && standard.includes("□") && standard.includes("起始装备"), `${route.subclassId}: standard card keeps offline write-in fields`);
+    assert(!standard.includes("spell-card") && !standard.includes("sheet-features"), `${route.subclassId}: standard card carries no rule prose`);
+    // 资料速查卡承接全部完整描述，并保持写空位字段。
+    const reference = render(route, "reference");
+    assert(reference.includes("当前 HP ____") && reference.includes("使用后勾选") && reference.includes("□"), `${route.subclassId}: reference card keeps tracked fields`);
     const state = { build: route, step: "character", play: { hp: 1, temporaryHp: 97 } };
     assert(parseDraft(JSON.stringify(state)).state?.play?.hp === 1, `${route.subclassId}: legacy state retained without destructive migration`);
   }

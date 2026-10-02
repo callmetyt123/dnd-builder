@@ -1,4 +1,4 @@
-import { createElement } from "react";
+﻿import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CharacterSheets } from "../src/components/character/CharacterSheets";
 import { NEW_CLASS_IDS, NEW_CLASSES } from "../src/data/newClasses";
@@ -21,7 +21,7 @@ import type { CharacterBuild, SpeciesId, BackgroundId } from "../src/rules/types
 
 export function newClassChecks(assert:(ok:unknown,message:string)=>void) {
   const ready=(b:CharacterBuild)=>({...b,identity:{name:"六职业验证",alignment:"NG" as const}});
-  const render=(b:CharacterBuild,mode:"quick"|"full")=>renderToStaticMarkup(createElement(CharacterSheets,{build:b,character:deriveCharacter(b),mode}));
+  const render=(b:CharacterBuild,mode:"quick"|"standard"|"reference")=>renderToStaticMarkup(createElement(CharacterSheets,{build:b,character:deriveCharacter(b),mode}));
   for(const [id,count] of [["bard",61],["cleric",41],["paladin",16],["sorcerer",72]] as const) assert(NEW_CLASS_SPELL_IDS[id].length===count&&new Set(NEW_CLASS_SPELL_IDS[id]).size===count&&NEW_CLASS_SPELL_IDS[id].every(v=>!!spell(v)?.text),`${id}: full catalog resolves`);
   // 全部起源组合经过推荐、派生与重新载入，防止新职业借用旧职业兜底。
   for(const id of NEW_CLASS_IDS) for(const species of Object.keys(SPECIES) as SpeciesId[]) for(const bg of Object.keys(BACKGROUNDS) as BackgroundId[]) {
@@ -34,9 +34,17 @@ export function newClassChecks(assert:(ok:unknown,message:string)=>void) {
     assert((quick.match(/data-sheet-page/g)??[]).length===1&&!/undefined|NaN/.test(quick),`${label}: one valid beginner sheet`);
     assert(parseDraft(JSON.stringify({build:b,step:"character"})).state?.step==="character",`${label}: restore finished build`);
     assert(!c.features.includes("arcane-recovery")&&!c.resources.some(v=>v.id==="arcane-recovery"),`${label}: no wizard leakage`);
+    // 常规卡必须列出手上实际拥有的法术名，否则玩家到桌前不知道该施什么。
+    const standard=render(b,"standard");
+    if(c.spellcasting&&(c.spellcasting.prepared.length||c.spellcasting.cantrips.length)) {
+      assert(standard.includes("法术名录"),`${label}: standard card lists known spells`);
+      const first=c.spellcasting.prepared[0]??c.spellcasting.cantrips[0];
+      assert(standard.includes(spell(first)!.name),`${label}: standard card names prepared spells`);
+      assert(!standard.includes(spell(first)!.text.slice(0,24)),`${label}: standard card keeps spell prose out`);
+    }
   }
   for(const id of NEW_CLASS_IDS) {
-    const b=ready(defaultBuild(id)),c=deriveCharacter(b),full=render(b,"full"),q=newChoices(b)!;
+    const b=ready(defaultBuild(id)),c=deriveCharacter(b),full=render(b,"reference"),q=newChoices(b)!;
     assert(validateBuild(b).canGenerate,`${id}: initial build legal`);
     assert(!/undefined|NaN|class-instrument|class-tool/.test(full),`${id}: full sheet complete`);
     assert(c.hitDie===NEW_CLASSES[id].hitDie&&c.maxHp>0,`${id}: class hit dice`);
@@ -60,7 +68,7 @@ export function newClassChecks(assert:(ok:unknown,message:string)=>void) {
   assert(deriveCharacter(pal).skills.stealth.state==="disadvantage","paladin: chain mail imposes stealth disadvantage");
   for(const id of Object.keys(METAMAGIC)) {
     const b=patchNewChoices(ready(defaultBuild("sorcerer")),{metamagic:[id,id==="subtle"?"empowered":"subtle"]});
-    assert(validateBuild(b).canGenerate&&render(b,"full").includes(METAMAGIC[id].text.replace(/&/g,"&amp;")),`${id}: selected metamagic recorded`);
+    assert(validateBuild(b).canGenerate&&render(b,"reference").includes(METAMAGIC[id].text.replace(/&/g,"&amp;")),`${id}: selected metamagic recorded`);
   }
   assert(!validateBuild(patchNewChoices(ready(defaultBuild("sorcerer")),{metamagic:["subtle","subtle"]})).canGenerate,"duplicate metamagic blocked");
 }

@@ -11,6 +11,8 @@ import { abilityNames, skillNames } from "../../translations/zh-CN";
 import { Header } from "./CharacterSheets";
 
 export function isOriginResource(c: DerivedCharacter, id: string) { return c.speciesFeatures.includes(id) || ["magic-initiate", "human-magic", "species-magic", "lucky"].includes(id); }
+// 常规人物卡只排除起源法术与幸运这类“记在别处的次数”，种族自带的资源仍需勾选框。
+export function isOriginOnlyResource(c: DerivedCharacter, id: string) { return ["magic-initiate", "human-magic", "species-magic", "lucky"].includes(id); }
 
 export function SpeciesSummary({ c }: { c: DerivedCharacter }) {
   return <p className="sheet-note">{c.size === "small" ? "小型" : "中型"}类人生物 · 被动察觉 {c.passivePerception} · {c.senses.darkvision ? `黑暗视觉 ${c.senses.darkvision} 尺` : "普通视觉"} · {c.resistances.length ? c.resistances.map((id) => DAMAGE_NAMES[id] ?? id).join("、") + "伤害抗性" : "无种族伤害抗性"}。条件豁免与其他种族能力见起源附页。</p>;

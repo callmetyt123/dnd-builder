@@ -58,6 +58,8 @@ p { color: var(--muted); line-height: 1.65; }
 .builder-footer { position: fixed; left: 0; right: 0; bottom: 0; min-height: 72px; padding: 12px max(20px, calc((100vw - 920px) / 2)); display: flex; justify-content: space-between; align-items: center; background: rgba(18,18,18,.92); border-top: 1px solid var(--border); backdrop-filter: blur(12px); z-index: 30; }
 .page-head { margin-bottom: 28px; }
 .page-head p { font-size: 1rem; max-width: 720px; }
+/* 引导页用加粗标出关键限制与保证，避免新手漏读“能改、不强制”这类前提。 */
+.page-head strong { color: var(--text); font-weight: 700; background: color-mix(in srgb, var(--accent) 12%, transparent); padding: 1px 2px; border-radius: 3px; }
 
 .card-grid { display: grid; gap: 14px; }
 .card-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -104,11 +106,11 @@ textarea { min-height: 92px; resize: vertical; }
 .choice-section > :last-child { margin-bottom: 16px; }
 .choice-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 .choice-pills button { border: 1px solid var(--border); background: #202022; border-radius: 99px; padding: 8px 12px; cursor: pointer; }
-.choice-pills button.selected { border-color: var(--accent); background: #342d20; color: #ecd49f; }
+.choice-pills button.selected, .choice-pills button[aria-pressed="true"] { border-color: var(--accent); background: #342d20; color: #ecd49f; }
 .selected-option { padding: 4px 0; }
 .weapon-list { display: grid; gap: 8px; }
 .weapon-row { width: 100%; border: 1px solid var(--border); border-radius: 10px; background: #202022; padding: 11px 12px; display: flex; justify-content: space-between; align-items: center; text-align: left; cursor: pointer; }
-.weapon-row.selected { border-color: var(--accent); background: #2d281f; }
+.weapon-row.selected, .weapon-row[aria-pressed="true"] { border-color: var(--accent); background: #2d281f; }
 .weapon-row span:first-child { display: grid; gap: 3px; }
 .weapon-row small { color: var(--muted); }
 
@@ -199,6 +201,9 @@ textarea { min-height: 92px; resize: vertical; }
 .sheet-attacks { border-collapse: collapse; width: 100%; table-layout: fixed; font-size: 12px; }.sheet-attacks th { color: #64707b; font-size: 10px; font-weight: 500; }.sheet-attacks th, .sheet-attacks td { text-align: left; padding: 6px; border-bottom: 1px solid #e0e5e8; }.sheet-attacks th:first-child { width: 44%; }.sheet-attacks th:nth-child(2) { width: 12%; }.sheet-attacks th:nth-child(3) { width: 25%; }.sheet-attacks small { display: block; font-size: 9px; }.sheet-page .rule-alert { color: #943e21; }
 .sheet-page .sheet-note { font-size: 10px; line-height: 1.6; color: #64707b; }.sheet-resources { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }.sheet-resources > div { border: 1px solid #dce1e5; padding: 8px 10px; border-radius: 3px; }.sheet-resources b { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }.sheet-resources small { display: block; margin-top: 3px; }
 .sheet-features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }.sheet-features > div { break-inside: avoid; }.sheet-features b { font-size: 13px; }.sheet-features small { display: block; }.sheet-features p { font-size: 11px; line-height: 1.65; margin: 4px 0 0; }.sheet-masteries p { font-size: 11px; }.sheet-story p { white-space: normal; }.sheet-footer { border-top: 1px solid #dce1e5; margin-top: 24px; padding-top: 10px; font-size: 9px; color: #71808c; }
+/* 常规卡把身份压成页脚一行，为资源与能力留出打印空间。 */
+.sheet-identity-footer { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; border-top: 1px solid #dce1e5; margin-top: 18px; padding-top: 10px; font-size: 9.5px; line-height: 1.6; color: #4d5964; }
+.sheet-identity-footer b { color: #252b31; }
 .export-root { position: absolute; left: -12000px; top: 0; width: 794px; pointer-events: none; }.export-root .sheet-page { width: 794px; min-height: 1122px; margin: 0; }
 @container (max-width: 600px) {
   .sheet-page { padding: 18px; }.sheet-header h2 { font-size: 24px; }.sheet-stats { grid-template-columns: 1fr 1fr; }.sheet-abilities { grid-template-columns: repeat(3, 1fr); }.sheet-columns, .sheet-features, .sheet-resources { grid-template-columns: 1fr; }.sheet-columns { gap: 0; }.sheet-attacks { font-size: 11px; }.sheet-attacks th, .sheet-attacks td { padding: 5px 3px; }.sheet-header { gap: 5px; }
@@ -285,7 +290,7 @@ textarea { min-height: 92px; resize: vertical; }
 @media (max-width: 640px) { .background-grid { grid-template-columns: 1fr; } }
 
 /* 完成页解释两种输出；上手卡用单列行动、双列提示控制一页的信息量。 */
-.handoff-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.handoff-intro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .handoff-intro h2 { font-size: 17px; margin-bottom: 8px; }.handoff-intro p { font-size: 14px; margin: 0; }
 .beginner-sheet { padding: 30px 34px; font-size: 13px; }
 .beginner-sheet .sheet-header h2 { font-size: 25px; }
@@ -300,6 +305,8 @@ textarea { min-height: 92px; resize: vertical; }
 .beginner-bottom { display: grid; grid-template-columns: 1fr 1.25fr; gap: 24px; }.beginner-bottom p { font-size: 12px; }
 .beginner-sheet .sheet-footer { margin-top: 14px; line-height: 1.65; font-size: 10px; }
 @media (max-width: 600px) { .handoff-intro { grid-template-columns: 1fr; gap: 16px; }.sheet-tabs { max-width: 100%; }.sheet-tabs button { font-size: 13px; padding-inline: 10px; } }
+/* 三张卡标签较长，允许换行而不是横向溢出。 */
+.sheet-tabs { flex-wrap: wrap; }
 @container (max-width: 600px) { .beginner-sheet { padding: 18px; }.beginner-bottom { grid-template-columns: 1fr; gap: 0; }.beginner-action { gap: 8px; padding: 10px; } }
 /* 完整核心页含全部技能和武器，收紧区块留白，给手写 HP 留出一行。 */
 .core-reference .sheet-stats { margin-top: 12px; }
@@ -315,6 +322,22 @@ textarea { min-height: 92px; resize: vertical; }
 @media (max-width: 640px) { .app-shell { padding-bottom: 146px; }.step-guide { grid-template-columns: 1fr; padding: 16px; }.step-guide .button { justify-self: start; }.builder-footer { flex-wrap: wrap; gap: 10px; }.builder-footer .checklist-link { order: 3; flex-basis: 100%; }.builder-footer .button { font-size: 13px; padding-inline: 12px; } }
 button.card { text-align: left; color: inherit; font: inherit; }.recommendation-applied { grid-column: 1 / -1; color: #abd8b4; font-size: 13px; }
 .step-guide .recommendation-scope { font-size: 12px; color: var(--muted); }
+
+/* 子职选择不是必填项，因此用小号摘要卡 + 缩略按钮提示“还能再选”，不与必填门禁混用同一套样式。 */
+.subclass-status { margin: 0 0 28px; padding: 16px 20px; border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 12px; background: #1d1d1f; }
+.subclass-status-head h2 { margin: 6px 0 8px; font-size: 1.05rem; }
+.subclass-status-head p { font-size: 13px; color: var(--muted); margin: 0; }
+.subclass-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.subclass-chip { display: grid; gap: 2px; text-align: left; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-raised); color: inherit; cursor: pointer; font: inherit; font-size: 13px; }
+.subclass-chip small { font-size: 11px; color: var(--faint); }
+.subclass-chip:hover { border-color: #5b554d; }
+.subclass-chip.selected { border-color: var(--accent); background: #28241d; }
+.subclass-chip.selected small { color: var(--accent); }
+.subclass-hint { margin: 12px 0 0; font-size: 12.5px; color: #ddc38e; }
+.subclass-jump { margin-top: 14px; }
+.subclass-location { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; margin-bottom: 18px; padding: 10px 14px; border: 1px dashed var(--border); border-radius: 10px; background: transparent; color: var(--muted); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.subclass-location b { color: var(--accent); white-space: nowrap; }
+.subclass-location:hover { border-color: #5b554d; color: var(--text); }
 
 /* 法师目录含较长法术，收紧卡片留白以保持六张一页。 */
 .wizard-spell-page .spell-card-grid { gap: 12px; }

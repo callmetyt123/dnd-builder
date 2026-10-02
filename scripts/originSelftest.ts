@@ -1,4 +1,4 @@
-import { createElement } from "react";
+﻿import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CharacterSheets } from "../src/components/character/CharacterSheets";
 import { BACKGROUNDS } from "../src/data/backgrounds";
@@ -33,10 +33,10 @@ export function originChecks(assert: (condition: unknown, message: string) => vo
     assert(classSkills(build).every((id) => !BACKGROUNDS[backgroundId].skills.includes(id)), `${label}: repair avoids duplicated proficiency`);
     assert(BACKGROUNDS[backgroundId].skills.every((id) => c.skills[id].proficiency !== "none"), `${label}: background skills are active`);
     assert(Object.keys(recommendedBoosts(classId, backgroundId)).every((id) => (BACKGROUNDS[backgroundId].abilities as readonly string[]).includes(id)), `${label}: recommended boosts remain legal`);
-    for (const mode of ["quick", "full"] as const) {
+    for (const mode of ["quick", "reference"] as const) {
       const html = renderToStaticMarkup(createElement(CharacterSheets, { build, character: c, play, mode }));
       assert(!html.includes("undefined") && !html.includes("NaN"), `${label}/${mode}: no missing values in printed tree`);
-      assert(html.includes("背景法术附页") === (mode === "full" && backgroundId === "sage"), `${label}/${mode}: origin spell appendix follows actual source`);
+      assert(html.includes("背景法术附页") === (mode === "reference" && backgroundId === "sage"), `${label}/${mode}: origin spell appendix follows actual source`);
       assert(html.includes("凶蛮打手") === (backgroundId === "soldier"), `${label}/${mode}: savage attacker text follows background`);
       assert(html.includes("医疗师") === (backgroundId === "hermit"), `${label}/${mode}: healer text follows background`);
       assert(html.includes("幸运") === (backgroundId === "wayfarer"), `${label}/${mode}: lucky text follows background`);
@@ -53,7 +53,7 @@ export function originChecks(assert: (condition: unknown, message: string) => vo
   assert(validateBuild(soldierWizard).messages.some((m) => m.id === "scholar"), "loss of background proficiency invalidates dependent expertise");
   assert(validateBuild(recommendSkills(soldierWizard)).canGenerate, "explicit repair restores valid scholar choice");
   assert(!deriveCharacter(soldierWizard).armorNote?.includes("法师护甲"), "removing sage also removes unavailable mage armor guidance");
-  assert(!renderToStaticMarkup(createElement(CharacterSheets, { build: fighterSage, character: c, play: normalizePlayState(undefined, c), mode: "full" })).includes("其中一根为奥术法器"), "sage equipment does not turn a fighter staff into an arcane focus");
+  assert(!renderToStaticMarkup(createElement(CharacterSheets, { build: fighterSage, character: c, play: normalizePlayState(undefined, c), mode: "reference" })).includes("其中一根为奥术法器"), "sage equipment does not turn a fighter staff into an arcane focus");
   const duplicate = defaultBuild("druid");
   duplicate.identity = { name: "重复熟练", alignment: "N" };
   duplicate.choices.druid!.skills = ["medicine", "nature"];

@@ -1,4 +1,4 @@
-import { createElement } from "react";
+﻿import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CharacterSheets } from "../src/components/character/CharacterSheets";
 import { defaultBuild } from "../src/rules/defaultBuild";
@@ -17,7 +17,7 @@ import type { CharacterBuild, RogueSubclass, BackgroundId, SpeciesId } from "../
 
 export function rogueChecks(assert: (ok: unknown, message: string) => void) {
   const named = (b = defaultBuild("rogue")): CharacterBuild => ({ ...b, identity: { name: "游荡者验证", alignment: "NG" } });
-  const html = (b: CharacterBuild, mode: "quick" | "full") => { const c = deriveCharacter(b); return renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: c, play: normalizePlayState(undefined, c), mode })); };
+  const html = (b: CharacterBuild, mode: "quick" | "standard" | "reference") => { const c = deriveCharacter(b); return renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: c, play: normalizePlayState(undefined, c), mode })); };
   // 640 个起源组合分别验证四个子职；独立期望防止只测试推荐路线。
   for (const subclass of Object.keys(ROGUE_SUBCLASSES) as RogueSubclass[]) for (const bg of Object.keys(BACKGROUNDS) as BackgroundId[]) for (const species of Object.keys(SPECIES) as SpeciesId[]) {
     const b = recommendSkills(changeSpecies(changeBackground({ ...named(), subclassId: subclass }, bg), species));
@@ -27,7 +27,7 @@ export function rogueChecks(assert: (ok: unknown, message: string) => void) {
     assert(c.armorClass === 11 + c.abilities.dexterity.modifier && c.criticalThreshold === 20, `${label}: armor/critical`);
     assert(c.skills[b.choices.rogue!.expertise[0]].proficiency === "expertise" && c.skills[b.choices.rogue!.expertise[1]].proficiency === "expertise", `${label}: both expertise`);
     assert(c.resources.some((r) => r.id === "psionic-power") === (subclass === "soulknife") && !!c.spellcasting === (subclass === "arcane-trickster"), `${label}: subclass isolation`);
-    for (const mode of ["quick", "full"] as const) {
+    for (const mode of ["quick", "reference"] as const) {
       const out = html(b, mode);
       assert(!/NaN|undefined/.test(out) && out.includes("2d6") && out.includes(ROGUE_SUBCLASSES[subclass].name), `${label}/${mode}: card`);
       assert(!out.includes("奥术回想") && !out.includes("remarkable-athlete"), `${label}/${mode}: no unrelated class abilities`);
@@ -82,5 +82,5 @@ export function rogueChecks(assert: (ok: unknown, message: string) => void) {
   const malformed = JSON.parse(JSON.stringify(state)); malformed.build.choices.rogue.expertise = null;
   assert(parseDraft(JSON.stringify(malformed)).preserveOriginal, "malformed rogue choice preserved for recovery");
   const familiar = structuredClone(trickster); familiar.choices.rogue!.prepared[0] = "find-familiar";
-  assert(html(familiar, "full").includes("寻获魔宠 · 随行记录"), "trickster familiar annex");
+  assert(html(familiar, "reference").includes("寻获魔宠 · 随行记录"), "trickster familiar annex");
 }

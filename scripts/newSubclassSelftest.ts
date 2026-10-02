@@ -1,4 +1,4 @@
-import { createElement } from "react";
+﻿import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CharacterSheets } from "../src/components/character/CharacterSheets";
 import { NEW_SUBCLASSES, newAutoSpells, newAutoCantrips, newSkillCount } from "../src/data/newSubclasses";
@@ -23,12 +23,12 @@ export function newSubclassChecks(assert:(ok:unknown,message:string)=>void) {
   const ready=(b:CharacterBuild)=>({...b,identity:{name:"子职验证",alignment:"NG" as const}});
   const recommend=(b:CharacterBuild)=>applyRecommendation(applyRecommendation(b,"configuration"),"spells");
   const make=(sub:NewSubclassId)=>recommend(ready(changeNewSubclass(defaultBuild(NEW_SUBCLASSES[sub].classId),sub)));
-  const render=(b:CharacterBuild,mode:"quick"|"full")=>renderToStaticMarkup(createElement(CharacterSheets,{build:b,character:deriveCharacter(b),mode}));
+  const render=(b:CharacterBuild,mode:"quick"|"standard"|"reference")=>renderToStaticMarkup(createElement(CharacterSheets,{build:b,character:deriveCharacter(b),mode}));
   assert(Object.keys(NEW_SUBCLASSES).length===24,"six classes each have four subclasses");
   for(const id of NEW_CLASS_IDS) assert(Object.values(NEW_SUBCLASSES).filter(s=>s.classId===id).length===4,`${id}: four routes`);
   // 每个新子职与所有起源组合验证名额和恢复；不能用一个默认种族代表全部组合。
   for(const [sub,def] of Object.entries(NEW_SUBCLASSES)) {
-    const b=make(sub as NewSubclassId),c=deriveCharacter(b),full=render(b,"full"),quick=render(b,"quick");
+    const b=make(sub as NewSubclassId),c=deriveCharacter(b),full=render(b,"reference"),quick=render(b,"quick");
     assert(validateBuild(b).canGenerate,`${sub}: recommended build valid`);
     assert(!/undefined|NaN/.test(full+quick)&&full.includes(def.name),`${sub}: sheets contain complete localized content`);
     assert((quick.match(/data-sheet-page/g)??[]).length===1,`${sub}: beginner guide one page`);
@@ -64,12 +64,12 @@ export function newSubclassChecks(assert:(ok:unknown,message:string)=>void) {
   const light=deriveCharacter(make("light")),war=deriveCharacter(make("war"));
   assert(!light.resources.find(r=>r.id==="warding-flare")?.shortRestRestore&&war.resources.find(r=>r.id==="war-priest")!.shortRestRestore!>0,"different short-rest rules");
   assert(Object.keys(PAD()).length===11,"ten fighting styles plus blessed warrior");
-  for(const style of Object.keys(PAD())) {const b=patchNewChoices(make("vengeance"),{style});assert(validateBuild(b).canGenerate&&render(b,"full").includes(PAD()[style].name),`${style}: legal and documented`);}
+  for(const style of Object.keys(PAD())) {const b=patchNewChoices(make("vengeance"),{style});assert(validateBuild(b).canGenerate&&render(b,"reference").includes(PAD()[style].name),`${style}: legal and documented`);}
   const pal=make("devotion"),thrown=deriveCharacter(patchNewChoices(pal,{style:"thrown-weapon-fighting"})),normal=deriveCharacter(pal);
   assert(thrown.attacks.find(a=>a.weaponId==="javelin")!.damageModifier===normal.attacks.find(a=>a.weaponId==="javelin")!.damageModifier+2,"thrown javelin adds damage");
   assert(!validateBuild(patchNewChoices(pal,{style:"invalid"})).canGenerate,"invalid fighting style blocked");
   assert(WILD_MAGIC.length===25&&WILD_MAGIC[0][0]==="01–04"&&WILD_MAGIC[24][0]==="97–100","wild table all 100 outcomes");
-  assert(!render(make("light"),"full").includes("生命门徒："),"light has no life healing bonus");
+  assert(!render(make("light"),"reference").includes("生命门徒："),"light has no life healing bonus");
   assert(!beginnerGuide(make("world-tree"),deriveCharacter(make("world-tree"))).actions.some(a=>a.how.includes("首次力量命中额外 +2d6")),"world tree guide no frenzy");
 }
 function PAD(){return PALADIN_STYLES;}

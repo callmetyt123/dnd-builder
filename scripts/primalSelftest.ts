@@ -24,7 +24,7 @@ export function primalRoutes(): CharacterBuild[] {
   return ([['druid', DRUID_SUBCLASSES], ['warlock', WARLOCK_SUBCLASSES], ['ranger', RANGER_SUBCLASSES]] as const).flatMap(([cls, table]) => Object.keys(table).map((id) => ({ ...changePrimalSubclass(defaultBuild(cls), id as PrimalSubclassId), identity: { name: "自然契约验证", alignment: "NG" as const } })));
 }
 export function primalChecks(assert: (ok: unknown, message: string) => void) {
-  const render = (b: CharacterBuild, mode: "quick" | "full" = "full") => renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: deriveCharacter(b), mode }));
+  const render = (b: CharacterBuild, mode: "quick" | "standard" | "reference" = "reference") => renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: deriveCharacter(b), mode }));
   for (const [ids, total] of [[DRUID_SPELL_IDS, 54], [WARLOCK_SPELL_IDS, 39], [RANGER_SPELL_IDS, 14]] as const) assert(ids.length === total && new Set(ids).size === total && ids.every((id) => spell(id)?.text), `resolved unique primal catalog ${total}`);
   assert(INVOCATIONS.length === 10, "ten supported invocation choices");
   // 九条新路线逐一交叉全部种族与背景，检测推荐、来源和草稿边界。
@@ -53,7 +53,12 @@ export function primalChecks(assert: (ok: unknown, message: string) => void) {
         assert(!validateBuild(bad).canGenerate, "ordinary circle cannot select CR1 bear");
       }
     }
-    if (b.classId === "ranger") assert(full.includes("伙伴速查") === (b.subclassId === "beast-master"), "only beast master renders companion sheet");
+    if (b.classId === "ranger") {
+      // 伙伴数据只属于资料速查卡；常规卡不含伙伴页。
+      assert(full.includes("资料速查卡 · 原初行侣") === (b.subclassId === "beast-master"), "only beast master renders companion sheet");
+      const standard = render(b, "standard");
+      assert(!standard.includes("资料速查卡 · 原初行侣") && standard.includes("当前 HP ____"), `${b.subclassId}: standard card excludes companion reference`);
+    }
     if (b.classId === "warlock") assert((c.pactMagic!.darkBlessing > 0) === (b.subclassId === "fiend"), "only fiend gains dark blessing");
   }
   const get = (id: PrimalSubclassId) => structuredClone(primalRoutes().find((b) => b.subclassId === id)!);

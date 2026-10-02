@@ -2,6 +2,7 @@ import { StepGuide } from "./StepGuide";
 import { validateBuild } from "../../rules/validator/validateBuild";
 import { stepBlockers, STEP_NAMES } from "../../rules/guides/onboarding";
 import { hasSpellStep } from "../../data/rogue";
+import { currentSubclassOption, className } from "../../data/subclassRegistry";
 import { Children, type ReactNode } from "react";
 import { useBuilder, type BuilderStep } from "../../store/builder";
 
@@ -38,7 +39,13 @@ export function BuilderShell({ children, previous, next, nextLabel = "下一步"
         <div className="progress-bar"><span style={{ width: `${((currentIndex + 1) / FLOW.length) * 100}%` }} /></div>
         <div className="progress-desktop">{FLOW.map((item, i) => <span className={i <= currentIndex ? "active" : ""} key={item.id}>{item.label}</span>)}</div>
       </div>
-      <main className="builder-content">{content[0]}<StepGuide key={state.step} />{content.slice(1)}
+      <main className="builder-content">
+        {/* 子职只在职业页可选，离开后用一个可点击的位置提示，避免玩家以为已经不能再改。 */}
+        {!["playstyle", "class"].includes(state.step) && <button type="button" className="subclass-location" onClick={() => dispatch({ type: "step", step: "class" })}>
+          <span>当前：{className(state.build.classId)} · 子职 {currentSubclassOption(state.build.classId, state.build.subclassId)?.name}</span>
+          <b>更换子职 →</b>
+        </button>}
+        {content[0]}<StepGuide key={state.step} />{content.slice(1)}
         {state.step !== "review" && issues.length > 0 && <section className="step-missing" aria-label="本步待完成" role="status"><strong>还需要完成 {issues.length} 项，才能继续</strong><ul>{issues.map((m) => <li key={m.id}>{m.message}</li>)}</ul><p>在本页对应选项中补齐；有推荐按钮时也可以采用推荐。</p></section>}
       </main>
       <footer className="builder-footer">

@@ -1,4 +1,4 @@
-import { createElement } from "react";
+﻿import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CharacterSheets } from "../src/components/character/CharacterSheets";
 import { defaultBuild } from "../src/rules/defaultBuild";
@@ -24,7 +24,7 @@ export function expansionChecks(assert: (ok: unknown, message: string) => void) 
   for (const [level, expected] of [[0, 20], [1, 31], [2, 39]]) assert(SPELL_LIST.filter((s) => s.level === level).length === expected, `complete PHB level ${level} list`);
   assert(Object.keys(MANEUVERS).length === 20, "twenty PHB maneuvers available");
   const complete = (b: CharacterBuild): CharacterBuild => ({ ...b, identity: { name: "子职验证", alignment: "NG" as const } });
-  const render = (b: CharacterBuild, mode: "quick" | "full") => renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: deriveCharacter(b), mode }));
+  const render = (b: CharacterBuild, mode: "quick" | "standard" | "reference") => renderToStaticMarkup(createElement(CharacterSheets, { build: b, character: deriveCharacter(b), mode }));
   // 新路线与所有起源交叉验证：推荐、草稿恢复、实际数值与单页指南使用同一构筑。
   for (const route of expansionRoutes()) for (const species of Object.keys(SPECIES) as SpeciesId[]) for (const bg of Object.keys(BACKGROUNDS) as BackgroundId[]) {
     let b = complete(changeBackground(changeSpecies(structuredClone(route), species), bg));
@@ -40,7 +40,7 @@ export function expansionChecks(assert: (ok: unknown, message: string) => void) 
     assert(!/undefined|NaN/.test(recommendationInfo(b, "spells").preview) && original.length > 0, `${label}: recommendation preview`);
   }
   for (const route of expansionRoutes()) {
-    const b = complete(subclassDefaults(route)), c = deriveCharacter(b), full = render(b, "full");
+    const b = complete(subclassDefaults(route)), c = deriveCharacter(b), full = render(b, "reference");
     assert(validateBuild(b).canGenerate && !/undefined|NaN/.test(full), `${b.subclassId}: default full output`);
     assert(!c.features.includes("potent-cantrip") && !c.features.includes("improved-critical") && c.criticalThreshold === 20 && c.initiative.state === "normal", `${b.subclassId}: no evoker or champion leakage`);
     assert(full.includes("子职能力") && full.includes("当前 HP ____"), `${b.subclassId}: complete offline reference`);
@@ -52,11 +52,11 @@ export function expansionChecks(assert: (ok: unknown, message: string) => void) 
       assert(full.includes("轻甲、中甲、重甲") && !full.includes("学者套组") && full.includes("奥法骑士法术"), "knight does not inherit wizard equipment or armor text");
       const bad = structuredClone(b); bad.choices.fighter!.prepared[0] = "web"; assert(!validateBuild(bad).canGenerate, "knight cannot prepare second-level spell");
       bad.choices.fighter!.prepared[0] = "cure-wounds"; assert(!validateBuild(bad).canGenerate, "knight cannot learn nonwizard spell");
-      bad.choices.fighter!.prepared[0] = "find-familiar"; assert(validateBuild(bad).canGenerate && render(bad, "full").includes("随行记录"), "knight familiar gets its sheet");
+      bad.choices.fighter!.prepared[0] = "find-familiar"; assert(validateBuild(bad).canGenerate && render(bad, "reference").includes("随行记录"), "knight familiar gets its sheet");
     }
     if (b.subclassId === "battle-master") {
       assert(c.skills[b.choices.fighter!.studentSkill].proficiency === "proficient" && c.tools.includes("smiths-tools") && c.resources.find((r) => r.id === "combat-superiority")?.max === 4, "student grants and d8 pool");
-      for (const key of Object.keys(MANEUVERS)) { const choice = structuredClone(b); choice.choices.fighter!.maneuvers = [key, ...Object.keys(MANEUVERS).filter((id) => id !== key).slice(0, 2)]; assert(validateBuild(choice).canGenerate && render(choice, "full").includes(MANEUVERS[key].name), `${key}: selectable and documented`); }
+      for (const key of Object.keys(MANEUVERS)) { const choice = structuredClone(b); choice.choices.fighter!.maneuvers = [key, ...Object.keys(MANEUVERS).filter((id) => id !== key).slice(0, 2)]; assert(validateBuild(choice).canGenerate && render(choice, "reference").includes(MANEUVERS[key].name), `${key}: selectable and documented`); }
       const bad = structuredClone(b); bad.choices.fighter!.maneuvers = ["parry", "parry", "trip-attack"]; assert(!validateBuild(bad).canGenerate, "duplicate maneuvers rejected");
     }
     if (b.subclassId === "psi-warrior") assert(c.abilities.intelligence.modifier === 2 && c.resources.find((r) => r.id === "psi-warrior-energy")?.shortRestRestore === 1 && c.resources.find((r) => r.id === "telekinetic-movement")?.shortRestRestore === 1, "psi recommendation and distinct recovery");
@@ -70,6 +70,13 @@ export function expansionChecks(assert: (ok: unknown, message: string) => void) 
     }
   }
   const wizard = complete(defaultBuild("wizard")); wizard.choices.wizard!.cantrips = ["minor-illusion", "light", "mage-hand"];
+  // 法师与奥法骑士的常规卡要分开列出戏法、已准备与书中未准备的法术名。
+  const wizardStandard = render(wizard, "standard");
+  const wizardCasting = deriveCharacter(wizard).spellcasting!;
+  assert(wizardStandard.includes("法术名录") && wizardStandard.includes("已准备") && wizardStandard.includes("法术书中未准备"), "wizard standard card lists prepared and unprepared book spells");
+  assert(wizardCasting.prepared.every((id) => wizardStandard.includes(spell(id)!.name)), "wizard standard card names every prepared spell");
+  assert(wizardCasting.book.filter((id) => !wizardCasting.prepared.includes(id)).every((id) => wizardStandard.includes(spell(id)!.name)), "wizard standard card names unprepared book spells");
+  assert(!wizardStandard.includes(wizardCasting.prepared.map((id) => spell(id)!.text.slice(0, 20)).find((text) => text.length > 6)!), "wizard standard card keeps spell prose out");
   const before = JSON.stringify(wizard), changed = changeExpandedSubclass(wizard, "illusionist");
   assert(JSON.stringify(wizard) === before && changed.choices.wizard!.cantrips.length === 3 && changed.choices.wizard!.cantrips.includes("minor-illusion") && deriveCharacter(changed).spellcasting!.cantrips.length === 4 && validateBuild(changed).canGenerate, "subclass switch preserves source and resolves free-cantrip overlap");
   const forest = changeSpecies(complete(changeExpandedSubclass(defaultBuild("wizard"), "illusionist")), "gnome");
@@ -77,7 +84,7 @@ export function expansionChecks(assert: (ok: unknown, message: string) => void) 
   forest.choices.wizard!.illusionCantrip = "mind-sliver";
   const restored = parseDraft(JSON.stringify({ build: forest, step: "spells" })).state;
   assert(restored?.build.choices.wizard?.illusionCantrip === "mind-sliver", "chosen extra cantrip persists");
-  assert(render(forest, "full").includes("90 尺") && wizardSpell(forest, "minor-illusion")!.time.includes("附赠"), "origin illusion uses subclass adjustments in full card");
+  assert(render(forest, "reference").includes("90 尺") && wizardSpell(forest, "minor-illusion")!.time.includes("附赠"), "origin illusion uses subclass adjustments in full card");
   forest.choices.wizard!.illusionCantrip = forest.choices.wizard!.cantrips[0];
   assert(!validateBuild(forest).canGenerate, "extra illusion cantrip cannot duplicate known class cantrip");
   forest.choices.wizard!.cantrips = SPELL_LIST.filter((s) => s.level === 0).map((s) => s.id);

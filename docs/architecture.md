@@ -114,3 +114,19 @@ CharacterBuild ───┤
 `StepGuide` 使用同一模型预览和提交推荐。`BuilderShell` 统一筛出当前步骤的 blocker，与各页面原有门禁合并；跨步骤问题由检查清单处理。`ReviewPage` 将 blocker 与 warning/info 分区，提供命名明确的修改链接。手机固定底栏增加清单入口后，相应增加内容底部留白。
 
 `onboardingSelftest.ts` 覆盖偏好排序、缓存切换、全部九路线／十种族／十六背景组合的推荐合法性、无关字段保留、源对象不可变性、卫士戏法数量以及可选建议不阻断生成。
+
+## v0.16 三张卡与子职可见性
+
+`CharacterSheets` 的 `mode` 由 `quick | full` 改为 `quick | standard | reference`，三者共用同一派生角色，不再有既当数值表又当规则手册的中间产物：
+
+- `quick`：`BeginnerSheet`，固定一页。
+- `standard`：`CoreReferencePage`（核心数值、豁免、全部技能、攻击、资源勾选框、能力名称、法术名录）+ 装备与身份页，固定两页。`spellGroups()` 按职业汇总戏法、已准备与法术书未准备，只输出名称。
+- `reference`：各类 `*Sheets` 的 `reference` 分支与 `PrimalSubclassSheet`／`OriginDetailSheet`／`OriginSpellSheet`／`FamiliarSheet`／`SummonedBeastSheet` 组合，承载全部描述。
+
+四个职业卡组件（`Rogue`／`Ranger`／`Warlock`／`Druid`）与 `NewClassSheets` 改为按 `standard`／`reference` 分支渲染互不重叠的页面；战士与法师的 `reference` 由 `ClassReference` 组合核心记录、职业能力、`SubclassSheet` 与 `SpellPages`。`character` 属性可省略，省略时由 `build` 现场派生，便于自检脚本只传构筑。
+
+`data/subclassRegistry.ts` 把六个来源的子职表（新六职业、战士、法师、德鲁伊、魔契师、游侠、游荡者）统一成 `{ id, name, complexity, recommended }`，供职业页状态条、缩略选择与跨步骤位置提示共用，避免十二个职业各写一套判断。
+
+`BuilderShell` 在非玩法／职业步骤渲染子职位置提示；`ClassPage` 在选定职业后滚动到子职说明区。子职保持可选，不进入 blocker。
+
+`vite.config.ts` 的 `server.watch.ignored` 跳过隐藏目录：编辑器原子写入产生的 `.<文件名>.<pid>.<uuid>.tmpdir` 在 Windows 上会让文件监听以 `EBUSY` 结束整个开发服务器。

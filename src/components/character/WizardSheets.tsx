@@ -11,7 +11,7 @@ export function SpellPages({ build, c, full = false, start, total }: WizardProps
   const ids = [...new Set([...casting.cantrips, ...(full && w ? casting.book : casting.prepared)])];
   const pages = Array.from({ length: Math.ceil(ids.length / 6) }, (_, i) => ids.slice(i * 6, i * 6 + 6));
   return <>{pages.map((page, i) => <article className="sheet-page wizard-spell-page" data-sheet-page key={i}>
-    <Header build={build} title={full ? w ? "完整人物卡 · 法术书" : "完整人物卡 · 奥法骑士法术" : "战斗速查 · 可施展法术"} page={`${start + i} / ${total}`} />
+    <Header build={build} title={full ? w ? "资料速查卡 · 法术书" : "资料速查卡 · 奥法骑士法术" : "常规人物卡 · 可施展法术"} page={`${start + i} / ${total}`} />
     <p className="casting-strip">{w ? "法师" : "奥法骑士"}：攻击 {signed(casting.attack)} · DC {casting.dc}</p>
     <div className="spell-card-grid">{page.map((id) => {
       const s = wizardSpell(build, id);
